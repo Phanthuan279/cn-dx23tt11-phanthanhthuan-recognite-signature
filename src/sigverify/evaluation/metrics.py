@@ -17,6 +17,7 @@ from __future__ import annotations
 from typing import Sequence, Tuple
 
 import numpy as np
+import pandas as pd
 from sklearn.metrics import roc_auc_score, roc_curve
 
 
@@ -150,3 +151,22 @@ def evaluate_by_forgery_type(
         metrics["auc"] = auc
         results[t] = metrics
     return results
+
+
+def build_predictions_dataframe(pairs_df: pd.DataFrame, scores: Sequence[float], tau: float) -> pd.DataFrame:
+    """Attach per-pair scores/predictions to a pairs dataframe (which already
+    carries pair_id, path_a, path_b, label, forgery_type) for Phase 8 error
+    analysis. `scores` must be in the same row order as `pairs_df` -- true for
+    any pairs_df run through src/sigverify/training/train_siamese.py's
+    PairDataset/compute_pair_scores, since it iterates by position with
+    shuffle=False.
+
+    This lives here (not as a return_per_pair flag on evaluate_at_threshold)
+    so the threshold-leakage guard on evaluate_at_threshold's signature never
+    has to change.
+    """
+    out = pairs_df.reset_index(drop=True).copy()
+    out["score"] = np.asarray(scores, dtype=np.float64)
+    out["tau_used"] = float(tau)
+    out["prediction"] = (out["score"] < tau).astype(int)
+    return out

@@ -18,6 +18,7 @@ import pandas as pd
 import torch
 
 from sigverify.evaluation.metrics import (  # noqa: E402
+    build_predictions_dataframe,
     compute_far_frr,
     evaluate_at_threshold,
     evaluate_by_forgery_type,
@@ -150,6 +151,10 @@ def main() -> None:
     (out_dir / "far_frr_curve.json").write_text(
         json.dumps({"far": far.tolist(), "frr": frr.tolist(), "thresholds": thresholds.tolist()}, indent=2)
     )
+
+    predictions_df = build_predictions_dataframe(test_pairs, test_scores, tau)
+    predictions_df.to_csv(out_dir / "predictions_test.csv", index=False)
+    print(f"[train_config_b] Per-pair predictions saved to {out_dir / 'predictions_test.csv'}")
 
     fig, ax = plt.subplots()
     for forgery_type in ("skilled_forgery", "random_forgery"):

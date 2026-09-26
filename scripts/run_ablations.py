@@ -25,6 +25,7 @@ import pandas as pd
 import torch
 
 from sigverify.evaluation.metrics import (  # noqa: E402
+    build_predictions_dataframe,
     evaluate_at_threshold,
     evaluate_by_forgery_type,
     roc_auc,
@@ -169,6 +170,11 @@ def evaluate_siamese_zero_shot(base_config: dict, bhsig260_df: pd.DataFrame, dev
 
     result = {"tau_from_cedar": tau, "overall": overall, "by_forgery_type": by_type}
     Path("results/generalization_bhsig260_siamese_raw.json").write_text(json.dumps(result, indent=2))
+
+    predictions_dir = Path("results/config_a")
+    predictions_dir.mkdir(parents=True, exist_ok=True)
+    build_predictions_dataframe(pairs_df, scores, tau).to_csv(predictions_dir / "predictions_bhsig260.csv", index=False)
+
     return result
 
 

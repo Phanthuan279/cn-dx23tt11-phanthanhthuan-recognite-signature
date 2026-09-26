@@ -28,10 +28,10 @@ dependencies: [7]
 
 ## Requirements
 
-- [ ] `scripts/error_analysis.py`: với mỗi tập đánh giá (CEDAR test, BHSig260 zero-shot), lọc ra các cặp có dự đoán sai tại `tau*`, sắp xếp theo mức độ sai lệch (`|D - tau*|` lớn nhất trước — đây là các ca sai "rõ ràng" nhất, đáng chú ý nhất).
-- [ ] Với mỗi ca sai được chọn (giới hạn số lượng hiển thị, vd. top 20 mỗi tổ hợp FA/FR × skilled/random), lưu ảnh gốc + ảnh sau tiền xử lý của cả 2 ảnh trong cặp, cùng giá trị `D`, `tau*`, nhãn thật, dự đoán, vào `results/error_analysis/{dataset}/{case_id}.png` (lưới 2×2: gốc A, gốc B, đã xử lý A, đã xử lý B).
-- [ ] `results/error_analysis/findings.md`: tổng hợp định tính — với mỗi tổ hợp (FA/FR × skilled/random × CEDAR/BHSig260), liệt kê 2-3 nguyên nhân khả dĩ quan sát được từ các ca cụ thể (tham chiếu ảnh đã lưu), không suy đoán chung chung không có bằng chứng ảnh minh hoạ.
-- [ ] `tests/test_error_analysis.py`: assert hàm lọc ca sai trả về đúng tập con (dùng dữ liệu tổng hợp có nhãn/dự đoán biết trước).
+- [x] `scripts/error_analysis.py`: với mỗi tập đánh giá (CEDAR test, BHSig260 zero-shot), lọc ra các cặp có dự đoán sai tại `tau*`, sắp xếp theo mức độ sai lệch (`|D - tau*|` lớn nhất trước — đây là các ca sai "rõ ràng" nhất, đáng chú ý nhất).
+- [x] Với mỗi ca sai được chọn (giới hạn số lượng hiển thị, vd. top 20 mỗi tổ hợp FA/FR × skilled/random), lưu ảnh gốc + ảnh sau tiền xử lý của cả 2 ảnh trong cặp, cùng giá trị `D`, `tau*`, nhãn thật, dự đoán, vào `results/error_analysis/{dataset}/{case_id}.png` (lưới 2×2: gốc A, gốc B, đã xử lý A, đã xử lý B).
+- [x] `results/error_analysis/findings.md`: tổng hợp định tính — với mỗi tổ hợp (FA/FR × skilled/random × CEDAR/BHSig260), liệt kê 2-3 nguyên nhân khả dĩ quan sát được từ các ca cụ thể (tham chiếu ảnh đã lưu), không suy đoán chung chung không có bằng chứng ảnh minh hoạ.
+- [x] `tests/test_error_analysis.py`: assert hàm lọc ca sai trả về đúng tập con (dùng dữ liệu tổng hợp có nhãn/dự đoán biết trước).
 
 ## Architecture
 
@@ -67,11 +67,11 @@ Với mỗi dataset ∈ {cedar_test, bhsig260}:
 
 ## Todo List
 
-- [ ] `evaluate_at_threshold` mở rộng không phá vỡ hành vi cũ
-- [ ] `predictions_*.csv` được lưu ở Phase 5/6/7
-- [ ] `find_top_errors` có test, lọc đúng 4 tổ hợp FA/FR × skilled/random
-- [ ] Ảnh minh hoạ 2×2 cho các ca sai tiêu biểu
-- [ ] `findings.md` có nguyên nhân định tính kèm tham chiếu ảnh cụ thể
+- [x] `evaluate_at_threshold` mở rộng không phá vỡ hành vi cũ
+- [x] `predictions_*.csv` được lưu ở Phase 5/6/7
+- [x] `find_top_errors` có test, lọc đúng 4 tổ hợp FA/FR × skilled/random
+- [x] Ảnh minh hoạ 2×2 cho các ca sai tiêu biểu
+- [x] `findings.md` có nguyên nhân định tính kèm tham chiếu ảnh cụ thể
 
 ## Success Criteria
 
