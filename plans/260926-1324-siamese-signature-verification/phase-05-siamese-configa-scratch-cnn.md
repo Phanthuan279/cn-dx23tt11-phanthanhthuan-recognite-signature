@@ -30,14 +30,14 @@ dependencies: [3, 4]
 
 ## Requirements
 
-- [ ] `src/sigverify/models/siamese_scratch.py`: `class SiameseScratchCNN(nn.Module)` — 4-5 khối `Conv2d+BatchNorm2d+ReLU+MaxPool2d`, kênh tăng dần (vd. 32→64→128→256), theo sau 1-2 `Linear` cho ra embedding 128 chiều; input 1 kênh (grayscale), kích thước `image.size_scratch` (220×150).
-- [ ] `src/sigverify/models/losses.py`: `class ContrastiveLoss(nn.Module)` implement đúng `L(y,D) = y·D² + (1-y)·max(0, m-D)²` với `y=1` nghĩa là cặp cùng người (genuine-genuine) — **thống nhất quy ước nhãn** với `y_pair` dùng trong Phase 3 (label=1 same/genuine, label=0 different) để không lệch dấu so với `metrics.py`.
-- [ ] `src/sigverify/training/augment.py`: augmentation train-only — xoay ±5°, dịch chuyển/co giãn nhẹ, nhiễu Gaussian nhẹ; **không có** hàm lật ngang/dọc nào trong module này.
-- [ ] `src/sigverify/training/train_siamese.py`: vòng lặp huấn luyện tổng quát dùng chung cho Config A và B (nhận model, loss, optimizer, dataloader làm tham số) — Adam, early stopping theo `val_eer` (patience từ config), lưu checkpoint tốt nhất theo `val_eer`.
-- [ ] `scripts/train_config_a.py`: CLI train Config A, lặp qua `train.margins` từ config, mỗi margin một lần train đầy đủ, chọn margin tốt nhất theo `val_eer`, đánh giá model tốt nhất trên test (skilled + random forgery tách riêng), lưu `models_registry/config_a_best.pt` + `models_registry/config_a_threshold.json` (chứa `tau*` đã đóng băng) + `results/config_a/metrics.json` + `results/config_a/roc.png` + `results/config_a/margin_sweep.json` (val_eer mỗi margin, để đưa vào báo cáo).
-- [ ] `notebooks/colab_train_siamese.ipynb`: notebook tối giản — cell 1 clone repo + cài đặt, cell 2 tải CEDAR (gọi `scripts/download_cedar.py`), cell 3 gọi `scripts/build_pairs.py`, cell 4 gọi `scripts/train_config_a.py`, cell 5 in bảng kết quả từ `results/config_a/metrics.json`. Không định nghĩa lớp mô hình/loss trực tiếp trong notebook.
-- [ ] `tests/test_siamese_model.py`: forward pass CPU trên batch giả (vd. `torch.randn(4,1,150,220)`), assert output shape `(4,128)`; `ContrastiveLoss` trên vài giá trị D/y biết trước đáp án (vd. `y=1,D=0` → loss=0; `y=0,D=0,margin=1` → loss=1).
-- [ ] `tests/test_augment.py`: assert module `augment.py` không import/gọi bất kỳ API lật ảnh ngang nào (kiểm tra tĩnh bằng cách rà tên hàm được gọi, hoặc property-based: áp augmentation nhiều lần lên ảnh có nội dung bất đối xứng rõ ràng và assert không có lần nào bị lật theo trục ngang).
+- [x] `src/sigverify/models/siamese_scratch.py`: `class SiameseScratchCNN(nn.Module)` — 4-5 khối `Conv2d+BatchNorm2d+ReLU+MaxPool2d`, kênh tăng dần (vd. 32→64→128→256), theo sau 1-2 `Linear` cho ra embedding 128 chiều; input 1 kênh (grayscale), kích thước `image.size_scratch` (220×150).
+- [x] `src/sigverify/models/losses.py`: `class ContrastiveLoss(nn.Module)` implement đúng `L(y,D) = y·D² + (1-y)·max(0, m-D)²` với `y=1` nghĩa là cặp cùng người (genuine-genuine) — **thống nhất quy ước nhãn** với `y_pair` dùng trong Phase 3 (label=1 same/genuine, label=0 different) để không lệch dấu so với `metrics.py`.
+- [x] `src/sigverify/training/augment.py`: augmentation train-only — xoay ±5°, dịch chuyển/co giãn nhẹ, nhiễu Gaussian nhẹ; **không có** hàm lật ngang/dọc nào trong module này.
+- [x] `src/sigverify/training/train_siamese.py`: vòng lặp huấn luyện tổng quát dùng chung cho Config A và B (nhận model, loss, optimizer, dataloader làm tham số) — Adam, early stopping theo `val_eer` (patience từ config), lưu checkpoint tốt nhất theo `val_eer`.
+- [x] `scripts/train_config_a.py`: CLI train Config A, lặp qua `train.margins` từ config, mỗi margin một lần train đầy đủ, chọn margin tốt nhất theo `val_eer`, đánh giá model tốt nhất trên test (skilled + random forgery tách riêng), lưu `models_registry/config_a_best.pt` + `models_registry/config_a_threshold.json` (chứa `tau*` đã đóng băng) + `results/config_a/metrics.json` + `results/config_a/roc.png` + `results/config_a/margin_sweep.json` (val_eer mỗi margin, để đưa vào báo cáo).
+- [x] `notebooks/colab_train_siamese.ipynb`: notebook tối giản — cell 1 clone repo + cài đặt, cell 2 tải CEDAR (gọi `scripts/download_cedar.py`), cell 3 gọi `scripts/build_pairs.py`, cell 4 gọi `scripts/train_config_a.py`, cell 5 in bảng kết quả từ `results/config_a/metrics.json`. Không định nghĩa lớp mô hình/loss trực tiếp trong notebook.
+- [x] `tests/test_siamese_model.py`: forward pass CPU trên batch giả (vd. `torch.randn(4,1,150,220)`), assert output shape `(4,128)`; `ContrastiveLoss` trên vài giá trị D/y biết trước đáp án (vd. `y=1,D=0` → loss=0; `y=0,D=0,margin=1` → loss=1).
+- [x] `tests/test_augment.py`: assert module `augment.py` không import/gọi bất kỳ API lật ảnh ngang nào (kiểm tra tĩnh bằng cách rà tên hàm được gọi, hoặc property-based: áp augmentation nhiều lần lên ảnh có nội dung bất đối xứng rõ ràng và assert không có lần nào bị lật theo trục ngang).
 
 ## Architecture
 
@@ -85,13 +85,13 @@ Huấn luyện (mỗi margin m ∈ {0.5, 1.0, 2.0}):
 
 ## Todo List
 
-- [ ] `SiameseScratchCNN` forward pass đúng shape, test CPU pass
-- [ ] `ContrastiveLoss` đúng công thức, test biết trước đáp án pass
-- [ ] `augment.py` không có lật ngang, có test tĩnh xác nhận
-- [ ] Vòng lặp train chung dùng lại được cho Config B (Phase 6)
-- [ ] Margin sweep {0.5, 1.0, 2.0} chạy đủ 3 lần, chọn theo `val_eer`
-- [ ] Threshold đóng băng đúng quy trình Phase 3 (không rò rỉ test)
-- [ ] So sánh kết quả với `results/baseline/metrics.json`, ghi rõ đạt/không đạt
+- [x] `SiameseScratchCNN` forward pass đúng shape, test CPU pass
+- [x] `ContrastiveLoss` đúng công thức, test biết trước đáp án pass
+- [x] `augment.py` không có lật ngang, có test tĩnh xác nhận
+- [x] Vòng lặp train chung dùng lại được cho Config B (Phase 6)
+- [x] Margin sweep {0.5, 1.0, 2.0} chạy đủ 3 lần, chọn theo `val_eer`
+- [x] Threshold đóng băng đúng quy trình Phase 3 (không rò rỉ test)
+- [x] So sánh kết quả với `results/baseline/metrics.json`, ghi rõ đạt/không đạt
 
 ## Success Criteria
 
