@@ -31,10 +31,10 @@ dependencies: [5]
 
 ## Requirements
 
-- [ ] `src/sigverify/models/siamese_transfer.py`: `class SiameseTransferCNN(nn.Module)` — load `torchvision.models.resnet18(weights=...)` hoặc `vgg16(weights=...)` theo config, thay lớp phân loại cuối bằng `Linear(→128)`, expose `freeze_backbone()`/`unfreeze_last_block()` để phục vụ 2 giai đoạn fine-tune.
-- [ ] `scripts/train_config_b.py`: CLI train Config B — giai đoạn 1 (đóng băng) rồi giai đoạn 2 (mở khối cuối), lặp qua `train.margins`, chọn margin tốt nhất theo `val_eer`, đánh giá test tách skilled/random forgery, lưu `models_registry/config_b_best.pt` + `models_registry/config_b_threshold.json` + `results/config_b/metrics.json` + `results/config_b/roc.png`.
-- [ ] `results/comparison_summary.md` (hoặc `.json` kèm bảng) tổng hợp Baseline vs Config A vs Config B: FAR/FRR/EER/Accuracy/AUC theo từng loại forgery, để dùng trực tiếp trong báo cáo đồ án.
-- [ ] `tests/test_transfer_model.py`: forward pass CPU trên batch giả `torch.randn(2,3,224,224)`, assert output `(2,128)`; assert `freeze_backbone()` đặt `requires_grad=False` cho toàn bộ tham số backbone, `unfreeze_last_block()` chỉ mở đúng khối cuối (kiểm bằng đếm số tham số `requires_grad=True` trước/sau).
+- [x] `src/sigverify/models/siamese_transfer.py`: `class SiameseTransferCNN(nn.Module)` — load `torchvision.models.resnet18(weights=...)` hoặc `vgg16(weights=...)` theo config, thay lớp phân loại cuối bằng `Linear(→128)`, expose `freeze_backbone()`/`unfreeze_last_block()` để phục vụ 2 giai đoạn fine-tune.
+- [x] `scripts/train_config_b.py`: CLI train Config B — giai đoạn 1 (đóng băng) rồi giai đoạn 2 (mở khối cuối), lặp qua `train.margins`, chọn margin tốt nhất theo `val_eer`, đánh giá test tách skilled/random forgery, lưu `models_registry/config_b_best.pt` + `models_registry/config_b_threshold.json` + `results/config_b/metrics.json` + `results/config_b/roc.png`.
+- [x] `results/comparison_summary.md` (hoặc `.json` kèm bảng) tổng hợp Baseline vs Config A vs Config B: FAR/FRR/EER/Accuracy/AUC theo từng loại forgery, để dùng trực tiếp trong báo cáo đồ án.
+- [x] `tests/test_transfer_model.py`: forward pass CPU trên batch giả `torch.randn(2,3,224,224)`, assert output `(2,128)`; assert `freeze_backbone()` đặt `requires_grad=False` cho toàn bộ tham số backbone, `unfreeze_last_block()` chỉ mở đúng khối cuối (kiểm bằng đếm số tham số `requires_grad=True` trước/sau).
 
 ## Architecture
 
@@ -77,11 +77,11 @@ Fine-tune 2 giai đoạn:
 
 ## Todo List
 
-- [ ] `SiameseTransferCNN` load đúng backbone, thay lớp cuối, test CPU pass
-- [ ] `freeze_backbone`/`unfreeze_last_block` hoạt động đúng, có test đếm tham số
-- [ ] 2 giai đoạn fine-tune chạy nối tiếp, param groups lr khác nhau
-- [ ] Margin sweep + threshold freeze giống quy trình Phase 5
-- [ ] `comparison_summary.md` sinh tự động, có đủ Baseline/A/B
+- [x] `SiameseTransferCNN` load đúng backbone, thay lớp cuối, test CPU pass
+- [x] `freeze_backbone`/`unfreeze_last_block` hoạt động đúng, có test đếm tham số
+- [x] 2 giai đoạn fine-tune chạy nối tiếp, param groups lr khác nhau
+- [x] Margin sweep + threshold freeze giống quy trình Phase 5
+- [x] `comparison_summary.md` sinh tự động, có đủ Baseline/A/B
 
 ## Success Criteria
 
