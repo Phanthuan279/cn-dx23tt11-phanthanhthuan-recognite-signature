@@ -1,0 +1,2 @@
+model:
+  l2_normalize: true

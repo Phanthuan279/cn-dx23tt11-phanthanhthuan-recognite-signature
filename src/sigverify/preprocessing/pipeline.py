@@ -115,10 +115,15 @@ def preprocess_image(
     mode: str = "unit",
     denoise_method: str = "gaussian",
     binarize_output: bool = False,
+    crop_to_bbox: bool = True,
 ) -> np.ndarray:
     """Run the full 5-step preprocessing pipeline.
 
     1. grayscale  2. denoise  3. Otsu (bbox only)  4. tight crop  5. center+pad+resize+normalize
+
+    `crop_to_bbox=False` is the Phase 7 ablation variant that skips step 4
+    entirely (resizes the whole original canvas instead of the tight Otsu
+    bounding box), to measure how much the tight crop actually contributes.
 
     Returns a float32 array: (H, W, 1) for mode="unit", (H, W, 3) for mode="imagenet".
     """
@@ -126,13 +131,16 @@ def preprocess_image(
     gray = ensure_dark_ink_on_white(gray)
     denoised = denoise(gray, denoise_method)
 
-    mask = otsu_mask(denoised)
-    x0, y0, x1, y1 = tight_bbox(mask)
+    mask = otsu_mask(denoised) if (binarize_output or crop_to_bbox) else None
 
-    source = mask if binarize_output else denoised
-    # invert back the mask (255=ink) to look like a grayscale image (dark ink, white bg)
-    if binarize_output:
-        source = 255 - source
+    # invert back (255=ink in the mask) to look like a grayscale image (dark ink, white bg)
+    source = (255 - mask) if binarize_output else denoised
+
+    if crop_to_bbox:
+        x0, y0, x1, y1 = tight_bbox(mask)
+    else:
+        h, w = source.shape[:2]
+        x0, y0, x1, y1 = 0, 0, w, h
     cropped = source[y0:y1, x0:x1]
 
     resized = center_pad_resize(cropped, target_size)

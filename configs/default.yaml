@@ -15,6 +15,7 @@ preprocessing:
   denoise: "gaussian"        # "gaussian" | "median"
   binarize_output: false     # Otsu is always used to locate the bbox; this only
                               # controls whether the FINAL model input is binarized
+  crop_to_bbox: true         # Phase 7 ablation variant: false skips the tight crop
 
 pairs:
   ratio_pos_hardneg_easyneg: [2, 1, 1]
@@ -35,6 +36,7 @@ train:
   lr_finetune_head: 0.0001
   lr_finetune_backbone: 0.00001
   finetune_stage1_epochs: 5
+  augmentation_enabled: true  # Phase 7 ablation variant: false disables train-time augmentation
 
 model:
   embedding_dim: 128

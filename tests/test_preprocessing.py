@@ -66,3 +66,19 @@ def test_preprocess_image_imagenet_mode_three_channels():
     img = _synthetic_signature()
     out = preprocess_image(img, (224, 224), mode="imagenet")
     assert out.shape == (224, 224, 3)
+
+
+def test_preprocess_image_crop_to_bbox_false_uses_full_canvas():
+    """Phase 7 ablation variant: skip the tight Otsu crop and resize the whole
+    original canvas instead. Output shape is unaffected either way, but the
+    stroke should occupy proportionally less of the frame than with cropping.
+    """
+    img = _synthetic_signature()
+    target_size = (220, 150)
+
+    cropped = preprocess_image(img, target_size, mode="unit", crop_to_bbox=True)
+    full_canvas = preprocess_image(img, target_size, mode="unit", crop_to_bbox=False)
+
+    assert cropped.shape == full_canvas.shape == (150, 220, 1)
+    # tight crop makes ink pixels denser in the frame -> lower mean (darker) overall
+    assert cropped.mean() < full_canvas.mean()

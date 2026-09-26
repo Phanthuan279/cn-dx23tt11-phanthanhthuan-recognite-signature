@@ -32,6 +32,7 @@ class PairDataset(Dataset):
         mode: str = "unit",
         denoise_method: str = "gaussian",
         binarize_output: bool = False,
+        crop_to_bbox: bool = True,
         augment: bool = False,
     ):
         self.pairs_df = pairs_df.reset_index(drop=True)
@@ -39,13 +40,16 @@ class PairDataset(Dataset):
         self.mode = mode
         self.denoise_method = denoise_method
         self.binarize_output = binarize_output
+        self.crop_to_bbox = crop_to_bbox
         self.augment = augment
 
     def __len__(self) -> int:
         return len(self.pairs_df)
 
     def _load(self, path: str) -> torch.Tensor:
-        img = preprocess_image(path, self.target_size, self.mode, self.denoise_method, self.binarize_output)
+        img = preprocess_image(
+            path, self.target_size, self.mode, self.denoise_method, self.binarize_output, self.crop_to_bbox
+        )
         if self.augment:
             img = augment_image(img, rng=random)
         # (H, W, C) -> (C, H, W)
@@ -68,12 +72,13 @@ def compute_pair_scores(
     binarize_output: bool,
     device: torch.device,
     batch_size: int = 64,
+    crop_to_bbox: bool = True,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Run the (frozen, eval-mode) model over every pair and return
     (distances, labels, forgery_types) as numpy arrays. Never applies
     augmentation -- val/test evaluation must be deterministic.
     """
-    dataset = PairDataset(pairs_df, target_size, mode, denoise_method, binarize_output, augment=False)
+    dataset = PairDataset(pairs_df, target_size, mode, denoise_method, binarize_output, crop_to_bbox, augment=False)
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
     model.eval()
@@ -104,9 +109,15 @@ def train_one_config(
     device: Optional[torch.device] = None,
     denoise_method: str = "gaussian",
     binarize_output: bool = False,
+    crop_to_bbox: bool = True,
+    augmentation_enabled: bool = True,
     optimizer: Optional[torch.optim.Optimizer] = None,
 ) -> tuple[dict, list[dict]]:
     """Train `model` with contrastive loss, early-stopping on validation EER.
+
+    `crop_to_bbox` and `augmentation_enabled` exist mainly for the Phase 7
+    ablation variants (configs/ablation_variants/*.yaml); both default to the
+    plan's standard configuration.
 
     Returns (best_state_dict, history) -- history is a list of per-epoch
     {epoch, train_loss, val_eer} dicts, useful for the margin-sweep report.
@@ -122,7 +133,10 @@ def train_one_config(
     )
 
     train_loader = DataLoader(
-        PairDataset(train_pairs_df, target_size, mode, denoise_method, binarize_output, augment=True),
+        PairDataset(
+            train_pairs_df, target_size, mode, denoise_method, binarize_output, crop_to_bbox,
+            augment=augmentation_enabled,
+        ),
         batch_size=batch_size,
         shuffle=True,
     )
@@ -146,7 +160,7 @@ def train_one_config(
         train_loss = total_loss / max(1, len(train_loader.dataset))
 
         val_scores, val_labels, _ = compute_pair_scores(
-            model, val_pairs_df, target_size, mode, denoise_method, binarize_output, device, batch_size
+            model, val_pairs_df, target_size, mode, denoise_method, binarize_output, device, batch_size, crop_to_bbox
         )
         far, frr, thresholds = compute_far_frr(val_scores, val_labels)
         val_eer, _ = find_eer(far, frr, thresholds)

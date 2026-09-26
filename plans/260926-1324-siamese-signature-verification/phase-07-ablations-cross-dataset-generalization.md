@@ -31,17 +31,17 @@ dependencies: [6]
 
 ## Requirements
 
-- [ ] `scripts/download_bhsig260.py`: cùng mẫu với `download_cedar.py` (Kaggle tự động nếu có config + fallback thủ công), parse cấu trúc thư mục BHSig260 thành cùng interface `(writer_id, sample_id, label, path)` như `datasets.py` của CEDAR (mở rộng `datasets.py` với hàm `list_bhsig260_signatures`, không tạo module riêng trùng lặp).
-- [ ] `scripts/run_ablations.py`: chạy lần lượt các biến thể sau trên mô hình chính, mỗi biến thể train lại từ đầu (không phải chỉ đánh giá) vì thay đổi tiền xử lý/augmentation ảnh hưởng đến dữ liệu huấn luyện:
+- [x] `scripts/download_bhsig260.py`: cùng mẫu với `download_cedar.py` (Kaggle tự động nếu có config + fallback thủ công), parse cấu trúc thư mục BHSig260 thành cùng interface `(writer_id, sample_id, label, path)` như `datasets.py` của CEDAR (mở rộng `datasets.py` với hàm `list_bhsig260_signatures`, không tạo module riêng trùng lặp).
+- [x] `scripts/run_ablations.py`: chạy lần lượt các biến thể sau trên mô hình chính, mỗi biến thể train lại từ đầu (không phải chỉ đánh giá) vì thay đổi tiền xử lý/augmentation ảnh hưởng đến dữ liệu huấn luyện:
   1. Baseline (cấu hình mặc định đã chọn ở Phase 5/6) — dùng lại kết quả có sẵn, không train lại.
   2. Tắt tight-crop bbox (resize toàn khung ảnh gốc, không crop theo Otsu bbox).
   3. Bật `binarize_output=True` (dùng ảnh nhị phân làm input thay vì grayscale).
   4. Tắt toàn bộ augmentation khi train.
   5. Bật `model.l2_normalize=True` cho embedding.
   - Ghi toàn bộ `val_eer`/`test_eer` mỗi biến thể vào `results/ablations/summary.json` + bảng Markdown.
-- [ ] `scripts/run_ablations.py` (phần 2 — cross-dataset): load `models_registry/{config_a|config_b}_best.pt` (mô hình chính, không train lại), chạy `preprocess_image` + inference trên toàn bộ BHSig260, tính FAR/FRR/EER/Accuracy/ROC-AUC bằng **đúng** `src/sigverify/evaluation/metrics.py`, tách skilled/random forgery, dùng **cùng τ* đã đóng băng từ CEDAR** (không chọn ngưỡng mới trên BHSig260 — đây chính là phép thử "writer-independent" nghiêm ngặt) và, để tham khảo thêm, một lần chạy phụ có ghi rõ nhãn với τ chọn lại trên một phần nhỏ BHSig260 validation (nếu người dùng muốn xem "trần" hiệu năng có thể đạt được khi cho phép hiệu chỉnh ngưỡng theo miền dữ liệu mới) — hai con số này **không được gộp lẫn** trong báo cáo.
-- [ ] Baseline HOG/LBP+SVM (Phase 4) cũng được chạy zero-shot trên BHSig260 để so sánh công bằng.
-- [ ] `results/generalization_bhsig260.md`: báo cáo tổng hợp EER trên BHSig260 (skilled/random), so với chỉ tiêu đề xuất EER ≤20%, so với baseline.
+- [x] `scripts/run_ablations.py` (phần 2 — cross-dataset): load `models_registry/{config_a|config_b}_best.pt` (mô hình chính, không train lại), chạy `preprocess_image` + inference trên toàn bộ BHSig260, tính FAR/FRR/EER/Accuracy/ROC-AUC bằng **đúng** `src/sigverify/evaluation/metrics.py`, tách skilled/random forgery, dùng **cùng τ* đã đóng băng từ CEDAR** (không chọn ngưỡng mới trên BHSig260 — đây chính là phép thử "writer-independent" nghiêm ngặt) và, để tham khảo thêm, một lần chạy phụ có ghi rõ nhãn với τ chọn lại trên một phần nhỏ BHSig260 validation (nếu người dùng muốn xem "trần" hiệu năng có thể đạt được khi cho phép hiệu chỉnh ngưỡng theo miền dữ liệu mới) — hai con số này **không được gộp lẫn** trong báo cáo.
+- [x] Baseline HOG/LBP+SVM (Phase 4) cũng được chạy zero-shot trên BHSig260 để so sánh công bằng.
+- [x] `results/generalization_bhsig260.md`: báo cáo tổng hợp EER trên BHSig260 (skilled/random), so với chỉ tiêu đề xuất EER ≤20%, so với baseline.
 
 ## Architecture
 
@@ -80,12 +80,12 @@ Cross-dataset generalization (zero-shot):
 
 ## Todo List
 
-- [ ] `list_bhsig260_signatures` parse đúng cấu trúc BHSig260 thật (xác nhận khi có dữ liệu)
-- [ ] 4 file config ablation, mỗi file đổi đúng 1 biến
-- [ ] `run_ablations.py` tái sử dụng toàn bộ hạ tầng Phase 2/3/5, không viết lại
-- [ ] Cross-dataset dùng đúng τ* đóng băng từ CEDAR, không tự chọn ngưỡng mới làm số liệu chính
-- [ ] Baseline SVM cũng chạy zero-shot BHSig260 để so sánh công bằng
-- [ ] `results/generalization_bhsig260.md` nêu rõ đạt/không đạt EER ≤20%
+- [x] `list_bhsig260_signatures` parse đúng cấu trúc BHSig260 thật (xác nhận khi có dữ liệu)
+- [x] 4 file config ablation, mỗi file đổi đúng 1 biến
+- [x] `run_ablations.py` tái sử dụng toàn bộ hạ tầng Phase 2/3/5, không viết lại
+- [x] Cross-dataset dùng đúng τ* đóng băng từ CEDAR, không tự chọn ngưỡng mới làm số liệu chính
+- [x] Baseline SVM cũng chạy zero-shot BHSig260 để so sánh công bằng
+- [x] `results/generalization_bhsig260.md` nêu rõ đạt/không đạt EER ≤20%
 
 ## Success Criteria
 
