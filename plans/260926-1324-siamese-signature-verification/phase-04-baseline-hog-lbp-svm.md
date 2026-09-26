@@ -29,10 +29,10 @@ dependencies: [3]
 
 ## Requirements
 
-- [ ] `src/sigverify/features/handcrafted.py`: hàm `extract_hog(img) -> np.ndarray` và `extract_lbp(img) -> np.ndarray`, cả hai nhận ảnh đã tiền xử lý (grayscale, chuẩn hoá `mode="unit"`, kích thước `image.size_scratch`).
-- [ ] `src/sigverify/training/train_baseline.py`: pipeline đầy đủ — đọc cặp từ Phase 3 → trích đặc trưng 2 ảnh → vector `|f(x1) - f(x2)|` → `GridSearchCV(SVC(kernel="rbf"), ...)` trên train → `select_threshold` trên val → `evaluate_at_threshold` trên test, tách theo `forgery_type`.
-- [ ] `scripts/run_baseline.py`: CLI chạy toàn bộ pipeline, lưu mô hình SVM đã fit (`models_registry/baseline_svm.joblib`) và bảng kết quả (`results/baseline/metrics.json`, kèm ROC plot `results/baseline/roc.png`).
-- [ ] `tests/test_baseline_features.py`: assert `extract_hog`/`extract_lbp` trả về vector 1 chiều, độ dài cố định, không đổi giữa 2 lần gọi cùng ảnh (tái lập được).
+- [x] `src/sigverify/features/handcrafted.py`: hàm `extract_hog(img) -> np.ndarray` và `extract_lbp(img) -> np.ndarray`, cả hai nhận ảnh đã tiền xử lý (grayscale, chuẩn hoá `mode="unit"`, kích thước `image.size_scratch`).
+- [x] `src/sigverify/training/train_baseline.py`: pipeline đầy đủ — đọc cặp từ Phase 3 → trích đặc trưng 2 ảnh → vector `|f(x1) - f(x2)|` → `GridSearchCV(SVC(kernel="rbf"), ...)` trên train → `select_threshold` trên val → `evaluate_at_threshold` trên test, tách theo `forgery_type`.
+- [x] `scripts/run_baseline.py`: CLI chạy toàn bộ pipeline, lưu mô hình SVM đã fit (`models_registry/baseline_svm.joblib`) và bảng kết quả (`results/baseline/metrics.json`, kèm ROC plot `results/baseline/roc.png`).
+- [x] `tests/test_baseline_features.py`: assert `extract_hog`/`extract_lbp` trả về vector 1 chiều, độ dài cố định, không đổi giữa 2 lần gọi cùng ảnh (tái lập được).
 
 ## Architecture
 
@@ -71,11 +71,11 @@ Ngưỡng: select_threshold(score_distance_val, label_val, method="eer") → tau
 
 ## Todo List
 
-- [ ] `extract_hog`, `extract_lbp` ổn định, có test
-- [ ] `train_baseline.py` tái sử dụng đúng split + metrics từ Phase 3
-- [ ] Đổi chiều điểm số SVM → khoảng cách trước khi gọi `metrics.py`
-- [ ] `run_baseline.py` sinh `metrics.json` + `roc.png`
-- [ ] Kết quả baseline tách riêng skilled/random forgery
+- [x] `extract_hog`, `extract_lbp` ổn định, có test
+- [x] `train_baseline.py` tái sử dụng đúng split + metrics từ Phase 3
+- [x] Đổi chiều điểm số SVM → khoảng cách trước khi gọi `metrics.py`
+- [x] `run_baseline.py` sinh `metrics.json` + `roc.png`
+- [x] Kết quả baseline tách riêng skilled/random forgery
 
 ## Success Criteria
 

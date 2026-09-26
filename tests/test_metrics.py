@@ -5,6 +5,7 @@ import numpy as np
 from sigverify.evaluation.metrics import (
     compute_far_frr,
     evaluate_at_threshold,
+    evaluate_by_forgery_type,
     find_eer,
     roc_auc,
     select_threshold,
@@ -65,3 +66,16 @@ def test_roc_auc_perfect_separation():
     scores = np.array([0.1] * 20 + [2.0] * 20)
     _, _, auc = roc_auc(scores, labels)
     assert auc == 1.0
+
+
+def test_evaluate_by_forgery_type_separates_random_and_skilled():
+    labels = np.array([1] * 20 + [0] * 10 + [0] * 10)
+    forgery_types = np.array(["genuine_genuine"] * 20 + ["skilled_forgery"] * 10 + ["random_forgery"] * 10)
+    # skilled forgery is much harder (closer to genuine) than random forgery
+    scores = np.array([0.2] * 20 + [0.3] * 10 + [1.8] * 10)
+    tau = 0.5
+
+    results = evaluate_by_forgery_type(scores, labels, forgery_types, tau)
+    assert set(results.keys()) == {"skilled_forgery", "random_forgery"}
+    assert results["skilled_forgery"]["far"] > results["random_forgery"]["far"]
+    assert results["random_forgery"]["accuracy"] == 1.0

@@ -122,3 +122,31 @@ def roc_auc(scores: Sequence[float], labels: Sequence[int]) -> Tuple[np.ndarray,
     fpr, tpr, _ = roc_curve(labels, y_score)
     auc = float(roc_auc_score(labels, y_score))
     return fpr, tpr, auc
+
+
+def evaluate_by_forgery_type(
+    scores: Sequence[float],
+    labels: Sequence[int],
+    forgery_types: Sequence[str],
+    tau: float,
+    types: Sequence[str] = ("skilled_forgery", "random_forgery"),
+) -> dict:
+    """Report FAR/FRR/Accuracy/AUC separately per forgery type (random vs. skilled),
+    as required throughout the plan. Each subset combines ALL genuine pairs
+    (label=1, needed for FRR) with only that forgery type's negative pairs
+    (needed for FAR), reusing the same frozen `tau` for both subsets.
+    """
+    scores = np.asarray(scores, dtype=np.float64)
+    labels = np.asarray(labels, dtype=np.int64)
+    forgery_types = np.asarray(forgery_types)
+
+    results = {}
+    for t in types:
+        mask = (forgery_types == t) | (labels == 1)
+        if not mask.any():
+            continue
+        metrics = evaluate_at_threshold(scores[mask], labels[mask], tau)
+        _, _, auc = roc_auc(scores[mask], labels[mask])
+        metrics["auc"] = auc
+        results[t] = metrics
+    return results
