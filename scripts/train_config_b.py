@@ -98,17 +98,35 @@ def main() -> None:
     denoise_method = config["preprocessing"]["denoise"]
     binarize_output = config["preprocessing"]["binarize_output"]
 
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    model_path = Path(args.model_out)
+    model_path.parent.mkdir(parents=True, exist_ok=True)
+    margin_sweep_path = out_dir / "margin_sweep.json"
+
     margin_sweep = {}
     best_margin, best_val_eer, best_state = None, float("inf"), None
 
     for margin in config["train"]["margins"]:
-        print(f"[train_config_b] === margin={margin} ===")
+        print(f"[train_config_b] === margin={margin} ===", flush=True)
+        # Reseed before each margin (see the same fix in train_config_a.py):
+        # otherwise margin N>1 inherits whatever random state margin N-1's
+        # training left behind, confounding the comparison between margins.
+        set_seed(config["seed"])
         state, history, val_eer = train_margin(
             config, train_pairs, val_pairs, margin, target_size, denoise_method, binarize_output, device
         )
         margin_sweep[str(margin)] = {"val_eer": val_eer, "history": history}
+        margin_sweep_path.write_text(json.dumps(margin_sweep, indent=2))
+
         if val_eer < best_val_eer:
             best_val_eer, best_margin, best_state = val_eer, margin, state
+            torch.save(best_state, model_path.with_name(model_path.stem + "_checkpoint" + model_path.suffix))
+            print(
+                f"[train_config_b] Checkpoint: margin={margin} is best so far "
+                f"(val_eer={val_eer:.4f}), saved to {model_path.stem}_checkpoint{model_path.suffix}",
+                flush=True,
+            )
 
     print(f"[train_config_b] Best margin={best_margin} (val_eer={best_val_eer:.4f})")
 
@@ -131,9 +149,6 @@ def main() -> None:
     overall = evaluate_at_threshold(test_scores, test_labels, tau)
     _, _, overall["auc"] = roc_auc(test_scores, test_labels)
     by_type = evaluate_by_forgery_type(test_scores, test_labels, test_forgery_types, tau)
-
-    out_dir = Path(args.out_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
 
     metrics = {
         "backbone": config["model"]["transfer_backbone"],
@@ -168,8 +183,6 @@ def main() -> None:
     ax.legend()
     fig.savefig(out_dir / "roc.png", dpi=120)
 
-    model_path = Path(args.model_out)
-    model_path.parent.mkdir(parents=True, exist_ok=True)
     torch.save(best_state, model_path)
     print(f"[train_config_b] Model saved to {model_path}")
 
