@@ -54,26 +54,33 @@ lẫn lần chạy full-sweep, nên đáng tin hơn là ngẫu nhiên.
 
 ## BHSig260 (zero-shot, khác miền dữ liệu — Bengali/Hindi)
 
+Kết quả zero-shot (mô hình Config A full-sweep, τ đóng băng từ CEDAR — xem
+`results/generalization_bhsig260.md`): skilled forgery FAR=19,8%/FRR=44,3%/
+AUC=0,752; random forgery FAR=9,7%/FRR=44,3%/AUC=0,852. Chưa đạt mục tiêu
+EER≤20%, nhưng AUC vẫn >0,75 cho thấy embedding còn giữ được tín hiệu phân
+biệt nhất định dù khác ngôn ngữ/hệ chữ hoàn toàn.
+
 **Genuine-genuine — từ chối nhầm nghiêm trọng, ví dụ
 `genuine_genuine_false_reject_000.png` (BHSig260):** hai chữ ký "sandeep"
 (chữ Devanagari) của cùng một người, nhìn ảnh gốc khá giống nhau, nhưng
-D=2.6044 — cao gấp hơn 10 lần τ=0.243 lấy từ CEDAR. Quan sát ảnh "Đã xử lý":
+D=1.9224 — cao gấp gần 8 lần τ=0.2471 lấy từ CEDAR. Quan sát ảnh "Đã xử lý":
 ảnh A hiện ra đậm/dày nét hẳn so với ảnh B mảnh/nhạt, dù ảnh gốc trông tương
 đồng về độ đậm. Đây là dấu hiệu **lệch miền (domain shift) ở khâu tiền xử
 lý**: tham số khử nhiễu/ngưỡng Otsu được ngầm phù hợp với đặc điểm ảnh scan
 CEDAR (độ phân giải, độ tương phản riêng), không chuyển đổi tốt sang ảnh
 BHSig260 (định dạng .tif, độ phân giải/độ tương phản khác) — làm hai ảnh vốn
 giống nhau trở nên khác biệt rõ rệt sau tiền xử lý, đẩy embedding ra xa nhau.
-Đây là nguyên nhân chính khả dĩ cho FRR rất cao (53,2%) khi test zero-shot
-trên BHSig260, dùng ngưỡng đóng băng từ CEDAR.
+Ca này xuất hiện ở cả hai lần chạy (model rút gọn lẫn model full-sweep), nên
+đây là nguyên nhân chính khả dĩ, nhất quán, cho FRR rất cao (44,3%) khi test
+zero-shot trên BHSig260.
 
 **Skilled forgery — chấp nhận nhầm, ví dụ
-`skilled_forgery_false_accept_008.png`:** cặp chữ ký Bengali với D=0.0233, rất
-gần 0. Cả hai đều là các đường cong lặp lại (loop) dày đặc, phong cách viết
-script rất giống nhau về mặt hình học tổng thể — củng cố thêm giả thuyết ở
-trên: mô hình nhạy với hình dạng/mật độ nét thô hơn là danh tính chi tiết,
-càng rõ hơn khi chuyển miền dữ liệu (chữ Devanagari/Bengali có mật độ nét và
-kiểu loop rất khác chữ Latin của CEDAR).
+`skilled_forgery_false_accept_008.png`:** cặp chữ ký Hindi "ravindra kaur"
+(thật vs giả) với D=0.0176, rất gần 0 — nội dung chữ và phong cách nét gần
+như giống hệt nhau bằng mắt thường. Củng cố thêm giả thuyết ở trên: mô hình
+nhạy với hình dạng/mật độ nét thô hơn là danh tính chi tiết, càng rõ hơn khi
+chuyển miền dữ liệu (chữ Devanagari có mật độ nét và kiểu nối chữ rất khác
+chữ Latin của CEDAR).
 
 ## Hàm ý cho các bước tiếp theo
 
@@ -81,9 +88,11 @@ kiểu loop rất khác chữ Latin của CEDAR).
    hoá độ tương phản thích ứng thay vì kernel khử nhiễu cố định) có thể giảm
    phần domain-shift quan sát được ở BHSig260.
 2. **Không thể tái hiệu chỉnh ngưỡng τ theo BHSig260** làm số liệu chính (vi
-   phạm tính "writer-independent"/zero-shot) — nhưng chạy thêm huấn luyện đầy
-   đủ (100 epoch, 3 margin, trên GPU) nhiều khả năng thu hẹp khoảng cách vì
-   mô hình rút gọn ở đây mới học 12-15 epoch.
-3. Kết quả CEDAR test AUC=0.939 > baseline AUC=0.887 dù chỉ huấn luyện rút
-   gọn — có cơ sở tốt để kỳ vọng huấn luyện đầy đủ trên GPU sẽ đạt hoặc vượt
-   chỉ tiêu EER≤5% (skilled forgery CEDAR) đề ra trong `plan.md`.
+   phạm tính "writer-independent"/zero-shot) — nhưng huấn luyện trên GPU với
+   augmentation/kiến trúc mạnh hơn (Config B, hoặc Config A chạy đủ patience
+   lớn hơn với seed sạch mỗi margin) nhiều khả năng thu hẹp khoảng cách.
+3. Kết quả CEDAR test AUC=0,915 (full-sweep) > baseline AUC=0,887 dù model
+   chỉ dừng sớm ở epoch 14–21 — có cơ sở để kỳ vọng huấn luyện với ngân sách
+   epoch/patience lớn hơn trên GPU sẽ tiến gần hơn chỉ tiêu EER≤5% (skilled
+   forgery CEDAR) đề ra trong `plan.md`. Điểm yếu rõ nhất hiện tại là FAR
+   random-forgery (39,5% trên CEDAR) — đáng ưu tiên khi huấn luyện tiếp.
