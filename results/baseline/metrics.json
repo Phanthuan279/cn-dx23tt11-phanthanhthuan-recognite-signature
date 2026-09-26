@@ -1,0 +1,30 @@
+{
+  "feature_type": "hog",
+  "tau": 0.1388183293706326,
+  "overall": {
+    "accuracy": 0.785,
+    "far": 0.235,
+    "frr": 0.195,
+    "tau": 0.1388183293706326,
+    "n_pairs": 800,
+    "auc": 0.88651875
+  },
+  "by_forgery_type": {
+    "skilled_forgery": {
+      "accuracy": 0.7683333333333333,
+      "far": 0.305,
+      "frr": 0.195,
+      "tau": 0.1388183293706326,
+      "n_pairs": 600,
+      "auc": 0.8624625
+    },
+    "random_forgery": {
+      "accuracy": 0.815,
+      "far": 0.165,
+      "frr": 0.195,
+      "tau": 0.1388183293706326,
+      "n_pairs": 600,
+      "auc": 0.9105749999999999
+    }
+  }
+}
