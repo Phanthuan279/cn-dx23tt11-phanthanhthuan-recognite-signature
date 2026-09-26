@@ -59,11 +59,22 @@ def main() -> None:
     l2_normalize = config["model"]["l2_normalize"]
     embedding_dim = config["model"]["embedding_dim"]
 
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    model_path = Path(args.model_out)
+    model_path.parent.mkdir(parents=True, exist_ok=True)
+    margin_sweep_path = out_dir / "margin_sweep.json"
+
+    # Checkpoint after EVERY margin (not just at the very end): a full sweep
+    # can run for hours on CPU, so losing an already-finished margin's result
+    # to an interruption would be wasteful. Re-running this script re-does
+    # every margin from scratch -- this only protects already-completed
+    # margins from being lost, it does not resume mid-margin.
     margin_sweep = {}
     best_margin, best_val_eer, best_state, best_history = None, float("inf"), None, None
 
     for margin in config["train"]["margins"]:
-        print(f"[train_config_a] === margin={margin} ===")
+        print(f"[train_config_a] === margin={margin} ===", flush=True)
         model = SiameseScratchCNN(embedding_dim=embedding_dim, l2_normalize=l2_normalize)
         state, history = train_one_config(
             model,
@@ -83,9 +94,16 @@ def main() -> None:
         )
         margin_val_eer = min(h["val_eer"] for h in history)
         margin_sweep[str(margin)] = {"val_eer": margin_val_eer, "history": history}
+        margin_sweep_path.write_text(json.dumps(margin_sweep, indent=2))
 
         if margin_val_eer < best_val_eer:
             best_val_eer, best_margin, best_state, best_history = margin_val_eer, margin, state, history
+            torch.save(best_state, model_path.with_name(model_path.stem + "_checkpoint" + model_path.suffix))
+            print(
+                f"[train_config_a] Checkpoint: margin={margin} is best so far "
+                f"(val_eer={margin_val_eer:.4f}), saved to {model_path.stem}_checkpoint{model_path.suffix}",
+                flush=True,
+            )
 
     print(f"[train_config_a] Best margin={best_margin} (val_eer={best_val_eer:.4f})")
 
@@ -104,9 +122,6 @@ def main() -> None:
     overall = evaluate_at_threshold(test_scores, test_labels, tau)
     _, _, overall["auc"] = roc_auc(test_scores, test_labels)
     by_type = evaluate_by_forgery_type(test_scores, test_labels, test_forgery_types, tau)
-
-    out_dir = Path(args.out_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
 
     metrics = {
         "best_margin": best_margin,
@@ -140,8 +155,6 @@ def main() -> None:
     ax.legend()
     fig.savefig(out_dir / "roc.png", dpi=120)
 
-    model_path = Path(args.model_out)
-    model_path.parent.mkdir(parents=True, exist_ok=True)
     torch.save(best_state, model_path)
     print(f"[train_config_a] Model saved to {model_path}")
 

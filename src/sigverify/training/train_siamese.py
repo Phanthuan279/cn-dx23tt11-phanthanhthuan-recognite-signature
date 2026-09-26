@@ -166,7 +166,7 @@ def train_one_config(
         val_eer, _ = find_eer(far, frr, thresholds)
 
         history.append({"epoch": epoch, "train_loss": train_loss, "val_eer": val_eer})
-        print(f"[train_one_config] epoch={epoch} train_loss={train_loss:.4f} val_eer={val_eer:.4f}")
+        print(f"[train_one_config] epoch={epoch} train_loss={train_loss:.4f} val_eer={val_eer:.4f}", flush=True)
 
         if val_eer < best_eer:
             best_eer = val_eer
@@ -175,7 +175,7 @@ def train_one_config(
         elif epoch >= warmup_epochs:
             epochs_without_improvement += 1
             if epochs_without_improvement >= patience:
-                print(f"[train_one_config] Early stopping at epoch {epoch} (best_val_eer={best_eer:.4f})")
+                print(f"[train_one_config] Early stopping at epoch {epoch} (best_val_eer={best_eer:.4f})", flush=True)
                 break
 
     model.load_state_dict(best_state)
