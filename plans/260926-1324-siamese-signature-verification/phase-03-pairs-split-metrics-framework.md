@@ -32,11 +32,11 @@ dependencies: [2]
 
 ## Requirements
 
-- [ ] `src/sigverify/pairs/splits.py`: hàm `writer_disjoint_split(writer_ids, n_train=40, n_val=5, n_test=10, seed) -> dict` trả về 3 danh sách `writer_id` rời nhau, lưu kết quả ra `data/splits/cedar_writer_split.json` (file này **được commit**, đảm bảo mọi lần chạy lại dùng đúng 1 split).
-- [ ] `src/sigverify/pairs/generator.py`: hàm `generate_pairs(df_signatures, writer_ids, ratio, pairs_per_writer, seed) -> list[(path_a, path_b, label, forgery_type)]` với `forgery_type ∈ {"genuine_genuine", "skilled_forgery", "random_forgery"}`.
-- [ ] `src/sigverify/evaluation/metrics.py`: hàm `compute_far_frr(scores, labels) -> (far_array, frr_array, thresholds)`, `find_eer(far_array, frr_array, thresholds) -> (eer, tau_star)`, `select_threshold(val_scores, val_labels, method="eer") -> tau`, `evaluate_at_threshold(test_scores, test_labels, tau) -> dict{accuracy, far, frr}`, `roc_auc(scores, labels) -> (fpr, tpr, auc)`. Tất cả hàm nhận `scores` là **khoảng cách D** (thấp = giống thật) — quy ước thống nhất chiều số cho mọi mô hình (Siamese, baseline SVM) dùng chung khung này.
-- [ ] Test bắt buộc chứng minh chống rò rỉ: `tests/test_pairs.py::test_no_writer_overlap_across_splits` và `tests/test_pairs.py::test_threshold_not_fit_on_test` (kiểm tra bằng cách mock/assert chữ ký hàm, không cho `evaluate_at_threshold` nhận `val_scores`).
-- [ ] `tests/test_metrics.py` với ca biết trước đáp án: điểm số phân tách hoàn hảo → EER ≈ 0; điểm số ngẫu nhiên hoàn toàn chồng lấp (cùng phân phối cho cả 2 lớp) → EER ≈ 0.5.
+- [x] `src/sigverify/pairs/splits.py`: hàm `writer_disjoint_split(writer_ids, n_train=40, n_val=5, n_test=10, seed) -> dict` trả về 3 danh sách `writer_id` rời nhau, lưu kết quả ra `data/splits/cedar_writer_split.json` (file này **được commit**, đảm bảo mọi lần chạy lại dùng đúng 1 split).
+- [x] `src/sigverify/pairs/generator.py`: hàm `generate_pairs(df_signatures, writer_ids, ratio, pairs_per_writer, seed) -> list[(path_a, path_b, label, forgery_type)]` với `forgery_type ∈ {"genuine_genuine", "skilled_forgery", "random_forgery"}`.
+- [x] `src/sigverify/evaluation/metrics.py`: hàm `compute_far_frr(scores, labels) -> (far_array, frr_array, thresholds)`, `find_eer(far_array, frr_array, thresholds) -> (eer, tau_star)`, `select_threshold(val_scores, val_labels, method="eer") -> tau`, `evaluate_at_threshold(test_scores, test_labels, tau) -> dict{accuracy, far, frr}`, `roc_auc(scores, labels) -> (fpr, tpr, auc)`. Tất cả hàm nhận `scores` là **khoảng cách D** (thấp = giống thật) — quy ước thống nhất chiều số cho mọi mô hình (Siamese, baseline SVM) dùng chung khung này.
+- [x] Test bắt buộc chứng minh chống rò rỉ: `tests/test_pairs.py::test_no_writer_overlap_across_splits` và `tests/test_pairs.py::test_threshold_not_fit_on_test` (kiểm tra bằng cách mock/assert chữ ký hàm, không cho `evaluate_at_threshold` nhận `val_scores`).
+- [x] `tests/test_metrics.py` với ca biết trước đáp án: điểm số phân tách hoàn hảo → EER ≈ 0; điểm số ngẫu nhiên hoàn toàn chồng lấp (cùng phân phối cho cả 2 lớp) → EER ≈ 0.5.
 
 ## Architecture
 
@@ -82,12 +82,12 @@ Quy trình đánh giá (dùng chung mọi mô hình):
 
 ## Todo List
 
-- [ ] `writer_disjoint_split` + file split được commit
-- [ ] `generate_pairs` đúng 3 loại, đúng tỉ lệ cấu hình được
-- [ ] `metrics.py` đầy đủ FAR/FRR/EER/Accuracy/ROC-AUC, tách theo forgery_type
-- [ ] Test chống rò rỉ writer pass
-- [ ] Test chống rò rỉ ngưỡng pass
-- [ ] Test EER trên ca biết trước đáp án pass
+- [x] `writer_disjoint_split` + file split được commit
+- [x] `generate_pairs` đúng 3 loại, đúng tỉ lệ cấu hình được
+- [x] `metrics.py` đầy đủ FAR/FRR/EER/Accuracy/ROC-AUC, tách theo forgery_type
+- [x] Test chống rò rỉ writer pass
+- [x] Test chống rò rỉ ngưỡng pass
+- [x] Test EER trên ca biết trước đáp án pass
 
 ## Success Criteria
 
