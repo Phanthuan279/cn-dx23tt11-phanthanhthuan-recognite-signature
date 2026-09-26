@@ -29,12 +29,12 @@ dependencies: [1]
 
 ## Requirements
 
-- [ ] `scripts/download_cedar.py`: tải hoặc xác thực CEDAR đã có sẵn tại `data/raw/cedar/`, in thống kê (số signer, số ảnh thật/giả mỗi signer, phát hiện thiếu file).
-- [ ] `src/sigverify/preprocessing/datasets.py`: hàm liệt kê toàn bộ ảnh CEDAR theo `(writer_id, sample_id, label∈{genuine, forged}, path)`, trả về `pandas.DataFrame` hoặc list dataclass — dùng chung cho Phase 3 sinh cặp và Phase 7 (BHSig260 loader theo cùng interface).
-- [ ] `src/sigverify/preprocessing/pipeline.py`: hàm `preprocess_image(path_or_array, target_size, binarize_output=False) -> np.ndarray` thực hiện đủ 5 bước theo đúng thứ tự nêu trong Overview, trả về ảnh float32 chuẩn hoá.
-- [ ] Chuẩn hoá pixel hỗ trợ 2 chế độ: `mode="unit"` → về `[0,1]` (dùng cho Config A train from scratch), `mode="imagenet"` → trừ mean/chia std ImageNet trên ảnh 3 kênh (dùng cho Config B) — chọn qua tham số, không hard-code.
-- [ ] Script khảo sát `scripts/run_preprocessing.py` chạy pipeline trên một mẫu ảnh, lưu ảnh gốc + ảnh sau xử lý cạnh nhau vào `results/eda/` để kiểm tra trực quan.
-- [ ] `tests/test_preprocessing.py` chạy trên ảnh tổng hợp (vẽ vài nét bằng PIL, không cần CEDAR thật) — không phụ thuộc dữ liệu thật để chạy CI/local.
+- [x] `scripts/download_cedar.py`: tải hoặc xác thực CEDAR đã có sẵn tại `data/raw/cedar/`, in thống kê (số signer, số ảnh thật/giả mỗi signer, phát hiện thiếu file).
+- [x] `src/sigverify/preprocessing/datasets.py`: hàm liệt kê toàn bộ ảnh CEDAR theo `(writer_id, sample_id, label∈{genuine, forged}, path)`, trả về `pandas.DataFrame` hoặc list dataclass — dùng chung cho Phase 3 sinh cặp và Phase 7 (BHSig260 loader theo cùng interface).
+- [x] `src/sigverify/preprocessing/pipeline.py`: hàm `preprocess_image(path_or_array, target_size, binarize_output=False) -> np.ndarray` thực hiện đủ 5 bước theo đúng thứ tự nêu trong Overview, trả về ảnh float32 chuẩn hoá.
+- [x] Chuẩn hoá pixel hỗ trợ 2 chế độ: `mode="unit"` → về `[0,1]` (dùng cho Config A train from scratch), `mode="imagenet"` → trừ mean/chia std ImageNet trên ảnh 3 kênh (dùng cho Config B) — chọn qua tham số, không hard-code.
+- [x] Script khảo sát `scripts/run_preprocessing.py` chạy pipeline trên một mẫu ảnh, lưu ảnh gốc + ảnh sau xử lý cạnh nhau vào `results/eda/` để kiểm tra trực quan.
+- [x] `tests/test_preprocessing.py` chạy trên ảnh tổng hợp (vẽ vài nét bằng PIL, không cần CEDAR thật) — không phụ thuộc dữ liệu thật để chạy CI/local.
 
 ## Architecture
 
@@ -74,13 +74,13 @@ preprocess_image(img)
 
 ## Todo List
 
-- [ ] `list_cedar_signatures` parse đúng cấu trúc CEDAR
-- [ ] `download_cedar.py` có cả đường tự động (Kaggle) và fallback thủ công
-- [ ] `pipeline.py` đủ 5 bước, tách hàm nhỏ
-- [ ] Hỗ trợ 2 chế độ chuẩn hoá `unit`/`imagenet`
-- [ ] `binarize_output` chỉ ảnh hưởng bước cuối, mặc định tắt
-- [ ] `test_preprocessing.py` xanh trên ảnh tổng hợp
-- [ ] EDA script sinh ảnh trực quan gốc vs. đã xử lý
+- [x] `list_cedar_signatures` parse đúng cấu trúc CEDAR
+- [x] `download_cedar.py` có cả đường tự động (Kaggle) và fallback thủ công
+- [x] `pipeline.py` đủ 5 bước, tách hàm nhỏ
+- [x] Hỗ trợ 2 chế độ chuẩn hoá `unit`/`imagenet`
+- [x] `binarize_output` chỉ ảnh hưởng bước cuối, mặc định tắt
+- [x] `test_preprocessing.py` xanh trên ảnh tổng hợp
+- [x] EDA script sinh ảnh trực quan gốc vs. đã xử lý
 
 ## Success Criteria
 
