@@ -1,0 +1,58 @@
+seed: 42
+data:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  splits_dir: data/splits
+  cedar_dir: data/raw/cedar
+  bhsig260_dir: data/raw/bhsig260
+image:
+  size_scratch:
+  - 220
+  - 150
+  size_transfer:
+  - 224
+  - 224
+preprocessing:
+  denoise: gaussian
+  binarize_output: false
+  crop_to_bbox: true
+pairs:
+  ratio_pos_hardneg_easyneg:
+  - 2
+  - 1
+  - 1
+  pairs_per_writer: 10
+split:
+  train_writers: 40
+  val_writers: 5
+  test_writers: 10
+train:
+  batch_size: 64
+  max_epochs: 100
+  early_stop_patience: 10
+  early_stop_warmup_epochs: 5
+  margins:
+  - 0.5
+  - 1.0
+  - 2.0
+  lr_scratch: 0.001
+  lr_finetune_head: 0.0001
+  lr_finetune_backbone: 1.0e-05
+  finetune_stage1_epochs: 5
+  augmentation_enabled: true
+model:
+  embedding_dim: 128
+  l2_normalize: false
+  transfer_backbone: resnet18
+baseline:
+  feature_type: hog
+  svm_param_grid:
+    C:
+    - 0.1
+    - 1
+    - 10
+    gamma:
+    - scale
+    - 0.01
+    - 0.001
+  pca_components: null

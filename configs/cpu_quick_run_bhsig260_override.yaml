@@ -1,0 +1,4 @@
+# Reduced pairs-per-writer for the BHSig260 zero-shot generalization check on
+# CPU (inference-only, but 260 real writers still means many image loads).
+pairs:
+  pairs_per_writer: 10
