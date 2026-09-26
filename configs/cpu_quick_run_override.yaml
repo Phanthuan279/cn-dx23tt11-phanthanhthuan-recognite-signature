@@ -1,0 +1,12 @@
+# Reduced-scale override for a REAL (not synthetic) CPU-only training run in
+# an environment without a GPU. Single margin instead of the full {0.5,1.0,2.0}
+# sweep, fewer epochs, so a genuine run on real CEDAR pairs finishes in a
+# practical amount of time on 4 CPU cores. Results from this config are
+# labeled "reduced-scale CPU run" everywhere they are reported -- they are
+# NOT the full-scale numbers the plan's success criteria call for, which
+# still require notebooks/colab_train_siamese.ipynb on a GPU.
+train:
+  margins: [1.0]
+  max_epochs: 15
+  early_stop_patience: 5
+  early_stop_warmup_epochs: 2

@@ -14,24 +14,37 @@ _CEDAR_GENUINE_RE = re.compile(r"original_(\d+)_(\d+)\.png$", re.IGNORECASE)
 _CEDAR_FORGED_RE = re.compile(r"forgeries_(\d+)_(\d+)\.png$", re.IGNORECASE)
 
 
+def _find_dir(raw_dir: Path, name: str) -> Path | None:
+    """Find a directory named `name` directly under raw_dir, or anywhere
+    beneath it (mirrors sometimes nest the real payload one level deeper,
+    e.g. Kaggle's shreelakshmigp/cedardataset puts it under 'signatures/').
+    """
+    direct = raw_dir / name
+    if direct.is_dir():
+        return direct
+    return next((p for p in raw_dir.rglob(name) if p.is_dir()), None)
+
+
 def list_cedar_signatures(raw_dir: str | Path) -> pd.DataFrame:
     """List every CEDAR signature image as (writer_id, sample_id, label, path).
 
-    Expects the conventional CEDAR layout:
-        <raw_dir>/full_org/original_<writer>_<sample>.png   (label="genuine")
-        <raw_dir>/full_forg/forgeries_<writer>_<sample>.png (label="forged")
+    Expects the conventional CEDAR layout (searched for at any depth under
+    raw_dir, since Kaggle mirrors commonly nest it under a 'signatures/'
+    folder):
+        .../full_org/original_<writer>_<sample>.png   (label="genuine")
+        .../full_forg/forgeries_<writer>_<sample>.png (label="forged")
 
     Raises FileNotFoundError with a clear message if the expected
     subdirectories are missing, so a mismatched mirror layout is caught early
     instead of silently returning an empty/partial table.
     """
     raw_dir = Path(raw_dir)
-    org_dir = raw_dir / "full_org"
-    forg_dir = raw_dir / "full_forg"
-    if not org_dir.is_dir() or not forg_dir.is_dir():
+    org_dir = _find_dir(raw_dir, "full_org")
+    forg_dir = _find_dir(raw_dir, "full_forg")
+    if org_dir is None or forg_dir is None:
         raise FileNotFoundError(
             f"Expected CEDAR layout not found under {raw_dir}: "
-            f"needs 'full_org/' and 'full_forg/' subdirectories. "
+            f"needs 'full_org/' and 'full_forg/' subdirectories (at any depth). "
             f"See scripts/download_cedar.py for how to fetch/place the dataset."
         )
 
@@ -62,15 +75,29 @@ def list_cedar_signatures(raw_dir: str | Path) -> pd.DataFrame:
 
 
 # BHSig260 filenames follow the "<lang-prefix>-S-<writer>-<G|F>-<sample>.<ext>"
-# convention of the commonly distributed mirror (B- for Bengali, H- for Hindi).
-# [UNVERIFIED] the exact mirror layout was not confirmed at planning time --
-# if a real download uses a different convention, this pattern (and/or the
-# per-language subdirectory names below) will need a small update; the
-# FileNotFoundError below is designed to surface that mismatch immediately
-# rather than silently returning an empty/partial table.
+# convention (B- for Bengali, H- for Hindi), confirmed against the
+# nth2165/bhsig260-hindi-bengali Kaggle mirror. That mirror's top-level
+# language folders are named "BHSig100_Bengali" / "BHSig160_Hindi" (100 and
+# 160 being the per-language writer counts that sum to 260), with genuine and
+# forged samples split into further "Genuine"/"Forged" subdirectories -- the
+# language-folder lookup below matches by substring so it tolerates that
+# "BHSig<N>_" prefix (and other mirrors that might drop it), and rglob("*")
+# already recurses through the Genuine/Forged split without needing to know
+# about it explicitly.
 _BHSIG260_RE = re.compile(r"[BH]-S-(\d+)-([GF])-(\d+)\.\w+$", re.IGNORECASE)
-_BHSIG260_LANGUAGE_DIRS = {"bengali": "Bengali", "hindi": "Hindi"}
 _BHSIG260_WRITER_ID_OFFSET = {"bengali": 0, "hindi": 100_000}
+
+
+def _find_language_dir(raw_dir: Path, language: str) -> Path | None:
+    """Find the top-level directory for a BHSig260 language by substring match
+    (case-insensitive), tolerating prefixes like "BHSig100_Bengali".
+    """
+    if not raw_dir.is_dir():
+        return None
+    for child in raw_dir.iterdir():
+        if child.is_dir() and language.lower() in child.name.lower():
+            return child
+    return None
 
 
 def list_bhsig260_signatures(raw_dir: str | Path, languages: tuple[str, ...] = ("bengali", "hindi")) -> pd.DataFrame:
@@ -85,8 +112,8 @@ def list_bhsig260_signatures(raw_dir: str | Path, languages: tuple[str, ...] = (
     rows = []
 
     for language in languages:
-        lang_dir = raw_dir / _BHSIG260_LANGUAGE_DIRS[language]
-        if not lang_dir.is_dir():
+        lang_dir = _find_language_dir(raw_dir, language)
+        if lang_dir is None:
             continue
         offset = _BHSIG260_WRITER_ID_OFFSET[language]
         for path in sorted(lang_dir.rglob("*")):
@@ -109,8 +136,9 @@ def list_bhsig260_signatures(raw_dir: str | Path, languages: tuple[str, ...] = (
     if not rows:
         raise FileNotFoundError(
             f"No BHSig260-style filenames matched under {raw_dir} for languages {languages}. "
-            f"Expected '<raw_dir>/Bengali/.../B-S-<writer>-<G|F>-<sample>.<ext>' and/or "
-            f"'<raw_dir>/Hindi/.../H-S-<writer>-<G|F>-<sample>.<ext>'. If your downloaded mirror "
-            f"uses a different layout, update _BHSIG260_RE / _BHSIG260_LANGUAGE_DIRS above."
+            f"Expected a directory whose name contains 'bengali' and/or 'hindi' (any depth under "
+            f"{raw_dir}), containing files like 'B-S-<writer>-<G|F>-<sample>.<ext>' / "
+            f"'H-S-<writer>-<G|F>-<sample>.<ext>'. If your downloaded mirror uses a different "
+            f"naming convention, update _BHSIG260_RE above."
         )
     return pd.DataFrame(rows).sort_values(["writer_id", "label", "sample_id"]).reset_index(drop=True)
