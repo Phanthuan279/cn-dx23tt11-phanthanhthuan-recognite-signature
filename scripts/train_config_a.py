@@ -75,6 +75,12 @@ def main() -> None:
 
     for margin in config["train"]["margins"]:
         print(f"[train_config_a] === margin={margin} ===", flush=True)
+        # Reseed before each margin so every margin starts from the same weight
+        # initialization and sees the same augmentation sequence -- otherwise
+        # each margin after the first inherits whatever random state the
+        # previous margin's training left behind, confounding the margin
+        # comparison with an uncontrolled difference in init/augmentation.
+        set_seed(config["seed"])
         model = SiameseScratchCNN(embedding_dim=embedding_dim, l2_normalize=l2_normalize)
         state, history = train_one_config(
             model,

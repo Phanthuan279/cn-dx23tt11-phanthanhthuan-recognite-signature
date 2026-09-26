@@ -1,37 +1,56 @@
 # Phân tích lỗi định tính
 
 Dựa trên `results/config_a/predictions_test.csv` (CEDAR test, mô hình Config A
-huấn luyện rút gọn — xem `results/config_a/metrics.json`) và
+huấn luyện **đầy đủ 3 margin** {0.5, 1.0, 2.0} với `patience=10`,
+`max_epochs=100` — mỗi margin tự dừng sớm ở epoch 14–21; margin thắng=1.0,
+val EER=9.75% — xem `results/config_a/metrics.json` và
+`results/config_a/margin_sweep.json`) và
 `results/config_a/predictions_bhsig260.csv` (BHSig260 zero-shot — xem
 `results/generalization_bhsig260.md`). Ảnh minh hoạ trong
 `results/error_analysis/{cedar_test,bhsig260}/`.
+
+**Lưu ý phương pháp luận:** ở lần chạy full-sweep này, seed chỉ được gieo một
+lần ở đầu script, không gieo lại cho từng margin — nên margin 1.0 và 2.0 kế
+thừa trạng thái ngẫu nhiên (augmentation, một phần thứ tự khởi tạo) còn lại từ
+margin trước, khiến so sánh giữa 3 margin không hoàn toàn kiểm soát được. Đã
+sửa trong `scripts/train_config_a.py`/`train_config_b.py` (gieo lại seed
+trước mỗi margin) cho các lần chạy sau; số liệu ở đây vẫn là kết quả thật hợp
+lệ, chỉ nên đọc so sánh giữa các margin với mức thận trọng vừa phải.
 
 ## CEDAR test (cùng miền dữ liệu huấn luyện)
 
 **Random forgery — chấp nhận nhầm (false accept), ví dụ
 `random_forgery_false_accept_006.png` và `..._007.png`:** cả hai ví dụ đều là
 cặp chữ ký của hai người hoàn toàn khác nhau (nội dung tên khác nhau: "Melissa
-N. Dumble" vs "Rrand R. Co") nhưng có D rất nhỏ (0.0115–0.0185, thấp hơn nhiều
-so với τ=0.243). Cả hai chữ ký trong mỗi cặp đều có nét gạch ngang/uốn lượn
-kéo dài đặc trưng phía trên chữ và độ nghiêng cursive tương tự. Cách đọc hợp
-lý nhất: ở ngân sách huấn luyện rút gọn (15 epoch, 1 margin), mô hình học
-mạnh các đặc trưng hình dạng tổng thể (độ nghiêng, mật độ nét, tỉ lệ khung)
-hơn là chi tiết nhận dạng nét chữ riêng của từng người — hai người có "gestalt"
-chữ ký tương tự bị nhầm là cùng một người.
+N. Dumble" vs "Rrand R. Co") nhưng có D rất nhỏ, thấp hơn nhiều so với
+τ=0.247. Cả hai chữ ký trong mỗi cặp đều có nét gạch ngang/uốn lượn kéo dài
+đặc trưng phía trên chữ và độ nghiêng cursive tương tự. Cách đọc hợp lý nhất:
+mô hình học mạnh các đặc trưng hình dạng tổng thể (độ nghiêng, mật độ nét, tỉ
+lệ khung) hơn là chi tiết nhận dạng nét chữ riêng của từng người — hai người
+có "gestalt" chữ ký tương tự bị nhầm là cùng một người. Với margin thắng cuộc
+là 1.0, random forgery vẫn là điểm yếu rõ rệt nhất: FAR=39,5% trên test set.
 
 **Genuine-genuine — từ chối nhầm (false reject), ví dụ
 `genuine_genuine_false_reject_000.png`:** hai chữ ký của cùng một người nhưng
-D=0.5554 (cao hơn τ). Hai ảnh khác biệt rõ về hình dạng tổng thể (một chụm
-tròn hơn, một dàn trải nghiêng hơn) — đây là biến thiên tự nhiên trong cách ký
-của chính người đó giữa các lần ký khác nhau. Với chỉ 15 epoch, mô hình chưa
-học đủ để dung nạp mức biến thiên nội-người này.
+D cao hơn τ. Hai ảnh khác biệt rõ về hình dạng tổng thể (một chụm tròn hơn,
+một dàn trải nghiêng hơn) — đây là biến thiên tự nhiên trong cách ký của
+chính người đó giữa các lần ký khác nhau, mà mô hình (dừng sớm ở epoch 18)
+chưa học đủ để dung nạp.
 
-**Điểm đáng chú ý:** skilled forgery được phân tách gần như hoàn hảo trên
-CEDAR test (AUC=1.000, FAR=0%) trong khi random forgery khó hơn (AUC=0.877).
-Đây là kết quả ngược với trực giác thông thường (thường skilled forgery khó
-phân biệt hơn), phù hợp với cách đọc ở trên: các cặp forged CEDAR có nét bút
-"cứng"/thiếu tự nhiên rất đặc trưng dễ phân biệt với nét bút thật ở mức thô,
-trong khi hai người viết thật với gestalt tương tự nhau lại dễ gây nhầm hơn.
+**Skilled forgery — chấp nhận nhầm, ví dụ
+`skilled_forgery_false_accept_012.png`:** một cặp chữ ký giả kỹ năng cao với
+D=0.1938, sát dưới τ=0.2471. Cả hai đều có nét nghiêng chéo và các vòng loop
+lặp lại theo cùng một hướng — hoạ tiết hình học tổng thể giống nhau đủ để
+"đánh lừa" mô hình dù đây là bản giả.
+
+**Điểm đáng chú ý:** skilled forgery vẫn được phân tách gần như hoàn hảo trên
+CEDAR test (AUC=0.997, FAR chỉ 1%) trong khi random forgery khó hơn hẳn
+(AUC=0.834, FAR 39,5%). Đây là kết quả ngược với trực giác thông thường
+(thường skilled forgery khó phân biệt hơn), phù hợp với cách đọc ở trên: các
+cặp forged CEDAR có nét bút "cứng"/thiếu tự nhiên rất đặc trưng dễ phân biệt
+với nét bút thật ở mức thô, trong khi hai người viết thật với gestalt tương tự
+nhau lại dễ gây nhầm hơn — và mẫu này vẫn nhất quán qua cả lần chạy rút gọn
+lẫn lần chạy full-sweep, nên đáng tin hơn là ngẫu nhiên.
 
 ## BHSig260 (zero-shot, khác miền dữ liệu — Bengali/Hindi)
 
