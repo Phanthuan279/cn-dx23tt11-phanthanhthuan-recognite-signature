@@ -28,13 +28,13 @@ dependencies: []
 
 ## Requirements
 
-- [ ] Thư mục dự án đầy đủ theo cấu trúc bên dưới, mỗi package Python có `__init__.py`.
-- [ ] `requirements.txt` liệt kê đầy đủ thư viện: `torch`, `torchvision`, `opencv-python`, `scikit-image`, `scikit-learn`, `numpy`, `matplotlib`, `pandas`, `pyyaml`, `tqdm`, `streamlit`, `pytest`. Gradio ghi chú là lựa chọn thay thế Streamlit, không cài mặc định để tránh phình môi trường.
-- [ ] `pyproject.toml` (hoặc `setup.py`) khai báo package `sigverify` (`src/` layout) cài được bằng `pip install -e .`.
-- [ ] `configs/default.yaml` chứa toàn bộ tham số mặc định dùng xuyên suốt các phase sau (đường dẫn dữ liệu, kích thước ảnh theo từng cấu hình, seed, batch size, margin mặc định, epoch tối đa, tỉ lệ chia writer-disjoint).
-- [ ] `.gitignore` loại trừ `data/raw/`, `data/processed/`, `models_registry/`, `results/` (trừ các file tổng hợp nhỏ như bảng metrics), `__pycache__/`, `.ipynb_checkpoints/`, môi trường ảo.
-- [ ] `README.md` mô tả mục tiêu đồ án, cấu trúc thư mục, cách cài đặt, và trỏ tới lệnh chạy cho từng phase (sẽ được các phase sau bổ sung thêm lệnh cụ thể).
-- [ ] `tests/` có ít nhất một test smoke (`test_setup.py`) xác nhận `import sigverify` thành công và đọc được `configs/default.yaml`.
+- [x] Thư mục dự án đầy đủ theo cấu trúc bên dưới, mỗi package Python có `__init__.py`.
+- [x] `requirements.txt` liệt kê đầy đủ thư viện: `torch`, `torchvision`, `opencv-python`, `scikit-image`, `scikit-learn`, `numpy`, `matplotlib`, `pandas`, `pyyaml`, `tqdm`, `streamlit`, `pytest`. Gradio ghi chú là lựa chọn thay thế Streamlit, không cài mặc định để tránh phình môi trường.
+- [x] `pyproject.toml` (hoặc `setup.py`) khai báo package `sigverify` (`src/` layout) cài được bằng `pip install -e .`.
+- [x] `configs/default.yaml` chứa toàn bộ tham số mặc định dùng xuyên suốt các phase sau (đường dẫn dữ liệu, kích thước ảnh theo từng cấu hình, seed, batch size, margin mặc định, epoch tối đa, tỉ lệ chia writer-disjoint).
+- [x] `.gitignore` loại trừ `data/raw/`, `data/processed/`, `models_registry/`, `results/` (trừ các file tổng hợp nhỏ như bảng metrics), `__pycache__/`, `.ipynb_checkpoints/`, môi trường ảo.
+- [x] `README.md` mô tả mục tiêu đồ án, cấu trúc thư mục, cách cài đặt, và trỏ tới lệnh chạy cho từng phase (sẽ được các phase sau bổ sung thêm lệnh cụ thể).
+- [x] `tests/` có ít nhất một test smoke (`test_setup.py`) xác nhận `import sigverify` thành công và đọc được `configs/default.yaml`.
 
 ## Architecture
 
@@ -99,14 +99,14 @@ Chỉ tạo file thật (không phải thư mục rỗng vô nghĩa với git) �
 
 ## Todo List
 
-- [ ] Cây thư mục + toàn bộ `__init__.py`
-- [ ] `pyproject.toml` + `requirements.txt`
-- [ ] `.gitignore`
-- [ ] `configs/default.yaml`
-- [ ] `src/sigverify/utils/seed.py`, `config.py`
-- [ ] `README.md`
-- [ ] `tests/test_setup.py` xanh
-- [ ] `pip install -e .` chạy sạch trên máy hiện tại (CPU-only)
+- [x] Cây thư mục + toàn bộ `__init__.py`
+- [x] `pyproject.toml` + `requirements.txt`
+- [x] `.gitignore`
+- [x] `configs/default.yaml`
+- [x] `src/sigverify/utils/seed.py`, `config.py`
+- [x] `README.md`
+- [x] `tests/test_setup.py` xanh
+- [x] `pip install -e .` chạy sạch trên máy hiện tại (CPU-only)
 
 ## Success Criteria
 

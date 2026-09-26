@@ -1,0 +1,49 @@
+seed: 42
+
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  splits_dir: "data/splits"
+  cedar_dir: "data/raw/cedar"
+  bhsig260_dir: "data/raw/bhsig260"
+
+image:
+  size_scratch: [220, 150]   # [width, height], used by Config A and the baseline
+  size_transfer: [224, 224]  # [width, height], used by Config B
+
+preprocessing:
+  denoise: "gaussian"        # "gaussian" | "median"
+  binarize_output: false     # Otsu is always used to locate the bbox; this only
+                              # controls whether the FINAL model input is binarized
+
+pairs:
+  ratio_pos_hardneg_easyneg: [2, 1, 1]
+  pairs_per_writer: 40       # per pair-type sampling budget per writer per split build
+
+split:
+  train_writers: 40
+  val_writers: 5
+  test_writers: 10
+
+train:
+  batch_size: 64
+  max_epochs: 100
+  early_stop_patience: 10
+  early_stop_warmup_epochs: 5
+  margins: [0.5, 1.0, 2.0]
+  lr_scratch: 0.001
+  lr_finetune_head: 0.0001
+  lr_finetune_backbone: 0.00001
+  finetune_stage1_epochs: 5
+
+model:
+  embedding_dim: 128
+  l2_normalize: false
+  transfer_backbone: "resnet18"   # "resnet18" | "vgg16"
+
+baseline:
+  feature_type: "hog"             # "hog" | "lbp"
+  svm_param_grid:
+    C: [0.1, 1, 10]
+    gamma: ["scale", 0.01, 0.001]
+  pca_components: null
