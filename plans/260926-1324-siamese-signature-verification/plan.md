@@ -1,7 +1,7 @@
 ---
 title: "Xác minh chữ ký viết tay offline bằng mạng Siamese (Writer-Independent)"
 description: "Hệ thống xác minh chữ ký viết tay offline (verification, không phải identification) dùng mạng Siamese writer-independent, huấn luyện/đánh giá trên CEDAR với kiểm tra tổng quát chéo trên BHSig260, kèm baseline HOG/LBP+SVM và demo Streamlit — đồ án tốt nghiệp."
-status: pending
+status: in-progress
 priority: P1
 effort: "16.5d"
 branch: claude/dreamy-carson-nkwqfa

@@ -30,13 +30,13 @@ dependencies: [5]
 
 ## Requirements
 
-- [ ] `app/inference.py`: hàm thuần suy luận, không phụ thuộc Streamlit — `load_model(config_name) -> (model, tau_default, far_frr_curve)`, `preprocess_and_embed(image_bytes) -> (preprocessed_np_array, embedding)`, `compare(embedding_a, embedding_b) -> distance`, `decision(distance, tau) -> "Thật"|"Giả"`, `lookup_far_frr(tau, far_frr_curve) -> (far, frr)`.
-- [ ] `app/demo_app.py` (Streamlit): 2 ô upload ảnh (`st.file_uploader`, giới hạn định dạng ảnh phổ biến), hiển thị ảnh gốc và ảnh sau tiền xử lý cạnh nhau cho cả 2 ảnh (dùng `preprocess_image` từ Phase 2, không viết lại), nút/tự động chạy suy luận, hiển thị kết quả "Thật"/"Giả" + giá trị D, thanh trượt τ (`st.slider`, khoảng giá trị lấy từ `far_frr_curve` đã tính sẵn) cập nhật FAR/FRR hiển thị theo thời gian thực khi kéo, và cập nhật lại kết quả thật/giả theo τ hiện tại của thanh trượt (không chỉ hiển thị τ mặc định cố định).
-- [ ] Toàn bộ xử lý ảnh upload chỉ trong bộ nhớ — không có lệnh ghi file nào trên đường dẫn xử lý ảnh người dùng; xác nhận bằng review code + 1 test tĩnh đơn giản (rà `inference.py` và phần xử lý ảnh của `demo_app.py` không gọi API ghi file ảnh).
-- [ ] Sinh `results/{config}/far_frr_curve.json` (từ `compute_far_frr` trên val, Phase 3) — bổ sung bước lưu file này vào script train Phase 5/6 nếu chưa có (mở rộng nhỏ ngược lại `scripts/train_config_a.py`/`train_config_b.py`, tương tự cách Phase 8 mở rộng `evaluate_at_threshold`).
-- [ ] `requirements.txt` chốt phiên bản cuối cùng, bao gồm `streamlit`.
-- [ ] `Dockerfile` (P3 — làm nếu còn thời gian, nhưng đặc tả đầy đủ ngay trong phase này để không phải quay lại thiết kế): base `python:3.11-slim`, cài `requirements.txt`, `EXPOSE 8501`, `CMD ["streamlit", "run", "app/demo_app.py", "--server.address=0.0.0.0"]`, chạy CPU-only (không cài CUDA).
-- [ ] `tests/test_inference.py`: test `preprocess_and_embed`/`compare`/`decision`/`lookup_far_frr` bằng model giả nhỏ hoặc mock, không cần chạy Streamlit UI thật.
+- [x] `app/inference.py`: hàm thuần suy luận, không phụ thuộc Streamlit — `load_model(config_name) -> (model, tau_default, far_frr_curve)`, `preprocess_and_embed(image_bytes) -> (preprocessed_np_array, embedding)`, `compare(embedding_a, embedding_b) -> distance`, `decision(distance, tau) -> "Thật"|"Giả"`, `lookup_far_frr(tau, far_frr_curve) -> (far, frr)`.
+- [x] `app/demo_app.py` (Streamlit): 2 ô upload ảnh (`st.file_uploader`, giới hạn định dạng ảnh phổ biến), hiển thị ảnh gốc và ảnh sau tiền xử lý cạnh nhau cho cả 2 ảnh (dùng `preprocess_image` từ Phase 2, không viết lại), nút/tự động chạy suy luận, hiển thị kết quả "Thật"/"Giả" + giá trị D, thanh trượt τ (`st.slider`, khoảng giá trị lấy từ `far_frr_curve` đã tính sẵn) cập nhật FAR/FRR hiển thị theo thời gian thực khi kéo, và cập nhật lại kết quả thật/giả theo τ hiện tại của thanh trượt (không chỉ hiển thị τ mặc định cố định).
+- [x] Toàn bộ xử lý ảnh upload chỉ trong bộ nhớ — không có lệnh ghi file nào trên đường dẫn xử lý ảnh người dùng; xác nhận bằng review code + 1 test tĩnh đơn giản (rà `inference.py` và phần xử lý ảnh của `demo_app.py` không gọi API ghi file ảnh).
+- [x] Sinh `results/{config}/far_frr_curve.json` (từ `compute_far_frr` trên val, Phase 3) — bổ sung bước lưu file này vào script train Phase 5/6 nếu chưa có (mở rộng nhỏ ngược lại `scripts/train_config_a.py`/`train_config_b.py`, tương tự cách Phase 8 mở rộng `evaluate_at_threshold`).
+- [x] `requirements.txt` chốt phiên bản cuối cùng, bao gồm `streamlit`.
+- [x] `Dockerfile` (P3 — làm nếu còn thời gian, nhưng đặc tả đầy đủ ngay trong phase này để không phải quay lại thiết kế): base `python:3.11-slim`, cài `requirements.txt`, `EXPOSE 8501`, `CMD ["streamlit", "run", "app/demo_app.py", "--server.address=0.0.0.0"]`, chạy CPU-only (không cài CUDA).
+- [x] `tests/test_inference.py`: test `preprocess_and_embed`/`compare`/`decision`/`lookup_far_frr` bằng model giả nhỏ hoặc mock, không cần chạy Streamlit UI thật.
 
 ## Architecture
 
@@ -77,13 +77,13 @@ User upload (2 ảnh, qua Streamlit) → bytes trong bộ nhớ
 
 ## Todo List
 
-- [ ] `far_frr_curve.json` được sinh từ Phase 5/6
-- [ ] `app/inference.py` xử lý hoàn toàn trong bộ nhớ, có test
-- [ ] `app/demo_app.py` đủ 5 yêu cầu UI: upload 2 ảnh, hiển thị gốc+đã xử lý, kết quả+D, thanh trượt τ, FAR/FRR theo τ
-- [ ] Xác nhận không có lệnh ghi file nào trên đường xử lý ảnh người dùng
-- [ ] `Dockerfile` CPU-only đặc tả đầy đủ (P3, làm nếu còn thời gian)
-- [ ] `requirements.txt` chốt bản cuối
-- [ ] Kiểm thử thủ công app chạy đúng, tiến trình được dừng sạch sau khi test
+- [x] `far_frr_curve.json` được sinh từ Phase 5/6
+- [x] `app/inference.py` xử lý hoàn toàn trong bộ nhớ, có test
+- [x] `app/demo_app.py` đủ 5 yêu cầu UI: upload 2 ảnh, hiển thị gốc+đã xử lý, kết quả+D, thanh trượt τ, FAR/FRR theo τ
+- [x] Xác nhận không có lệnh ghi file nào trên đường xử lý ảnh người dùng
+- [x] `Dockerfile` CPU-only đặc tả đầy đủ (P3, làm nếu còn thời gian)
+- [x] `requirements.txt` chốt bản cuối
+- [x] Kiểm thử thủ công app chạy đúng, tiến trình được dừng sạch sau khi test
 
 ## Success Criteria
 
