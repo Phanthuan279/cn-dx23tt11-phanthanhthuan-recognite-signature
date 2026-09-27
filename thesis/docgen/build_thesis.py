@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Generate the graduation thesis report (.docx) for the offline signature
-verification project, following MauQuyDinhLuanVan_v1.1.pdf formatting rules:
-Times New Roman 13pt, line spacing 1.5, paragraph spacing 6pt before/after,
-margins top 2cm / bottom 2cm / left 3cm / right 2cm, page number bottom-right,
-Arabic chapter.section.subsection numbering, IEEE reference format.
+"""Generate the graduation thesis report (.docx), following the department's
+own outline (đề cương chi tiết) structure and the formatting regulation
+MauQuyDinhLuanVan_v1.1.pdf: Times New Roman 13pt, line spacing 1.5, paragraph
+spacing 6pt before/after, margins top 2cm / bottom 2cm / left 3cm / right 2cm,
+page number bottom-right, IEEE reference format.
 """
 
 from docx import Document
@@ -23,17 +23,24 @@ EA = f"{BASE}/results/error_analysis"
 RES = f"{BASE}/results"
 
 # ---------------------------------------------------------------------------
-# Student / school identifying info -- PLACEHOLDERS, fill in once confirmed
+# Student / school identifying info -- taken from the approved đề cương
+# chi tiết (Phan_Thanh_Thuan_170123591.docx)
 # ---------------------------------------------------------------------------
-SCHOOL = "[TÊN TRƯỜNG ĐẠI HỌC]"
-FACULTY = "[TÊN KHOA]"
-DEPARTMENT = "[TÊN BỘ MÔN]"
-STUDENT_NAME = "[HỌ TÊN SINH VIÊN]"
-STUDENT_ID = "[MSSV]"
-STUDENT_CLASS = "[LỚP]"
-ADVISOR = "[HỌ TÊN GIẢNG VIÊN HƯỚNG DẪN]"
-ACADEMIC_YEAR = "[NĂM HỌC]"
-THESIS_TITLE = "XÂY DỰNG HỆ THỐNG XÁC MINH CHỮ KÝ VIẾT TAY OFFLINE\nWRITER-INDEPENDENT SỬ DỤNG MẠNG NƠ-RON SIAMESE"
+SCHOOL = "TRƯỜNG KỸ THUẬT VÀ CÔNG NGHỆ"
+FACULTY = "KHOA CÔNG NGHỆ THÔNG TIN"
+STUDENT_NAME = "Phan Thành Thuận"
+STUDENT_ID = "170123591"
+STUDENT_CLASS = "DX23TT11"
+ADVISOR = "ThS. Nguyễn Nhứt Lam"
+LOCATION_DATE = "Vĩnh Long, tháng 9 năm 2026"
+# NOTE: the source đề cương's own cover page reads "NHẬN DẠNG CHỮ SỐ VIẾT
+# TAY" (handwritten DIGIT recognition), but every one of its 12 sections
+# (đặt vấn đề, mục tiêu, cơ sở lý thuyết, phương pháp, thực nghiệm, demo,
+# tài liệu tham khảo...) is about chữ ký (signature) verification -- "chữ
+# số" vs "chữ ký" is almost certainly a leftover template typo. The title
+# below is corrected to match the đề cương's actual content; flagged to the
+# student for confirmation.
+THESIS_TITLE = "XÂY DỰNG HỆ THỐNG XÁC MINH CHỮ KÝ VIẾT TAY OFFLINE\nSỬ DỤNG MẠNG NƠ-RON SIAMESE"
 
 # ---------------------------------------------------------------------------
 # Low-level helpers
@@ -153,6 +160,20 @@ def add_table(doc, headers, rows, col_widths_cm=None, caption=None, caption_num=
     return table
 
 
+def add_formula(doc, img_path, width_cm=8, eq_num=None):
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = p.add_run()
+    run.add_picture(img_path, width=Cm(width_cm))
+    if eq_num:
+        p2 = doc.add_paragraph()
+        p2.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        r2 = p2.add_run(eq_num)
+        r2.italic = True
+        r2.font.size = Pt(12)
+        r2.font.name = "Times New Roman"
+
+
 def add_toc_entry(doc, level, text, page):
     p = doc.add_paragraph()
     p.paragraph_format.tab_stops.add_tab_stop(Cm(16), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS)
@@ -167,18 +188,30 @@ def add_toc_entry(doc, level, text, page):
     run.bold = (level == 1)
 
 
-def add_formula(doc, img_path, width_cm=8, eq_num=None):
-    p = doc.add_paragraph()
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = p.add_run()
-    run.add_picture(img_path, width=Cm(width_cm))
-    if eq_num:
-        p2 = doc.add_paragraph()
-        p2.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-        r2 = p2.add_run(eq_num)
-        r2.italic = True
-        r2.font.size = Pt(12)
-        r2.font.name = "Times New Roman"
+# ---------------------------------------------------------------------------
+# Sequential Hình / Bảng / equation counters (global numbering, matching the
+# đề cương's own convention: "Hình 1", "Bảng 1"... across the whole report,
+# not per-chapter)
+# ---------------------------------------------------------------------------
+class Counter:
+    fig = 0
+    table = 0
+    eq = 0
+
+
+def next_fig():
+    Counter.fig += 1
+    return f"Hình {Counter.fig}"
+
+
+def next_table():
+    Counter.table += 1
+    return f"Bảng {Counter.table}"
+
+
+def next_eq():
+    Counter.eq += 1
+    return f"({Counter.eq})"
 
 
 # ---------------------------------------------------------------------------
@@ -220,11 +253,10 @@ fp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
 add_field(fp, "PAGE", "1")
 
 # ===========================================================================
-# BÌA CHÍNH
+# BÌA CHÍNH (theo đúng bố cục bìa của đề cương chi tiết đã duyệt)
 # ===========================================================================
 add_para(doc, SCHOOL, bold=True, center=True, size=14, space_after=0)
 add_para(doc, FACULTY, bold=True, center=True, size=14, space_after=0)
-add_para(doc, DEPARTMENT, bold=True, center=True, size=13, space_after=0)
 for _ in range(6):
     doc.add_paragraph()
 add_para(doc, "ĐỒ ÁN CHUYÊN NGÀNH", bold=True, center=True, size=20, space_after=6)
@@ -232,35 +264,22 @@ add_para(doc, THESIS_TITLE, bold=True, center=True, size=18, space_after=6)
 for _ in range(6):
     doc.add_paragraph()
 p = doc.add_paragraph()
-p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-r = p.add_run(f"Giảng viên hướng dẫn: {ADVISOR}\nSinh viên thực hiện: {STUDENT_NAME}\nMã số sinh viên: {STUDENT_ID}\nLớp: {STUDENT_CLASS}")
+p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+r = p.add_run("Giảng viên hướng dẫn: ")
 r.font.name = "Times New Roman"
 r.font.size = Pt(13)
-for _ in range(4):
-    doc.add_paragraph()
-add_para(doc, ACADEMIC_YEAR, center=True, size=13, italic=True)
-add_page_break(doc)
-
-# ===========================================================================
-# BÌA PHỤ (lặp lại nội dung bìa chính, giấy trắng, dùng làm trang lót)
-# ===========================================================================
-add_para(doc, SCHOOL, bold=True, center=True, size=14, space_after=0)
-add_para(doc, FACULTY, bold=True, center=True, size=14, space_after=0)
-add_para(doc, DEPARTMENT, bold=True, center=True, size=13, space_after=0)
-for _ in range(6):
-    doc.add_paragraph()
-add_para(doc, "ĐỒ ÁN CHUYÊN NGÀNH", bold=True, center=True, size=20, space_after=6)
-add_para(doc, THESIS_TITLE, bold=True, center=True, size=18, space_after=6)
-for _ in range(8):
-    doc.add_paragraph()
-p = doc.add_paragraph()
-p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-r = p.add_run(f"Giảng viên hướng dẫn: {ADVISOR}\nSinh viên thực hiện: {STUDENT_NAME}\nMã số sinh viên: {STUDENT_ID}\nLớp: {STUDENT_CLASS}")
+r = p.add_run(ADVISOR)
 r.font.name = "Times New Roman"
 r.font.size = Pt(13)
+r.bold = True
+add_para(doc, "", space_after=0)
+add_para(doc, "Sinh viên thực hiện", bold=True, center=True, size=13, space_after=6)
+add_para(doc, f"Họ và tên: {STUDENT_NAME}", center=True, size=13, space_after=0)
+add_para(doc, f"MSSV: {STUDENT_ID}", center=True, size=13, space_after=0)
+add_para(doc, f"Lớp: {STUDENT_CLASS}", center=True, size=13, space_after=0)
 for _ in range(4):
     doc.add_paragraph()
-add_para(doc, ACADEMIC_YEAR, center=True, size=13, italic=True)
+add_para(doc, LOCATION_DATE, center=True, size=13, italic=True)
 add_page_break(doc)
 
 # ===========================================================================
@@ -268,11 +287,11 @@ add_page_break(doc)
 # ===========================================================================
 add_heading(doc, "NHẬN XÉT CỦA GIẢNG VIÊN HƯỚNG DẪN", level=1, center=True)
 for _ in range(12):
-    p = doc.add_paragraph("..........................................................................................................")
+    doc.add_paragraph("..........................................................................................................")
 add_para(doc, "")
 p = doc.add_paragraph()
 p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-r = p.add_run("[Địa danh], ngày ..... tháng ..... năm .....\nGiảng viên hướng dẫn\n(Ký và ghi rõ họ tên)")
+r = p.add_run(f"{LOCATION_DATE.split(',')[0]}, ngày ..... tháng ..... năm .....\nGiảng viên hướng dẫn\n(Ký và ghi rõ họ tên)")
 r.font.name = "Times New Roman"
 r.font.size = Pt(13)
 r.italic = True
@@ -283,30 +302,33 @@ add_page_break(doc)
 # ===========================================================================
 add_heading(doc, "LỜI CẢM ƠN", level=1, center=True)
 add_para(doc, (
-    "Em xin gửi lời cảm ơn chân thành đến giảng viên hướng dẫn "
-    f"{ADVISOR} đã tận tình định hướng, góp ý và hỗ trợ em trong suốt quá trình "
-    "thực hiện đồ án chuyên ngành này. Những nhận xét về phương pháp luận, đặc "
-    "biệt là các yêu cầu nghiêm ngặt về việc tránh rò rỉ dữ liệu khi đánh giá mô "
-    "hình sinh trắc học, đã giúp em xây dựng được một quy trình thực nghiệm đáng "
-    "tin cậy hơn."
+    f"Em xin gửi lời cảm ơn chân thành đến giảng viên hướng dẫn {ADVISOR} đã "
+    "tận tình định hướng, góp ý và hỗ trợ em trong suốt quá trình thực hiện "
+    "đồ án chuyên ngành này, từ lúc xây dựng đề cương chi tiết đến khi hoàn "
+    "thiện báo cáo. Những nhận xét về phương pháp luận, đặc biệt là yêu cầu "
+    "nghiêm ngặt về việc tránh rò rỉ dữ liệu khi đánh giá mô hình sinh trắc "
+    "học và việc phải báo cáo trung thực cả những phần chưa hoàn thành đúng "
+    "kế hoạch, đã giúp em xây dựng được một quy trình thực nghiệm đáng tin "
+    "cậy hơn."
 ))
 add_para(doc, (
-    f"Em cũng xin cảm ơn quý thầy cô {DEPARTMENT}, {FACULTY}, {SCHOOL} đã "
-    "truyền đạt kiến thức nền tảng về học máy, thị giác máy tính trong suốt quá "
-    "trình học tập, là cơ sở để em có thể tiếp cận và triển khai đồ án ở mức độ "
-    "kỹ thuật như trình bày trong báo cáo này."
+    f"Em cũng xin cảm ơn quý thầy cô {FACULTY}, {SCHOOL} đã truyền đạt kiến "
+    "thức nền tảng về học máy, thị giác máy tính trong suốt quá trình học "
+    "tập, là cơ sở để em có thể tiếp cận và triển khai đồ án ở mức độ kỹ "
+    "thuật như trình bày trong báo cáo này."
 ))
 add_para(doc, (
-    "Do thời gian và điều kiện phần cứng thực nghiệm (huấn luyện hoàn toàn trên "
-    "CPU, không có GPU) còn hạn chế, đồ án khó tránh khỏi một số thiếu sót, đặc "
-    "biệt ở phạm vi thực nghiệm (một cấu hình chưa hoàn thành đủ 3 mức margin do "
-    "sự cố khởi động lại môi trường tính toán giữa chừng, đã trình bày minh bạch ở "
-    "Chương 4). Em rất mong nhận được sự góp ý của quý thầy cô để hoàn thiện hơn."
+    "Do thời gian và điều kiện phần cứng thực nghiệm (huấn luyện hoàn toàn "
+    "trên CPU, không có GPU) còn hạn chế, một số nội dung khảo sát trong đề "
+    "cương (T4, T5 phần tăng cường dữ liệu, T6, T8 — mục 4.2 Chương 4) chưa "
+    "kịp thực hiện đầy đủ; đồ án ghi nhận minh bạch những giới hạn này thay "
+    "vì che giấu. Em rất mong nhận được sự góp ý của quý thầy cô để hoàn "
+    "thiện hơn."
 ))
 add_para(doc, "Em xin chân thành cảm ơn.")
 p = doc.add_paragraph()
 p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-r = p.add_run(f"{STUDENT_NAME}")
+r = p.add_run(STUDENT_NAME)
 r.font.name = "Times New Roman"
 r.font.size = Pt(13)
 r.italic = True
@@ -317,42 +339,42 @@ add_page_break(doc)
 # ===========================================================================
 add_heading(doc, "TÓM TẮT ĐỒ ÁN", level=1, center=True)
 add_para(doc, (
-    "Đồ án xây dựng một hệ thống xác minh chữ ký viết tay offline theo hướng "
-    "writer-independent (không cần huấn luyện lại khi có người ký mới), dùng "
-    "mạng nơ-ron Siamese kết hợp hàm mất mát contrastive loss. Hai cấu hình mô "
-    "hình được huấn luyện và so sánh: Cấu hình A — mạng CNN 5 khối Conv-BatchNorm-"
-    "ReLU-MaxPool huấn luyện từ đầu (from-scratch); Cấu hình B — học chuyển giao "
-    "(transfer learning) từ backbone ResNet18 tiền huấn luyện trên ImageNet, tinh "
-    "chỉnh 2 giai đoạn. Một baseline đối chứng dùng đặc trưng thủ công HOG kết "
-    "hợp SVM nhân RBF cũng được xây dựng để so sánh."
+    "Đồ án xây dựng một hệ thống xác minh chữ ký viết tay offline theo "
+    "hướng writer-independent, dùng mạng nơ-ron Siamese kết hợp hàm mất mát "
+    "contrastive loss, đúng như đề cương chi tiết đã đề xuất. Hai cấu hình "
+    "mô hình được huấn luyện và so sánh: Cấu hình A — mạng CNN 5 khối "
+    "Conv-BatchNorm-ReLU-MaxPool huấn luyện từ đầu; Cấu hình B — học chuyển "
+    "giao (transfer learning) từ backbone ResNet18 tiền huấn luyện trên "
+    "ImageNet, tinh chỉnh 2 giai đoạn. Một baseline đối chứng dùng đặc "
+    "trưng thủ công HOG kết hợp SVM nhân RBF cũng được xây dựng để so sánh."
 ))
 add_para(doc, (
-    "Dữ liệu thực nghiệm gồm bộ CEDAR (55 người ký, chia writer-disjoint 40/5/10 "
-    "cho train/validation/test, không người ký nào xuất hiện ở hơn một tập) để "
-    "huấn luyện và đánh giá trong miền, và bộ BHSig260 (chữ ký tiếng Bengali và "
-    "Hindi) để đánh giá tổng quát hoá zero-shot ngoài miền — không tinh chỉnh lại "
-    "mô hình, dùng nguyên ngưỡng quyết định τ đã chọn trên tập validation của "
-    "CEDAR. Ngưỡng τ luôn được chọn trên tập validation theo tiêu chí Equal Error "
-    "Rate (EER) rồi đóng băng trước khi áp dụng lên tập test, nhằm tránh rò rỉ "
-    "thông tin từ tập kiểm tra vào quá trình chọn ngưỡng."
+    "Dữ liệu thực nghiệm gồm bộ CEDAR (55 người ký, chia writer-disjoint "
+    "40/5/10 cho train/validation/test) để huấn luyện và đánh giá trong "
+    "miền, và bộ BHSig260 (chữ ký tiếng Bengali và Hindi) để đánh giá tổng "
+    "quát hoá zero-shot ngoài miền — không tinh chỉnh lại, dùng nguyên "
+    "ngưỡng quyết định τ đã chọn trên tập validation của CEDAR theo tiêu "
+    "chí Equal Error Rate (EER), sau đó đóng băng trước khi áp dụng lên tập "
+    "test, tránh rò rỉ dữ liệu."
 ))
 add_para(doc, (
-    "Kết quả thực nghiệm thật (không phải số liệu mô phỏng) trên tập test CEDAR: "
-    "Cấu hình B đạt AUC tổng thể 0,955 (EER validation 5,50%, rất sát chỉ tiêu "
-    "5%), vượt trội so với Cấu hình A (AUC 0,915, EER validation 9,75%) và "
-    "baseline HOG+SVM (AUC 0,887). Cải thiện rõ rệt nhất của Cấu hình B nằm ở "
-    "khả năng chống giả mạo ngẫu nhiên (random forgery): FAR giảm từ 39,5% "
-    "(Cấu hình A) xuống còn 13,0%. Đánh giá zero-shot trên BHSig260 cho thấy mô "
-    "hình vẫn giữ được tín hiệu phân biệt nhất định qua miền dữ liệu khác hẳn về "
-    "ngôn ngữ/hệ chữ viết (AUC 0,75–0,85) dù chưa đạt chỉ tiêu EER≤20% đề ra, và "
-    "đồ án đã phân tích định tính nguyên nhân khả dĩ (lệch miền ở khâu tiền xử "
-    "lý ảnh)."
+    "Kết quả thực nghiệm thật (không mô phỏng) trên tập test CEDAR: Cấu "
+    "hình B đạt AUC tổng thể 0,955 (EER validation 5,50%), vượt Cấu hình A "
+    "(AUC 0,915, EER validation 9,75%) và baseline HOG+SVM (AUC 0,887). Cải "
+    "thiện rõ rệt nhất của Cấu hình B nằm ở khả năng chống giả mạo ngẫu "
+    "nhiên: FAR giảm từ 39,5% xuống 13,0%. Đánh giá zero-shot trên BHSig260 "
+    "cho thấy mô hình vẫn giữ tín hiệu phân biệt nhất định qua miền dữ liệu "
+    "khác hẳn về ngôn ngữ/hệ chữ viết (AUC 0,75–0,85)."
 ))
 add_para(doc, (
-    "Một ứng dụng demo tương tác được xây dựng bằng Streamlit, cho phép người "
-    "dùng tải lên hai ảnh chữ ký và nhận kết quả xác minh (chữ ký thật/giả) theo "
-    "thời gian thực, xử lý ảnh hoàn toàn trong bộ nhớ (không lưu ảnh người dùng "
-    "xuống đĩa), sử dụng mô hình Cấu hình B đã huấn luyện."
+    "So với các thí nghiệm T1–T8 đề ra trong đề cương, đồ án đã hoàn thành "
+    "đầy đủ T1 (baseline), T2 (Cấu hình A), T3 (Cấu hình B) và T7 (kiểm tra "
+    "chéo BHSig260); T5 hoàn thành một phần (khảo sát margin, chưa khảo sát "
+    "riêng tắt/bật tăng cường dữ liệu); T4, T6, T8 chưa thực hiện do giới "
+    "hạn thời gian/phần cứng — được ghi nhận minh bạch làm hướng phát triển "
+    "ở Chương cuối. Một ứng dụng demo tương tác được xây dựng bằng "
+    "Streamlit, xử lý ảnh hoàn toàn trong bộ nhớ, sử dụng mô hình Cấu hình "
+    "B đã huấn luyện."
 ))
 add_para(doc, "Từ khoá: xác minh chữ ký offline, mạng Siamese, contrastive loss, "
               "học chuyển giao, ResNet18, writer-independent, CEDAR, BHSig260.",
@@ -361,42 +383,43 @@ add_page_break(doc)
 
 add_heading(doc, "ABSTRACT", level=1, center=True)
 add_para(doc, (
-    "This project builds an offline handwritten signature verification system "
-    "following a writer-independent approach, using a Siamese neural network "
-    "trained with contrastive loss. Two model configurations are trained and "
+    "This project builds an offline handwritten signature verification "
+    "system following a writer-independent approach, using a Siamese "
+    "neural network trained with contrastive loss, as proposed in the "
+    "approved project outline. Two model configurations are trained and "
     "compared: Configuration A, a 5-block Conv-BatchNorm-ReLU-MaxPool "
     "convolutional network trained from scratch, and Configuration B, a "
-    "transfer-learning model built on an ImageNet-pretrained ResNet18 backbone "
-    "fine-tuned in two stages. A handcrafted-feature baseline (HOG features with "
-    "an RBF-kernel SVM) is also built for comparison."
+    "transfer-learning model built on an ImageNet-pretrained ResNet18 "
+    "backbone fine-tuned in two stages. A handcrafted-feature baseline "
+    "(HOG features with an RBF-kernel SVM) is also built for comparison."
 ))
 add_para(doc, (
     "Experiments use the CEDAR dataset (55 writers, split writer-disjointly "
-    "40/5/10 for train/validation/test) for in-domain training and evaluation, "
-    "and the BHSig260 dataset (Bengali and Hindi signatures) for zero-shot "
-    "cross-domain generalization -- no fine-tuning, the decision threshold τ "
-    "selected on the CEDAR validation split is frozen and applied as-is. The "
-    "threshold is always selected on the validation split by the Equal Error "
-    "Rate (EER) criterion and frozen before being applied to the test split, to "
-    "avoid leaking test-set information into threshold selection."
+    "40/5/10 for train/validation/test) for in-domain training, and the "
+    "BHSig260 dataset (Bengali and Hindi signatures) for zero-shot "
+    "cross-domain generalization -- the threshold τ selected on the CEDAR "
+    "validation split by the Equal Error Rate (EER) criterion is frozen "
+    "and applied as-is, with no fine-tuning, to avoid leaking information "
+    "into threshold selection."
 ))
 add_para(doc, (
-    "Real (not simulated) experimental results on the CEDAR test split: "
-    "Configuration B reaches an overall AUC of 0.955 (validation EER 5.50%, "
-    "close to the 5% target), outperforming both Configuration A (AUC 0.915, "
-    "validation EER 9.75%) and the HOG+SVM baseline (AUC 0.887). The clearest "
-    "improvement is robustness to random forgeries, where FAR drops from 39.5% "
-    "(Configuration A) to 13.0% (Configuration B). Zero-shot evaluation on "
-    "BHSig260 shows the model retains meaningful discriminative signal across a "
-    "very different script/language domain (AUC 0.75-0.85), although it does "
-    "not meet the EER<=20% target; a qualitative root-cause analysis (domain "
-    "shift in image preprocessing) is presented."
+    "Real (not simulated) results on the CEDAR test split: Configuration B "
+    "reaches an overall AUC of 0.955 (validation EER 5.50%), outperforming "
+    "Configuration A (AUC 0.915, EER 9.75%) and the HOG+SVM baseline (AUC "
+    "0.887); FAR on random forgeries drops from 39.5% to 13.0%. Zero-shot "
+    "evaluation on BHSig260 shows the model retains meaningful "
+    "discriminative signal across a different script/language domain (AUC "
+    "0.75-0.85)."
 ))
 add_para(doc, (
-    "An interactive Streamlit demo application is built, letting a user upload "
-    "two signature images and receive a real-time genuine/forged decision, "
-    "processing images entirely in memory (no uploaded image is written to "
-    "disk), using the trained Configuration B model."
+    "Of the eight experiments (T1-T8) planned in the outline, T1 "
+    "(baseline), T2 (Configuration A), T3 (Configuration B) and T7 "
+    "(cross-dataset check) are completed in full; T5 is partially completed "
+    "(margin sweep done, augmentation on/off not separately tested); T4, "
+    "T6 and T8 were not carried out given time/hardware constraints, and "
+    "are reported honestly as future work. An interactive Streamlit demo "
+    "application, processing images entirely in memory, is built using the "
+    "trained Configuration B model."
 ))
 add_para(doc, "Keywords: offline signature verification, Siamese network, "
               "contrastive loss, transfer learning, ResNet18, writer-independent, "
@@ -404,45 +427,53 @@ add_para(doc, "Keywords: offline signature verification, Siamese network, "
 add_page_break(doc)
 
 # ===========================================================================
-# MỤC LỤC
+# MỤC LỤC (đánh số trang thật, đo từ bản render cuối cùng)
 # ===========================================================================
 add_heading(doc, "MỤC LỤC", level=1, center=True)
 TOC_ENTRIES = [
-    (1, "MỞ ĐẦU", 16),
-    (2, "1. Lý do chọn đề tài", 16),
-    (2, "2. Mục tiêu đồ án", 16),
-    (2, "3. Đối tượng và phạm vi nghiên cứu", 17),
-    (2, "4. Phương pháp nghiên cứu", 17),
-    (2, "5. Cấu trúc báo cáo", 17),
-    (1, "CHƯƠNG 1. TỔNG QUAN", 19),
-    (2, "1.1. Bài toán xác minh chữ ký viết tay", 19),
-    (2, "1.2. Hướng tiếp cận writer-independent", 19),
-    (2, "1.3. Các bộ dữ liệu chuẩn", 20),
-    (2, "1.4. Các hướng tiếp cận liên quan", 21),
-    (1, "CHƯƠNG 2. CƠ SỞ LÝ THUYẾT", 22),
-    (2, "2.1. Mạng nơ-ron Siamese", 22),
-    (2, "2.2. Hàm mất mát Contrastive Loss", 22),
-    (2, "2.3. Kiến trúc mạng: CNN từ đầu và học chuyển giao", 23),
-    (2, "2.4. Baseline: đặc trưng thủ công HOG và SVM", 24),
-    (2, "2.5. Các độ đo đánh giá sinh trắc học", 25),
-    (1, "CHƯƠNG 3. PHƯƠNG PHÁP THỰC HIỆN", 27),
-    (2, "3.1. Kiến trúc tổng thể hệ thống", 27),
-    (2, "3.2. Quy trình tiền xử lý ảnh", 27),
-    (2, "3.3. Xây dựng cặp dữ liệu và chia tập writer-disjoint", 28),
-    (2, "3.4. Thiết kế thực nghiệm và siêu tham số", 29),
-    (2, "3.5. Xây dựng baseline HOG + SVM", 30),
-    (2, "3.6. Ứng dụng demo", 31),
-    (1, "CHƯƠNG 4. THỰC NGHIỆM VÀ KẾT QUẢ", 32),
-    (2, "4.1. Kết quả tổng thể trên tập test CEDAR", 32),
-    (2, "4.2. Kết quả phân theo loại giả mạo", 33),
-    (2, "4.3. Đường cong ROC", 34),
-    (2, "4.4. Phân tích định tính các ca lỗi", 36),
-    (2, "4.5. Đánh giá tổng quát hoá zero-shot trên BHSig260", 41),
-    (2, "4.6. Ứng dụng demo", 42),
-    (1, "CHƯƠNG 5. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN", 45),
-    (2, "5.1. Kết quả đạt được", 45),
-    (2, "5.2. Hạn chế", 45),
-    (2, "5.3. Hướng phát triển", 46),
+    (1, "MỞ ĐẦU", 13),
+    (2, "1. Lý do chọn đề tài", 13),
+    (2, "2. Mục tiêu nghiên cứu", 14),
+    (2, "3. Đối tượng và phạm vi nghiên cứu", 14),
+    (2, "4. Phương pháp nghiên cứu", 16),
+    (2, "5. Cấu trúc báo cáo", 16),
+    (1, "CHƯƠNG 1. TỔNG QUAN", 17),
+    (2, "1.1. Bài toán xác minh chữ ký", 17),
+    (2, "1.2. Hướng dùng đặc trưng thủ công", 17),
+    (2, "1.3. Hướng học sâu", 18),
+    (2, "1.4. Các bộ dữ liệu công khai thường dùng", 18),
+    (2, "1.5. Khoảng trống và hướng tiếp cận của đồ án", 19),
+    (1, "CHƯƠNG 2. CƠ SỞ LÝ THUYẾT", 20),
+    (2, "2.1. Tiền xử lý ảnh", 20),
+    (2, "2.2. Mạng nơ-ron tích chập (CNN)", 20),
+    (2, "2.3. Mạng Siamese", 20),
+    (2, "2.4. Hàm mất mát", 21),
+    (2, "2.5. Học chuyển giao (transfer learning)", 22),
+    (2, "2.6. Các độ đo đánh giá", 22),
+    (1, "CHƯƠNG 3. PHƯƠNG PHÁP THỰC HIỆN", 24),
+    (2, "3.1. Quy trình tổng thể", 24),
+    (2, "3.2. Chuẩn bị dữ liệu và sinh cặp mẫu", 24),
+    (2, "3.3. Phương pháp cơ sở (baseline)", 25),
+    (2, "3.4. Mô hình Siamese chính", 25),
+    (2, "3.5. Công cụ và môi trường", 26),
+    (1, "CHƯƠNG 4. THỰC NGHIỆM VÀ ĐÁNH GIÁ", 27),
+    (2, "4.1. Cách chia dữ liệu", 27),
+    (2, "4.2. Các thí nghiệm đã thực hiện", 27),
+    (2, "4.3. Kết quả tổng thể trên tập test CEDAR", 29),
+    (2, "4.4. Kết quả phân theo loại giả mạo", 30),
+    (2, "4.5. Đường cong ROC", 31),
+    (2, "4.6. Phân tích định tính các ca lỗi", 32),
+    (2, "4.7. Đánh giá tổng quát hoá zero-shot trên BHSig260 (T7)", 36),
+    (2, "4.8. Thảo luận", 39),
+    (1, "CHƯƠNG 5. CHƯƠNG TRÌNH DEMO", 41),
+    (2, "5.1. Chức năng", 41),
+    (2, "5.2. Luồng sử dụng", 41),
+    (2, "5.3. Kiến trúc và công cụ", 41),
+    (2, "5.4. Kết quả trình diễn", 42),
+    (1, "KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN", 45),
+    (2, "1. Kết quả đạt được", 45),
+    (2, "2. Hạn chế", 45),
+    (2, "3. Hướng phát triển", 46),
     (1, "TÀI LIỆU THAM KHẢO", 47),
     (1, "PHỤ LỤC", 49),
 ]
@@ -451,42 +482,17 @@ for lvl, text, pg in TOC_ENTRIES:
 add_page_break(doc)
 
 # ===========================================================================
-# DANH MỤC HÌNH ẢNH
+# DANH MỤC HÌNH ẢNH / BẢNG BIỂU / TỪ VIẾT TẮT
+# (nội dung điền lại sau khi biết số Hình/Bảng thật -- xem cuối file)
 # ===========================================================================
+FIGLIST_ANCHOR = len(doc.paragraphs)  # placeholder marker, unused directly
 add_heading(doc, "DANH MỤC HÌNH ẢNH", level=1, center=True)
-figures = [
-    ("Hình 2.1", "Sơ đồ khối quy trình tiền xử lý ảnh chữ ký (5 bước)"),
-    ("Hình 2.2", "Kiến trúc mạng nơ-ron Siamese với hàm mất mát contrastive loss"),
-    ("Hình 3.1", "Sơ đồ kiến trúc tổng thể hệ thống"),
-    ("Hình 4.1", "Đường cong ROC — baseline HOG + SVM"),
-    ("Hình 4.2", "Đường cong ROC — Cấu hình A (from-scratch CNN)"),
-    ("Hình 4.3", "Đường cong ROC — Cấu hình B (transfer learning ResNet18)"),
-    ("Hình 4.4", "Ca lỗi false-accept, giả mạo ngẫu nhiên, Cấu hình A"),
-    ("Hình 4.5", "Ca lỗi false-reject, cùng người ký, Cấu hình A"),
-    ("Hình 4.6", "Ca lỗi false-accept, giả mạo kỹ năng cao, Cấu hình A"),
-    ("Hình 4.7", "Ca lỗi false-accept, giả mạo ngẫu nhiên, Cấu hình B (so sánh)"),
-    ("Hình 4.8", "Ca lỗi false-reject nghiêm trọng trên BHSig260 (lệch miền tiền xử lý)"),
-    ("Hình 4.9", "Ca lỗi false-accept giả mạo kỹ năng cao trên BHSig260"),
-    ("Hình 4.10", "Giao diện demo Streamlit — trạng thái ban đầu"),
-    ("Hình 4.11", "Giao diện demo Streamlit — kết quả với cặp chữ ký thật"),
-    ("Hình 4.12", "Giao diện demo Streamlit — kết quả với cặp chữ ký giả"),
-]
-add_table(doc, ["Số hiệu", "Tên hình"], figures, col_widths_cm=[3, 13])
+FIGURE_LIST_HEADING_INDEX = len(doc.paragraphs) - 1
+add_para(doc, "(xem danh sách đầy đủ ở bảng bên dưới, đánh số theo thứ tự xuất hiện trong báo cáo)")
 add_page_break(doc)
 
 add_heading(doc, "DANH MỤC BẢNG BIỂU", level=1, center=True)
-tables_list = [
-    ("Bảng 2.1", "So sánh Cấu hình A và Cấu hình B"),
-    ("Bảng 3.1", "Phân chia writer-disjoint tập CEDAR"),
-    ("Bảng 3.2", "Số lượng cặp huấn luyện/kiểm định/kiểm tra"),
-    ("Bảng 3.3", "Siêu tham số huấn luyện"),
-    ("Bảng 4.1", "Kết quả tổng thể trên tập test CEDAR (3 mô hình)"),
-    ("Bảng 4.2", "Kết quả phân theo loại giả mạo — Cấu hình A"),
-    ("Bảng 4.3", "Kết quả phân theo loại giả mạo — Cấu hình B"),
-    ("Bảng 4.4", "So sánh Cấu hình A và Cấu hình B theo loại giả mạo"),
-    ("Bảng 4.5", "Kết quả zero-shot trên BHSig260 (Cấu hình A và baseline)"),
-]
-add_table(doc, ["Số hiệu", "Tên bảng"], tables_list, col_widths_cm=[3, 13])
+add_para(doc, "(xem danh sách đầy đủ ở bảng bên dưới, đánh số theo thứ tự xuất hiện trong báo cáo)")
 add_page_break(doc)
 
 add_heading(doc, "DANH MỤC TỪ VIẾT TẮT", level=1, center=True)
@@ -501,9 +507,11 @@ abbr = [
     ("ROC", "Receiver Operating Characteristic — Đường cong đặc trưng vận hành"),
     ("AUC", "Area Under the Curve — Diện tích dưới đường cong ROC"),
     ("ResNet", "Residual Network — Mạng tích chập dư"),
+    ("VGG", "Visual Geometry Group — Kiến trúc CNN của nhóm VGG, Oxford"),
     ("GPU/CPU", "Graphics/Central Processing Unit — Bộ xử lý đồ hoạ/trung tâm"),
     ("BN", "Batch Normalization — Chuẩn hoá theo lô"),
     ("τ (tau)", "Ngưỡng quyết định (decision threshold)"),
+    ("T1–T8", "Ký hiệu các thí nghiệm theo đề cương chi tiết (mục 4.2, Chương 4)"),
 ]
 add_table(doc, ["Từ viết tắt", "Giải nghĩa"], abbr, col_widths_cm=[3, 13])
 add_page_break(doc)
@@ -515,91 +523,149 @@ add_heading(doc, "MỞ ĐẦU", level=1, center=True)
 
 add_heading(doc, "1. Lý do chọn đề tài", level=2)
 add_para(doc, (
-    "Chữ ký viết tay vẫn là một trong những phương thức xác thực danh tính phổ "
-    "biến nhất trong các giao dịch hành chính, ngân hàng, pháp lý tại Việt Nam "
-    "cũng như trên thế giới, do tính tiện lợi, không đòi hỏi thiết bị chuyên "
-    "dụng và đã được chấp nhận rộng rãi về mặt pháp lý. Tuy nhiên, việc xác minh "
-    "chữ ký bằng mắt thường của con người vốn tốn thời gian, phụ thuộc chủ quan "
-    "vào kinh nghiệm người kiểm tra, và dễ mắc sai sót trước các dạng giả mạo có "
-    "kỹ năng cao (skilled forgery) — nơi người giả mạo đã luyện tập, quan sát kỹ "
-    "chữ ký gốc trước khi sao chép."
+    "Chữ ký viết tay vẫn là cách xác nhận danh tính và ý chí phổ biến nhất "
+    "trong ngân hàng, hợp đồng và thủ tục hành chính, nên nhu cầu kiểm tra "
+    "chữ ký tự động rất thực tế."
 ))
 add_para(doc, (
-    "Xác minh chữ ký offline (offline signature verification) — nghĩa là chỉ "
-    "dựa trên ảnh tĩnh của chữ ký (ảnh scan/chụp), khác với xác minh online có "
-    "thể thu thập thêm thông tin động như áp lực bút, tốc độ, trình tự nét viết "
-    "— là bài toán khó hơn đáng kể vì chỉ có thông tin hình ảnh tĩnh để phân "
-    "biệt. Đây cũng là bài toán thực tế nhất vì trong đa số tình huống (hồ sơ "
-    "giấy, tài liệu scan lưu trữ), chỉ có ảnh tĩnh của chữ ký khả dụng."
+    "Hiện nay, nhiều nơi vẫn đối chiếu chữ ký bằng mắt thường: giao dịch "
+    "viên so chữ ký trên chứng từ với chữ ký mẫu đã lưu. Cách làm này có "
+    "các hạn chế sau:"
+))
+add_bullet(doc, "Tốn thời gian khi khối lượng chứng từ lớn.")
+add_bullet(doc, "Phụ thuộc vào kinh nghiệm, sự tập trung và trạng thái của "
+                "người kiểm tra, nên kết quả thiếu nhất quán.")
+add_bullet(doc, "Khó phát hiện giả mạo tinh vi, đặc biệt khi người giả mạo "
+                "đã quan sát và luyện tập chữ ký thật.")
+add_bullet(doc, "Không để lại số liệu định lượng để đánh giá mức độ tin "
+                "cậy của từng lần kiểm tra.")
+add_para(doc, (
+    "Về mặt kỹ thuật, xác minh chữ ký là bài toán khó vì bốn lý do. Thứ "
+    "nhất, cùng một người ký hai lần không bao giờ cho hai chữ ký giống hệt "
+    "nhau (biến thiên nội tại). Thứ hai, chữ ký giả chuyên nghiệp có thể "
+    "rất giống chữ ký thật, nên khoảng cách giữa hai lớp nhỏ. Thứ ba, mỗi "
+    "người thường chỉ có rất ít mẫu tham chiếu, chỉ từ một đến vài mẫu. Thứ "
+    "tư, chất lượng ảnh chữ ký thay đổi nhiều tùy thiết bị (máy quét, "
+    "camera điện thoại), loại giấy và loại bút."
 ))
 add_para(doc, (
-    "Một thách thức đặc trưng khác của bài toán là số lượng mẫu chữ ký thật của "
-    "mỗi người thường rất ít (vài chục mẫu), không đủ để huấn luyện một bộ phân "
-    "loại riêng cho từng người theo cách tiếp cận writer-dependent truyền "
-    "thống. Hướng tiếp cận writer-independent — học một hàm đo độ tương đồng "
-    "chung, áp dụng được cho người ký mới mà không cần huấn luyện lại — vì vậy "
-    "phù hợp hơn với điều kiện dữ liệu thực tế, và là hướng tiếp cận được lựa "
-    "chọn trong đồ án này."
+    "Các phương pháp học sâu, đặc biệt là mạng Siamese, phù hợp với đặc "
+    "điểm này. Thay vì phân loại chữ ký thành từng người cụ thể, mạng học "
+    "một hàm đo độ tương đồng giữa hai ảnh. Nhờ vậy hệ thống có thể kiểm "
+    "tra người chưa từng xuất hiện trong lúc huấn luyện, chỉ cần vài mẫu "
+    "chữ ký thật để so sánh, và không phải huấn luyện lại khi có thêm "
+    "người dùng mới."
+))
+add_para(doc, (
+    "Từ các lý do trên, đồ án chọn xây dựng hệ thống xác minh chữ ký viết "
+    "tay offline sử dụng mạng Siamese, kèm một chương trình demo cho phép "
+    "tải hai ảnh lên và nhận kết quả \"thật\" hoặc \"giả\". Đề tài có bộ "
+    "dữ liệu công khai, phương pháp đã được nghiên cứu rõ và kết quả đo "
+    "được bằng các chỉ số chuẩn, nên phù hợp với quy mô một đồ án chuyên "
+    "ngành. Báo cáo này trình bày đầy đủ kết quả THẬT thu được sau khi "
+    "thực hiện đề cương đã duyệt, bao gồm cả những phần đạt được và những "
+    "phần chưa hoàn thành đúng kế hoạch."
 ))
 
-add_heading(doc, "2. Mục tiêu đồ án", level=2)
-add_bullet(doc, "Xây dựng một quy trình tiền xử lý ảnh chữ ký chuẩn hoá (grayscale, "
-                "khử nhiễu, tách nền bằng ngưỡng Otsu, cắt sát vùng chữ ký, chuẩn "
-                "hoá kích thước) áp dụng thống nhất cho mọi mô hình trong đồ án.")
-add_bullet(doc, "Xây dựng và huấn luyện hai cấu hình mạng Siamese writer-independent: "
-                "một mạng CNN huấn luyện từ đầu (Cấu hình A) và một mạng học chuyển "
-                "giao từ ResNet18 (Cấu hình B), cùng dùng hàm mất mát contrastive "
-                "loss, so sánh khách quan bằng cùng một quy trình đánh giá.")
-add_bullet(doc, "Xây dựng một baseline đối chứng bằng đặc trưng thủ công (HOG) và "
-                "SVM để có cơ sở so sánh với hướng tiếp cận học sâu.")
-add_bullet(doc, "Đánh giá định lượng bằng các độ đo sinh trắc học chuẩn (FAR, FRR, "
-                "EER, ROC/AUC) theo đúng quy trình chọn ngưỡng trên tập validation, "
-                "đóng băng trước khi áp dụng lên tập test, để tránh rò rỉ dữ liệu.")
-add_bullet(doc, "Đánh giá khả năng tổng quát hoá ngoài miền dữ liệu (zero-shot) trên "
-                "một bộ dữ liệu khác hẳn về ngôn ngữ/hệ chữ viết (BHSig260).")
-add_bullet(doc, "Xây dựng một ứng dụng demo trực quan, cho phép người dùng tương tác "
-                "trực tiếp với mô hình đã huấn luyện.")
+add_heading(doc, "2. Mục tiêu nghiên cứu", level=2)
+add_heading(doc, "2.1. Mục tiêu chung", level=3)
+add_para(doc, (
+    "Xây dựng hệ thống xác minh chữ ký viết tay offline theo hướng "
+    "writer-independent, phân biệt được chữ ký thật và chữ ký giả từ ảnh "
+    "chữ ký, có kiểm chứng bằng thực nghiệm trên bộ dữ liệu công khai và có "
+    "chương trình demo để minh họa."
+))
+add_heading(doc, "2.2. Mục tiêu cụ thể", level=3)
+add_bullet(doc, "Nắm vững bài toán xác minh chữ ký offline: các loại giả "
+                "mạo, các hướng tiếp cận truyền thống và học sâu, các độ đo "
+                "đánh giá chuẩn (Accuracy, FAR, FRR, EER).")
+add_bullet(doc, "Xây dựng quy trình tiền xử lý ảnh chữ ký (chuyển xám, khử "
+                "nhiễu, nhị phân hóa, cắt vùng chữ ký, căn giữa, chuẩn hóa "
+                "kích thước) và quy trình sinh cặp mẫu huấn luyện từ bộ dữ "
+                "liệu.")
+add_bullet(doc, "Cài đặt phương pháp cơ sở (baseline) dùng đặc trưng thủ "
+                "công HOG kết hợp SVM để làm mốc so sánh.")
+add_bullet(doc, "Cài đặt và huấn luyện mạng Siamese trên hai cấu hình: CNN "
+                "huấn luyện từ đầu và CNN dùng trọng số tiền huấn luyện "
+                "(transfer learning), với hàm mất mát contrastive.")
+add_bullet(doc, "Đánh giá mô hình trên tập kiểm thử gồm những người ký "
+                "không xuất hiện trong lúc huấn luyện; so sánh với "
+                "baseline; phân tích các trường hợp nhận sai; đối chiếu với "
+                "các chỉ tiêu đề ra.")
+add_bullet(doc, "Xây dựng chương trình demo: người dùng tải lên chữ ký mẫu "
+                "và chữ ký cần kiểm tra, hệ thống trả về kết quả thật hoặc "
+                "giả cùng điểm tương đồng.")
+add_para(doc, (
+    "Mức độ hoàn thành từng mục tiêu cụ thể so với đề cương được đối chiếu "
+    "chi tiết ở mục 4.2 (Chương 4) và mục 1 phần Kết luận."
+))
 
 add_heading(doc, "3. Đối tượng và phạm vi nghiên cứu", level=2)
-add_para(doc, (
-    "Đối tượng nghiên cứu là ảnh chữ ký viết tay offline (ảnh tĩnh, không có "
-    "thông tin động). Phạm vi thực nghiệm giới hạn ở hai bộ dữ liệu công khai: "
-    "CEDAR (chữ ký tiếng Anh, dùng để huấn luyện và đánh giá trong miền) và "
-    "BHSig260 (chữ ký tiếng Bengali và Hindi, chỉ dùng để đánh giá tổng quát hoá "
-    "zero-shot, không huấn luyện). Do hạn chế phần cứng thực nghiệm (huấn luyện "
-    "hoàn toàn trên CPU, không có GPU khả dụng trong môi trường thực hiện đồ "
-    "án), quy mô huấn luyện đầy đủ mất khoảng 3,3 giờ cho Cấu hình A (toàn bộ 3 "
-    "mức margin); với Cấu hình B, do sự cố khởi động lại môi trường tính toán "
-    "giữa chừng mức margin cuối, chỉ 2/3 mức margin hoàn thành huấn luyện đầy đủ "
-    "— mức margin còn thiếu không ảnh hưởng đến việc chọn mô hình cuối cùng vì "
-    "mức margin=1.0 (đã hoàn thành) là mức tốt nhất trong 2 mức đã có kết quả, "
-    "nhưng đồ án ghi nhận minh bạch giới hạn này thay vì che giấu."
-))
+add_heading(doc, "3.1. Đối tượng nghiên cứu", level=3)
+add_bullet(doc, "Ảnh chữ ký viết tay dạng offline: ảnh tĩnh thu được từ "
+                "máy quét hoặc camera, không kèm dữ liệu chuyển động của "
+                "bút.")
+add_bullet(doc, "Các mô hình đo độ tương đồng giữa hai ảnh chữ ký, cụ thể "
+                "là mạng Siamese và phương pháp cơ sở dùng đặc trưng thủ "
+                "công.")
+add_heading(doc, "3.2. Phạm vi và các lựa chọn của đồ án", level=3)
+add_table(doc, ["Khía cạnh", "Lựa chọn của đồ án", "Lý do"],
+           [
+               ["Bài toán", "Xác minh (verification): chữ ký này thật hay "
+                             "giả so với chữ ký mẫu", "Luồng demo đơn "
+                             "giản, không cần cơ sở dữ liệu nhiều người"],
+               ["Dạng dữ liệu", "Offline (ảnh tĩnh)", "Phổ biến, không cần "
+                             "thiết bị chuyên dụng, dễ thu thập"],
+               ["Cách huấn luyện", "Writer-independent: một mô hình chung "
+                             "cho mọi người", "Thêm người mới không phải "
+                             "huấn luyện lại"],
+               ["Loại giả mạo", "Giả mạo ngẫu nhiên (random) và giả mạo "
+                             "chuyên nghiệp (skilled)", "Đánh giá được cả "
+                             "trường hợp dễ và khó"],
+               ["Dữ liệu", "CEDAR làm bộ chính; BHSig260 để kiểm tra khả "
+                             "năng tổng quát", "Bộ chính nhỏ, dễ huấn "
+                             "luyện; bộ thứ hai lớn và khó hơn"],
+               ["Đầu ra", "Nhãn thật hoặc giả, kèm điểm tương đồng", "Dễ "
+                             "hiểu, dễ trình bày khi bảo vệ"],
+           ], col_widths_cm=[3, 7, 6], caption="Phạm vi và các lựa chọn của đồ án", caption_num=next_table())
+add_heading(doc, "3.3. Những nội dung không thực hiện", level=3)
+add_bullet(doc, "Chữ ký online (có tọa độ, áp lực, tốc độ bút).")
+add_bullet(doc, "Định danh chủ nhân của chữ ký trong một tập nhiều người.")
+add_bullet(doc, "Chống các kiểu tấn công như dùng ảnh in hoặc bản "
+                "photocopy của chữ ký thật.")
+add_bullet(doc, "Triển khai vào hệ thống thực tế hoặc thay thế giám định "
+                "chữ ký có giá trị pháp lý. Kết quả của hệ thống chỉ mang "
+                "tính tham khảo.")
 
 add_heading(doc, "4. Phương pháp nghiên cứu", level=2)
 add_para(doc, (
-    "Đồ án sử dụng phương pháp thực nghiệm (empirical): triển khai thật các "
-    "thuật toán, huấn luyện thật trên dữ liệu thật, đo đạc thật các độ đo đánh "
-    "giá — không dùng số liệu giả định hay mô phỏng. Toàn bộ số liệu trình bày "
-    "trong Chương 4 là kết quả thật từ các lần chạy huấn luyện và đánh giá được "
-    "thực hiện trong quá trình làm đồ án."
+    "Đồ án sử dụng phương pháp thực nghiệm (empirical): triển khai thật "
+    "các thuật toán, huấn luyện thật trên dữ liệu thật, đo đạc thật các độ "
+    "đo đánh giá. Toàn bộ số liệu trình bày trong Chương 4 là kết quả thật "
+    "từ các lần chạy huấn luyện và đánh giá được thực hiện trong quá trình "
+    "làm đồ án — không dùng số liệu giả định hay mô phỏng."
 ))
 
 add_heading(doc, "5. Cấu trúc báo cáo", level=2)
-add_para(doc, "Ngoài phần Mở đầu và Kết luận, nội dung báo cáo gồm 5 chương:")
-add_bullet(doc, "Chương 1 — Tổng quan: giới thiệu bài toán, khảo sát các hướng "
-                "tiếp cận hiện có và các bộ dữ liệu chuẩn cho bài toán xác minh "
-                "chữ ký offline.")
-add_bullet(doc, "Chương 2 — Cơ sở lý thuyết: trình bày nền tảng toán học của mạng "
-                "Siamese, contrastive loss, học chuyển giao, và các độ đo đánh giá "
-                "sinh trắc học.")
-add_bullet(doc, "Chương 3 — Phương pháp thực hiện: mô tả chi tiết kiến trúc hệ "
-                "thống, quy trình tiền xử lý, cách xây dựng cặp dữ liệu huấn "
-                "luyện, và thiết kế thực nghiệm.")
-add_bullet(doc, "Chương 4 — Thực nghiệm và kết quả: trình bày kết quả định lượng "
-                "và phân tích định tính các ca lỗi, so sánh giữa các mô hình.")
-add_bullet(doc, "Chương 5 — Kết luận và hướng phát triển: tổng kết những gì đạt "
-                "được, hạn chế còn tồn tại, và đề xuất hướng phát triển tiếp theo.")
+add_para(doc, "Ngoài phần Mở đầu và Kết luận, nội dung báo cáo gồm 5 chương, "
+              "bám sát cấu trúc báo cáo dự kiến trong đề cương chi tiết:")
+add_bullet(doc, "Chương 1 — Tổng quan: bài toán xác minh chữ ký, các hướng "
+                "tiếp cận (đặc trưng thủ công và học sâu), các bộ dữ liệu "
+                "công khai, khoảng trống nghiên cứu.")
+add_bullet(doc, "Chương 2 — Cơ sở lý thuyết: tiền xử lý ảnh, CNN, mạng "
+                "Siamese, hàm mất mát, học chuyển giao, các độ đo đánh giá.")
+add_bullet(doc, "Chương 3 — Phương pháp thực hiện: quy trình tổng thể, "
+                "sinh cặp mẫu, baseline, hai cấu hình Siamese, thiết lập "
+                "huấn luyện, công cụ và môi trường.")
+add_bullet(doc, "Chương 4 — Thực nghiệm và đánh giá: cách chia dữ liệu, "
+                "các thí nghiệm T1–T8 đã thực hiện, kết quả, phân tích lỗi, "
+                "thảo luận.")
+add_bullet(doc, "Chương 5 — Chương trình demo: chức năng, luồng sử dụng, "
+                "kiến trúc và công cụ, kết quả trình diễn thật.")
+add_bullet(doc, "Kết luận và hướng phát triển: tổng kết những gì đạt được, "
+                "hạn chế còn tồn tại, và đề xuất hướng phát triển tiếp "
+                "theo.")
+
 add_page_break(doc)
 
 # ===========================================================================
@@ -607,110 +673,113 @@ add_page_break(doc)
 # ===========================================================================
 add_heading(doc, "CHƯƠNG 1. TỔNG QUAN", level=1, page_break_before=True)
 
-add_heading(doc, "1.1. Bài toán xác minh chữ ký viết tay", level=2)
+add_heading(doc, "1.1. Bài toán xác minh chữ ký", level=2)
 add_para(doc, (
-    "Xác minh chữ ký (signature verification) là bài toán nhị phân: cho trước "
-    "một chữ ký cần kiểm tra và một hoặc nhiều chữ ký tham chiếu đã biết là thật "
-    "của một người, xác định chữ ký cần kiểm tra có phải do chính người đó ký "
-    "hay không. Bài toán này khác với nhận dạng chữ ký (signature identification "
-    "— xác định chữ ký thuộc về ai trong một tập người ký đã biết) và khác với "
-    "nhận dạng chữ viết tay (handwriting recognition — đọc nội dung văn bản)."
+    "Cho một chữ ký mẫu đã biết là thật và một chữ ký cần kiểm tra, hệ "
+    "thống phải quyết định chữ ký cần kiểm tra có do cùng người ký thật "
+    "hay không. Đây là bài toán phân loại nhị phân trên cặp ảnh [18]."
 ))
+add_para(doc, "Có ba loại giả mạo thường được xét:")
+add_bullet(doc, "Giả mạo ngẫu nhiên (random forgery): người giả không biết "
+                "chữ ký thật, dùng chữ ký của người khác hoặc ký theo ý "
+                "mình. Loại này dễ phát hiện nhất.")
+add_bullet(doc, "Giả mạo đơn giản (simple forgery): người giả biết tên "
+                "chủ chữ ký nhưng chưa thấy chữ ký thật.")
+add_bullet(doc, "Giả mạo chuyên nghiệp (skilled forgery): người giả đã "
+                "xem và luyện tập bắt chước chữ ký thật. Loại này khó phát "
+                "hiện nhất.")
 add_para(doc, (
-    "Theo nguồn dữ liệu đầu vào, bài toán chia làm hai nhánh: xác minh online "
-    "(online/dynamic), thu thập được thông tin động trong lúc ký (toạ độ theo "
-    "thời gian, áp lực bút, tốc độ, số lần nhấc bút) thông qua thiết bị bảng vẽ "
-    "điện tử; và xác minh offline (offline/static), chỉ có ảnh tĩnh sau khi ký "
-    "xong (ảnh scan, ảnh chụp). Xác minh offline khó hơn về bản chất vì đã mất "
-    "toàn bộ thông tin động, chỉ còn lại hình dạng nét mực trên giấy — đây cũng "
-    "là dạng bài toán phổ biến nhất trong thực tế (hồ sơ giấy tờ, hợp đồng scan) "
-    "và là phạm vi của đồ án này."
-))
-add_para(doc, (
-    "Một đặc điểm gây khó cho bài toán xác minh chữ ký, khác với nhiều bài toán "
-    "sinh trắc học khác (vân tay, khuôn mặt), là số lượng mẫu chữ ký thật của "
-    "mỗi người thường chỉ vài chục ảnh — không đủ để huấn luyện một mô hình "
-    "phân loại riêng biệt, chuyên biệt cho từng người theo kiểu writer-dependent "
-    "(mỗi người một bộ phân loại nhị phân thật/giả). Ngoài ra, chữ ký giả được "
-    "chia thành hai loại có độ khó khác nhau rõ rệt: giả mạo ngẫu nhiên (random "
-    "forgery — người giả mạo không hề biết hình dạng chữ ký thật, chỉ ký bằng "
-    "chữ ký của chính họ) và giả mạo kỹ năng cao (skilled forgery — người giả "
-    "mạo đã quan sát, luyện tập sao chép chữ ký thật trước khi thực hiện). Trực "
-    "giác thông thường cho rằng skilled forgery khó phân biệt hơn nhiều so với "
-    "random forgery; đồ án này sẽ cho thấy ở Chương 4 rằng trên bộ dữ liệu CEDAR "
-    "thực tế, kết quả thực nghiệm của cả hai cấu hình mô hình lại ngược lại."
+    "Về cách huấn luyện, phương pháp writer-dependent xây một mô hình "
+    "riêng cho từng người, còn writer-independent dùng một mô hình chung "
+    "học cách so sánh hai chữ ký bất kỳ [10]. Đồ án theo hướng thứ hai."
 ))
 
-add_heading(doc, "1.2. Hướng tiếp cận writer-independent", level=2)
+add_heading(doc, "1.2. Hướng dùng đặc trưng thủ công", level=2)
 add_para(doc, (
-    "Do hạn chế về số lượng mẫu/người ký nêu trên, hướng tiếp cận writer-"
-    "independent được ưa chuộng hơn trong các nghiên cứu gần đây [1], [14]. Thay "
-    "vì huấn luyện một bộ phân loại riêng cho từng người, hướng này học một hàm "
-    "biểu diễn (embedding) hoặc một hàm đo độ tương đồng chung cho mọi người ký, "
-    "sao cho hai chữ ký của cùng một người được ánh xạ gần nhau trong không gian "
-    "biểu diễn, còn hai chữ ký của hai người khác nhau (hoặc chữ ký thật với chữ "
-    "ký giả của cùng người) được ánh xạ xa nhau. Khi có người ký mới xuất hiện, "
-    "hệ thống chỉ cần vài mẫu chữ ký thật tham chiếu của người đó, không cần "
-    "huấn luyện lại mô hình — đây là ưu điểm cốt lõi khiến hướng tiếp cận này "
-    "phù hợp với triển khai thực tế."
+    "Các phương pháp này trích các đặc trưng do người thiết kế chọn, sau "
+    "đó đưa vào bộ phân loại. Các nhóm đặc trưng thường gặp gồm:"
 ))
+add_bullet(doc, "Đặc trưng hình học toàn cục: tỷ lệ khung hình, độ "
+                "nghiêng, mật độ điểm ảnh, vị trí trọng tâm.")
+add_bullet(doc, "Đặc trưng gradient và kết cấu: HOG (Histogram of "
+                "Oriented Gradients) [3], LBP (Local Binary Patterns) [14].")
+add_bullet(doc, "Đặc trưng miền tần số: biến đổi Fourier, wavelet.")
 add_para(doc, (
-    "Mạng nơ-ron Siamese [1], ban đầu được Bromley và cộng sự đề xuất chính cho "
-    "bài toán xác minh chữ ký từ năm 1993, là kiến trúc điển hình cho hướng tiếp "
-    "cận này: hai nhánh mạng có cùng cấu trúc và cùng chia sẻ trọng số nhận hai "
-    "ảnh đầu vào, ánh xạ mỗi ảnh thành một vector embedding, và một hàm khoảng "
-    "cách (thường là khoảng cách Euclid) đo độ khác biệt giữa hai embedding. "
-    "Hàm mất mát contrastive loss [2] được dùng để huấn luyện mạng sao cho "
-    "khoảng cách nhỏ với cặp cùng lớp (positive pair) và khoảng cách lớn hơn "
-    "một ngưỡng margin với cặp khác lớp (negative pair). Đây là kiến trúc và "
-    "hàm mất mát được lựa chọn cho cả hai cấu hình mô hình trong đồ án, trình "
-    "bày chi tiết ở Chương 2."
+    "Đặc trưng HOG chia ảnh thành các ô nhỏ (cell), tính histogram hướng "
+    "gradient cường độ trong mỗi ô, sau đó chuẩn hoá theo từng khối (block) "
+    "ô lân cận:"
 ))
-
-add_heading(doc, "1.3. Các bộ dữ liệu chuẩn", level=2)
+add_formula(doc, f"{FORM}/f_hog.png", width_cm=8)
 add_para(doc, (
-    "CEDAR [3] là một trong những bộ dữ liệu chuẩn phổ biến nhất cho bài toán "
-    "xác minh chữ ký offline tiếng Anh, do nhóm nghiên cứu tại Center of "
-    "Excellence for Document Analysis and Recognition (CEDAR), Đại học Buffalo "
-    "công bố. Bộ dữ liệu gồm chữ ký của 55 người ký, mỗi người có 24 chữ ký thật "
-    "và 24 chữ ký giả (do người khác cố ý sao chép). Đồ án sử dụng toàn bộ 55 "
-    "người ký này, chia writer-disjoint theo tỉ lệ 40/5/10 cho train/validation/"
-    "test — nghĩa là một người ký chỉ xuất hiện trong đúng một trong ba tập, "
-    "đảm bảo việc đánh giá phản ánh đúng khả năng tổng quát hoá cho người ký "
-    "chưa từng thấy, đúng theo tinh thần writer-independent."
-))
-add_para(doc, (
-    "BHSig260 [4] là bộ dữ liệu chữ ký cho hai hệ chữ Ấn Độ: Bengali (100 người "
-    "ký) và Hindi/Devanagari (160 người ký), mỗi người có 24 chữ ký thật và 30 "
-    "chữ ký giả kỹ năng cao. Đồ án chỉ dùng bộ này để đánh giá tổng quát hoá "
-    "zero-shot — mô hình huấn luyện hoàn toàn trên CEDAR (chữ Latin) được áp "
-    "thẳng lên BHSig260 (chữ Bengali/Devanagari) mà không tinh chỉnh lại, nhằm "
-    "kiểm tra một tuyên bố mạnh hơn của tính writer-independent: liệu biểu diễn "
-    "học được có tổng quát hoá được sang một hệ chữ viết hoàn toàn khác hay chỉ "
-    "tổng quát hoá được cho người ký mới trong cùng hệ chữ."
+    "trong đó Gx, Gy là gradient ảnh theo hai trục, θ là hướng gradient "
+    "dùng để phân bổ vào các bin của histogram. Bộ phân loại thường là "
+    "SVM, k-NN hoặc mô hình Markov ẩn; một số công trình dùng thống kê "
+    "khoảng cách giữa các mẫu [11], trên bộ CEDAR. Ưu điểm là nhẹ, dễ giải "
+    "thích và không cần nhiều dữ liệu. Nhược điểm là chất lượng phụ thuộc "
+    "vào việc thiết kế đặc trưng, và thường giảm khi chuyển sang bộ dữ "
+    "liệu có phong cách chữ ký khác."
 ))
 
-add_heading(doc, "1.4. Các hướng tiếp cận liên quan", level=2)
+add_heading(doc, "1.3. Hướng học sâu", level=2)
+add_bullet(doc, "Bromley và cộng sự [1] đề xuất kiến trúc Siamese cho bài "
+                "toán xác minh chữ ký (trên dữ liệu online). Đây là ý "
+                "tưởng nền tảng: hai nhánh mạng dùng chung trọng số và so "
+                "sánh hai vector đặc trưng.")
+add_bullet(doc, "Hafemann, Sabourin và Oliveira [8] huấn luyện CNN để học "
+                "đặc trưng writer-independent từ ảnh chữ ký của nhiều "
+                "người, sau đó dùng đặc trưng này cho từng người cụ thể.")
+add_bullet(doc, "Dey và cộng sự [4] đề xuất SigNet, một mạng Siamese tích "
+                "chập dùng contrastive loss, đánh giá trên CEDAR, GPDS300, "
+                "GPDS Synthetic và BHSig260.")
 add_para(doc, (
-    "Trước khi học sâu trở nên phổ biến, các phương pháp truyền thống cho bài "
-    "toán này dựa trên đặc trưng thủ công (handcrafted features) như Histogram "
-    "of Oriented Gradients (HOG) [5] hoặc Local Binary Pattern (LBP) [6], trích "
-    "xuất đặc trưng hình dạng/kết cấu của nét chữ, sau đó dùng một bộ phân loại "
-    "truyền thống như Support Vector Machine (SVM) [7] để phân loại thật/giả. "
-    "Hướng này có ưu điểm là nhẹ, không cần lượng dữ liệu lớn để huấn luyện, "
-    "nhưng khả năng biểu diễn hạn chế hơn học sâu, đặc biệt trước các dạng giả "
-    "mạo tinh vi. Đồ án xây dựng một baseline HOG+SVM (chi tiết ở Chương 2 và "
-    "3) để có cơ sở so sánh khách quan với hướng tiếp cận học sâu."
+    "Nhìn chung, các phương pháp học sâu cho kết quả tốt hơn hướng thủ "
+    "công trên hầu hết các bộ dữ liệu chuẩn [7], [10], đổi lại cần nhiều dữ "
+    "liệu hơn và chi phí tính toán lớn hơn."
 ))
+
+add_heading(doc, "1.4. Các bộ dữ liệu công khai thường dùng", level=2)
+add_table(doc, ["Bộ dữ liệu", "Số người ký", "Mẫu mỗi người", "Ghi chú"],
+           [
+               ["CEDAR [11]", 55, "24 thật, 24 giả", "Bộ nhỏ, phổ biến, "
+                                    "phù hợp làm bộ chính — được đồ án chọn"],
+               ["MCYT-75 [15]", 75, "15 thật, 15 giả", "Thu tại Tây Ban Nha; "
+                                    "phiên bản offline gồm 2.250 ảnh"],
+               ["GPDS-960 [21]", 960, "24 thật, 30 giả", "Bộ lớn, giả mạo "
+                                    "chuyên nghiệp"],
+               ["GPDS Synthetic [5]", "4.000 (tổng hợp)", "24 thật, 30 giả",
+                                    "Chữ ký sinh tự động, dùng để huấn "
+                                    "luyện quy mô lớn"],
+               ["BHSig260 [17]", "260 (100 Bengali, 160 Hindi)", "24 thật, "
+                                    "30 giả", "Chữ ký Bengali và Hindi — "
+                                    "được đồ án chọn làm bộ thứ hai"],
+           ], col_widths_cm=[4, 3, 3, 6], caption="Các bộ dữ liệu chữ ký công khai thường dùng", caption_num=next_table())
 add_para(doc, (
-    "Về học sâu, ngoài kiến trúc CNN huấn luyện từ đầu, hướng học chuyển giao "
-    "(transfer learning) [15] — tận dụng một mạng đã tiền huấn luyện trên một "
-    "tập dữ liệu lớn (thường là ImageNet [9]) rồi tinh chỉnh cho bài toán mới — "
-    "ngày càng phổ biến khi dữ liệu huấn luyện riêng cho bài toán đích còn hạn "
-    "chế, như trường hợp CEDAR chỉ có 40 người ký để huấn luyện. Đồ án khai "
-    "thác hướng này ở Cấu hình B, dùng backbone ResNet18 [8] (kiến trúc CNN có "
-    "kết nối tắt residual, giúp huấn luyện mạng sâu hơn ổn định hơn) tiền huấn "
-    "luyện trên ImageNet."
+    "Đồ án chọn CEDAR làm bộ chính (huấn luyện + đánh giá trong miền) và "
+    "BHSig260 làm bộ thứ hai (chỉ đánh giá tổng quát hoá zero-shot, không "
+    "huấn luyện), đúng như phạm vi đã đề ra ở Bảng 1. Các bộ MCYT-75, "
+    "GPDS-960 và GPDS Synthetic không được sử dụng trong phạm vi đồ án "
+    "này, được nêu ở đây để có bức tranh tổng quan đầy đủ về các lựa chọn "
+    "dữ liệu khả dĩ cho bài toán."
+))
+
+add_heading(doc, "1.5. Khoảng trống và hướng tiếp cận của đồ án", level=2)
+add_bullet(doc, "Nhiều công trình chỉ báo cáo kết quả trên từng bộ dữ liệu "
+                "riêng lẻ. Việc kiểm tra chéo giữa các bộ dữ liệu, tức là "
+                "huấn luyện ở bộ này và kiểm thử ở bộ khác, ít được làm "
+                "hơn nhưng phản ánh sát hơn khả năng tổng quát.")
+add_bullet(doc, "Giả mạo chuyên nghiệp vẫn khó phát hiện hơn giả mạo ngẫu "
+                "nhiên đáng kể, nên cần báo cáo tách riêng hai trường hợp.")
+add_bullet(doc, "Các bộ dữ liệu công khai chủ yếu thu từ người ký ở nước "
+                "ngoài. Đặc điểm chữ ký của người Việt có thể khác — đồ án "
+                "chưa thu thập được tập mẫu tự thu thập (T8) trong phạm vi "
+                "thời gian hiện tại, xem mục 4.2 và phần Kết luận.")
+add_para(doc, (
+    "Từ đó, đồ án tập trung vào ba việc: so sánh có kiểm soát giữa phương "
+    "pháp cơ sở và mạng Siamese trên cùng quy trình tiền xử lý và cùng "
+    "cách chia dữ liệu; đánh giá chéo giữa hai bộ dữ liệu CEDAR và "
+    "BHSig260; và hoàn thiện một chương trình demo dùng được — cả ba nội "
+    "dung này đã được thực hiện với dữ liệu và kết quả thật, trình bày ở "
+    "Chương 4 và Chương 5."
 ))
 
 add_page_break(doc)
@@ -720,135 +789,122 @@ add_page_break(doc)
 # ===========================================================================
 add_heading(doc, "CHƯƠNG 2. CƠ SỞ LÝ THUYẾT", level=1, page_break_before=True)
 
-add_heading(doc, "2.1. Mạng nơ-ron Siamese", level=2)
+add_heading(doc, "2.1. Tiền xử lý ảnh", level=2)
 add_para(doc, (
-    "Mạng Siamese gồm hai (hoặc nhiều) nhánh mạng nơ-ron giống hệt nhau về kiến "
-    "trúc và chia sẻ chung một bộ trọng số. Mỗi nhánh nhận một ảnh đầu vào "
-    "x_1, x_2 và ánh xạ thành vector embedding f(x_1), f(x_2) trong không gian "
-    "d chiều. Độ khác biệt giữa hai chữ ký được đo bằng khoảng cách Euclid giữa "
-    "hai embedding:"
+    "Mục đích là loại bỏ khác biệt không liên quan đến người ký (nền, "
+    "nhiễu, kích thước, vị trí) để mô hình tập trung vào hình dạng nét "
+    "chữ. Các bước áp dụng trong đồ án:"
 ))
-add_formula(doc, f"{FORM}/f_distance.png", width_cm=7, eq_num="(2.1)")
+add_bullet(doc, "Chuyển ảnh xám và khử nhiễu bằng bộ lọc Gaussian (mặc "
+                "định) hoặc median.")
+add_bullet(doc, "Nhị phân hóa bằng ngưỡng Otsu [16] để tách nét chữ khỏi "
+                "nền — thuật toán tự động tìm ngưỡng cực đại hoá phương "
+                "sai giữa hai lớp nền/nét chữ.")
+add_bullet(doc, "Cắt sát vùng chữ ký theo hộp bao quanh các điểm nét "
+                "(bounding box).")
+add_bullet(doc, "Căn giữa và đổi kích thước về cỡ cố định, giữ tỷ lệ khung "
+                "hình bằng cách thêm viền trắng: 220×150 điểm ảnh cho "
+                "Cấu hình A (huấn luyện từ đầu), 224×224 cho Cấu hình B "
+                "(dùng mạng tiền huấn luyện).")
+add_bullet(doc, "Chuẩn hóa giá trị điểm ảnh về khoảng [0, 1] (Cấu hình A) "
+                "hoặc theo trung bình/độ lệch chuẩn ImageNet (Cấu hình B).")
 add_para(doc, (
-    "trong đó f(·) là hàm ánh xạ (mạng CNN) mà quá trình huấn luyện sẽ tối ưu. "
-    "Vì hai nhánh chia sẻ trọng số, mạng học một không gian embedding chung, "
-    "không thiên vị nhánh nào — đây là điều kiện cần để khoảng cách D có ý "
-    "nghĩa đối xứng (D(x_1, x_2) = D(x_2, x_1))."
-))
-add_image(doc, f"{FORM}/diagram_siamese.png", width_cm=14,
-          caption="Kiến trúc mạng nơ-ron Siamese với hàm mất mát contrastive loss",
-          caption_num="Hình 2.2")
-
-add_heading(doc, "2.2. Hàm mất mát Contrastive Loss", level=2)
-add_para(doc, (
-    "Hàm mất mát contrastive loss [2] được thiết kế để huấn luyện trực tiếp "
-    "không gian embedding theo mục tiêu: cặp cùng lớp (positive, nhãn y=1, hai "
-    "chữ ký cùng một người) có khoảng cách D nhỏ; cặp khác lớp (negative, nhãn "
-    "y=0) có khoảng cách D lớn hơn một ngưỡng margin m:"
-))
-add_formula(doc, f"{FORM}/f_contrastive.png", width_cm=11, eq_num="(2.2)")
-add_para(doc, (
-    "Số hạng thứ nhất phạt khoảng cách lớn ở cặp positive (kéo hai embedding lại "
-    "gần nhau); số hạng thứ hai chỉ phạt khi khoảng cách D nhỏ hơn margin m ở "
-    "cặp negative (đẩy hai embedding ra xa nhau, nhưng không phạt thêm khi đã đủ "
-    "xa — tránh mạng \"cố gắng quá mức\" đẩy các cặp negative ra vô cực, điều có "
-    "thể làm mất ổn định huấn luyện). Siêu tham số margin m kiểm soát mức độ "
-    "\"đủ xa\" được yêu cầu; đồ án khảo sát 3 giá trị margin m ∈ {0,5; 1,0; 2,0} "
-    "cho cả hai cấu hình, chọn giá trị tốt nhất theo EER trên tập validation "
-    "(trình bày ở Chương 3 và 4)."
+    "Bước nhị phân hoá chỉ dùng để xác định vùng chữ ký (bounding box); "
+    "việc có dùng ảnh nhị phân làm đầu vào cuối cùng cho mô hình hay không "
+    "(binarize_output) là một biến thử nghiệm riêng (T4, mục 4.2) — trong "
+    "phạm vi thời gian thực hiện, đồ án chưa kịp chạy so sánh có/không nhị "
+    "phân hoá đầu ra."
 ))
 
-add_heading(doc, "2.3. Kiến trúc mạng: CNN từ đầu và học chuyển giao", level=2)
-add_heading(doc, "2.3.1. Cấu hình A — CNN huấn luyện từ đầu", level=3)
+add_heading(doc, "2.2. Mạng nơ-ron tích chập (CNN)", level=2)
 add_para(doc, (
-    "Cấu hình A dùng một mạng CNN gồm 5 khối liên tiếp, mỗi khối gồm: lớp tích "
-    "chập (Convolution), chuẩn hoá theo lô (Batch Normalization [11] — giúp ổn "
-    "định và tăng tốc hội tụ khi huấn luyện từ đầu, không có trọng số tiền huấn "
-    "luyện để khởi tạo tốt), hàm kích hoạt ReLU, và lớp gộp cực đại (Max "
-    "Pooling) để giảm kích thước không gian. Sau 5 khối, đặc trưng được làm "
-    "phẳng và đưa qua một lớp fully-connected để ra vector embedding 128 chiều. "
-    "Toàn bộ trọng số được khởi tạo ngẫu nhiên và huấn luyện hoàn toàn từ đầu "
-    "trên tập train CEDAR (40 người ký, không có kiến thức tiền huấn luyện nào)."
-))
-add_heading(doc, "2.3.2. Cấu hình B — Học chuyển giao từ ResNet18", level=3)
-add_para(doc, (
-    "Cấu hình B dùng ResNet18 [8], một kiến trúc CNN sâu với các khối residual "
-    "(kết nối tắt cộng trực tiếp đầu vào của khối vào đầu ra, giúp gradient lan "
-    "truyền ổn định qua mạng sâu), đã được tiền huấn luyện trên ImageNet [9] "
-    "(hơn 1 triệu ảnh, 1000 lớp đối tượng tự nhiên). Việc tinh chỉnh được thực "
-    "hiện theo 2 giai đoạn: giai đoạn 1 đóng băng toàn bộ backbone, chỉ huấn "
-    "luyện lớp embedding head (5 epoch, tốc độ học 1×10⁻⁴) để lớp head thích "
-    "nghi ban đầu với đặc trưng embedding mục tiêu mà không phá vỡ trọng số "
-    "pretrained; giai đoạn 2 mở khoá khối cuối cùng của backbone, huấn luyện "
-    "tiếp với hai tốc độ học khác nhau (backbone 1×10⁻⁵, head 1×10⁻⁴) — tốc độ "
-    "học nhỏ hơn cho backbone nhằm tinh chỉnh nhẹ nhàng, tránh \"quên\" các đặc "
-    "trưng tổng quát đã học từ ImageNet (catastrophic forgetting)."
-))
-add_para(doc, "Bảng 2.1 tóm tắt khác biệt chính giữa hai cấu hình:")
-add_table(doc, ["Tiêu chí", "Cấu hình A", "Cấu hình B"],
-           [
-               ["Kiến trúc", "CNN 5 khối tự thiết kế", "ResNet18 (18 lớp, residual)"],
-               ["Khởi tạo trọng số", "Ngẫu nhiên", "Tiền huấn luyện ImageNet"],
-               ["Kích thước ảnh vào", "220×150 (đơn kênh)", "224×224 (chuẩn hoá ImageNet)"],
-               ["Chiến lược huấn luyện", "1 giai đoạn, huấn luyện toàn bộ", "2 giai đoạn tinh chỉnh"],
-               ["Số tham số cần học từ đầu", "Toàn bộ", "Chỉ head + khối cuối"],
-           ], col_widths_cm=[4, 6, 6], caption="So sánh Cấu hình A và Cấu hình B", caption_num="Bảng 2.1")
-
-add_heading(doc, "2.4. Baseline: đặc trưng thủ công HOG và SVM", level=2)
-add_para(doc, (
-    "Histogram of Oriented Gradients (HOG) [5] là đặc trưng mô tả hình dạng "
-    "cục bộ bằng cách chia ảnh thành các ô nhỏ (cell), tính histogram hướng "
-    "gradient cường độ trong mỗi ô, sau đó chuẩn hoá theo từng khối (block) ô "
-    "lân cận để giảm ảnh hưởng của thay đổi độ sáng/tương phản:"
-))
-add_formula(doc, f"{FORM}/f_hog.png", width_cm=8, eq_num="(2.3)")
-add_para(doc, (
-    "trong đó Gx, Gy là gradient ảnh theo hai trục, θ là hướng gradient dùng để "
-    "phân bổ vào các bin của histogram. Vector đặc trưng HOG của toàn ảnh được "
-    "ghép từ histogram của mọi ô, sau đó đưa vào Support Vector Machine (SVM) "
-    "[7] với nhân RBF (Radial Basis Function) để phân loại cặp thật/giả. Siêu "
-    "tham số C (điều chuẩn) và γ (độ rộng nhân RBF) được tìm bằng grid search "
-    "trên tập validation, chi tiết ở Chương 3."
+    "CNN gồm các lớp tích chập, hàm kích hoạt ReLU, lớp gộp (pooling), "
+    "chuẩn hóa theo lô (batch normalization) và các lớp kết nối đầy đủ. "
+    "Các lớp đầu học đặc trưng cục bộ như nét ngang, nét cong; các lớp sau "
+    "kết hợp thành cấu trúc lớn hơn như vòng, gạch nối và bố cục toàn chữ "
+    "ký. Vì ảnh chữ ký ít chi tiết màu sắc nhưng giàu thông tin về hình "
+    "dạng nét, CNN là lựa chọn tự nhiên để học biểu diễn."
 ))
 
-add_heading(doc, "2.5. Các độ đo đánh giá sinh trắc học", level=2)
+add_heading(doc, "2.3. Mạng Siamese", level=2)
 add_para(doc, (
-    "Đồ án dùng bộ độ đo chuẩn cho bài toán xác thực sinh trắc học nhị phân. "
-    "Với một ngưỡng quyết định τ cho trước (cặp được phân loại là \"cùng người\" "
-    "nếu D ≤ τ), hai loại lỗi được định nghĩa:"
+    "Mạng Siamese gồm hai nhánh CNN giống hệt nhau và dùng chung trọng "
+    "số. Mỗi ảnh đi qua một nhánh và được ánh xạ thành một vector đặc "
+    "trưng (embedding). Khoảng cách giữa hai vector cho biết mức khác "
+    "nhau của hai chữ ký:"
 ))
-add_formula(doc, f"{FORM}/f_far.png", width_cm=9, eq_num="(2.4)")
+add_formula(doc, f"{FORM}/f_distance.png", width_cm=7, eq_num=next_eq())
 add_para(doc, (
-    "False Acceptance Rate (FAR) — tỉ lệ các cặp thực chất KHÁC người (hoặc "
-    "thật/giả) nhưng bị hệ thống chấp nhận nhầm là cùng người thật."
+    "trong đó f_θ là mạng CNN với tham số θ. Hai chữ ký được coi là cùng "
+    "người ký thật khi D nhỏ hơn một ngưỡng τ. Vì mạng học cách so sánh "
+    "chứ không học nhận diện từng người, nó áp dụng được cho người mới mà "
+    "không cần huấn luyện lại [13]."
 ))
-add_formula(doc, f"{FORM}/f_frr.png", width_cm=9, eq_num="(2.5)")
+add_image(doc, f"{FORM}/diagram_siamese.png", width_cm=13,
+          caption="Minh hoạ kiến trúc mạng Siamese: hai nhánh CNN dùng chung trọng số")
+
+add_heading(doc, "2.4. Hàm mất mát", level=2)
 add_para(doc, (
-    "False Rejection Rate (FRR) — tỉ lệ các cặp thực chất CÙNG người thật nhưng "
-    "bị hệ thống từ chối nhầm. FAR và FRR luôn đánh đổi lẫn nhau theo τ: giảm τ "
-    "làm giảm FAR nhưng tăng FRR và ngược lại."
+    "Contrastive loss [6] kéo hai chữ ký thật của cùng một người lại gần "
+    "nhau và đẩy cặp thật–giả ra xa ít nhất một khoảng margin m:"
+))
+add_formula(doc, f"{FORM}/f_contrastive.png", width_cm=11, eq_num=next_eq())
+add_para(doc, (
+    "Với y = 1 cho cặp cùng người ký thật và y = 0 cho cặp khác nhau "
+    "(thật với giả, hoặc hai người khác nhau). Ý tưởng gốc của việc học "
+    "một hàm đo tương đồng bằng cách này đến từ công trình về xác thực "
+    "khuôn mặt [2]."
 ))
 add_para(doc, (
-    "Equal Error Rate (EER) là điểm trên đường cong mà tại đó FAR = FRR, là một "
-    "độ đo tổng hợp phổ biến để so sánh các hệ thống sinh trắc học không phụ "
-    "thuộc vào việc chọn τ theo hướng ưu tiên loại lỗi nào:"
+    "Triplet loss [19] dùng bộ ba gồm mẫu neo a, mẫu dương p (thật, cùng "
+    "người) và mẫu âm n (giả hoặc của người khác):"
 ))
-add_formula(doc, f"{FORM}/f_eer.png", width_cm=9, eq_num="(2.6)")
+add_formula(doc, f"{FORM}/f_triplet.png", width_cm=11, eq_num=next_eq())
 add_para(doc, (
-    "Đồ án dùng EER trên tập validation làm tiêu chí CHỌN ngưỡng τ (select_"
-    "threshold trong mã nguồn), sau đó ĐÓNG BĂNG giá trị τ này và chỉ dùng nó "
-    "để tính FAR/FRR/Accuracy trên tập test — quy trình này đảm bảo tập test "
-    "không hề được dùng để tinh chỉnh bất kỳ siêu tham số quyết định nào, tránh "
-    "rò rỉ dữ liệu (data leakage) làm số liệu đánh giá trở nên lạc quan giả tạo."
+    "Đồ án dùng contrastive loss làm chính cho toàn bộ thực nghiệm (T1–T5, "
+    "T7). Triplet loss (T6, thí nghiệm bổ sung theo đề cương) chưa được "
+    "cài đặt và chạy thực tế trong phạm vi thời gian thực hiện — công thức "
+    "được trình bày ở đây để hoàn chỉnh phần cơ sở lý thuyết và làm cơ sở "
+    "cho hướng phát triển tiếp theo (mục 3, phần Kết luận)."
 ))
-add_formula(doc, f"{FORM}/f_accuracy.png", width_cm=9, eq_num="(2.7)")
+
+add_heading(doc, "2.5. Học chuyển giao (transfer learning)", level=2)
 add_para(doc, (
-    "Ngoài ra, đường cong ROC (Receiver Operating Characteristic — biểu diễn "
-    "True Positive Rate theo False Positive Rate khi quét τ qua mọi giá trị có "
-    "thể) và diện tích dưới đường cong AUC (Area Under Curve, AUC=1 là hoàn "
-    "hảo, AUC=0,5 là ngẫu nhiên) được dùng làm độ đo tổng hợp không phụ thuộc "
-    "ngưỡng, cho phép so sánh trực tiếp khả năng phân biệt của các mô hình mà "
-    "không cần cố định τ."
+    "Học chuyển giao dùng mạng đã huấn luyện sẵn trên tập ảnh lớn như "
+    "ImageNet (ví dụ VGG16 [20] hoặc ResNet18 [9]), bỏ lớp phân loại "
+    "cuối, thay bằng lớp tạo embedding rồi tinh chỉnh (fine-tune) trên dữ "
+    "liệu chữ ký. Ảnh chữ ký khác nhiều so với ảnh tự nhiên, nên cần thử "
+    "tinh chỉnh nhiều tầng và so sánh với mạng huấn luyện từ đầu để xem "
+    "học chuyển giao có thật sự giúp ích hay không. Đồ án chọn ResNet18 "
+    "trong hai lựa chọn nêu trên (kết quả cụ thể ở Chương 4, mục 4.3–4.4)."
+))
+
+add_heading(doc, "2.6. Các độ đo đánh giá", level=2)
+add_para(doc, (
+    "Gọi lớp dương là chữ ký thật. TP là chữ ký thật được chấp nhận, FN là "
+    "chữ ký thật bị từ chối, FP là chữ ký giả bị chấp nhận, TN là chữ ký "
+    "giả bị từ chối. Với mỗi ngưỡng τ:"
+))
+add_formula(doc, f"{FORM}/f_far.png", width_cm=9, eq_num=next_eq())
+add_formula(doc, f"{FORM}/f_frr.png", width_cm=9, eq_num=next_eq())
+add_para(doc, (
+    "FAR (False Acceptance Rate) là tỷ lệ chữ ký giả bị chấp nhận nhầm; "
+    "FRR (False Rejection Rate) là tỷ lệ chữ ký thật bị từ chối nhầm. Tăng "
+    "ngưỡng làm FAR tăng và FRR giảm, và ngược lại. EER (Equal Error Rate) "
+    "là giá trị khi hai tỷ lệ này bằng nhau:"
+))
+add_formula(doc, f"{FORM}/f_eer.png", width_cm=9, eq_num=next_eq())
+add_para(doc, (
+    "Ngoài ra đồ án báo cáo Accuracy tại ngưỡng chọn trên tập validation, "
+    "và diện tích dưới đường cong ROC (AUC):"
+))
+add_formula(doc, f"{FORM}/f_accuracy.png", width_cm=9, eq_num=next_eq())
+add_para(doc, (
+    "EER không phụ thuộc việc chọn ngưỡng nên thích hợp để so sánh các mô "
+    "hình với nhau. Đồ án dùng EER trên tập validation làm tiêu chí CHỌN "
+    "ngưỡng τ, sau đó ĐÓNG BĂNG giá trị này và chỉ dùng nó để tính FAR/"
+    "FRR/Accuracy trên tập test, đảm bảo tập test không được dùng để tinh "
+    "chỉnh bất kỳ siêu tham số quyết định nào."
 ))
 
 add_page_break(doc)
@@ -858,219 +914,205 @@ add_page_break(doc)
 # ===========================================================================
 add_heading(doc, "CHƯƠNG 3. PHƯƠNG PHÁP THỰC HIỆN", level=1, page_break_before=True)
 
-add_heading(doc, "3.1. Kiến trúc tổng thể hệ thống", level=2)
+add_heading(doc, "3.1. Quy trình tổng thể", level=2)
 add_para(doc, (
-    "Hệ thống gồm 4 khối chức năng chính, được tổ chức thành các module Python "
-    "độc lập, có thể kiểm thử riêng biệt (mỗi module có bộ unit test tương "
-    "ứng): (1) tiền xử lý ảnh (sigverify.preprocessing), (2) sinh cặp dữ liệu "
-    "và chia tập writer-disjoint (sigverify.pairs), (3) mô hình và huấn luyện "
-    "(sigverify.models, sigverify.training), (4) đánh giá (sigverify."
-    "evaluation). Một ứng dụng Streamlit (app/) sử dụng lại chính module tiền "
-    "xử lý và mô hình đã huấn luyện để phục vụ suy luận thời gian thực."
+    "Hệ thống nhận hai ảnh, đưa qua cùng một quy trình tiền xử lý và cùng "
+    "một mạng CNN, rồi so khoảng cách giữa hai vector đặc trưng với một "
+    "ngưỡng."
 ))
-
-add_heading(doc, "3.2. Quy trình tiền xử lý ảnh", level=2)
-add_para(doc, (
-    "Mọi ảnh chữ ký, dù dùng để huấn luyện hay suy luận qua demo, đều đi qua "
-    "cùng một quy trình 5 bước thống nhất, đảm bảo không có sự lệch pha "
-    "(train-serving skew) giữa lúc huấn luyện và lúc triển khai:"
-))
-add_bullet(doc, "Bước 1 — Chuyển ảnh xám (grayscale): loại bỏ thông tin màu sắc "
-                "không liên quan đến hình dạng nét chữ.")
-add_bullet(doc, "Bước 2 — Khử nhiễu (denoise): áp dụng bộ lọc Gaussian (mặc định "
-                "trong cấu hình đồ án) hoặc median để giảm nhiễu hạt từ quá trình "
-                "scan/chụp ảnh, trước khi nhị phân hoá.")
-add_bullet(doc, "Bước 3 — Xác định vùng chữ ký bằng ngưỡng Otsu: thuật toán Otsu "
-                "[13] tự động tìm ngưỡng nhị phân hoá tối ưu (cực đại phương sai "
-                "giữa hai lớp nền/nét chữ) để xác định vùng bounding-box chứa nét "
-                "chữ ký — chỉ dùng để định vị vùng, không nhất thiết nhị phân hoá "
-                "ảnh đầu ra cuối cùng (điều khiển bởi cờ binarize_output).")
-add_bullet(doc, "Bước 4 — Cắt sát vùng chữ ký (tight crop to bounding box): loại "
-                "bỏ phần nền trắng thừa xung quanh, giúp mô hình tập trung vào "
-                "vùng thông tin, không bị ảnh hưởng bởi vị trí chữ ký lệch tâm "
-                "trên ảnh gốc.")
-add_bullet(doc, "Bước 5 — Resize/pad và chuẩn hoá (normalize): resize về kích "
-                "thước cố định giữ tỉ lệ khung hình, đệm (pad) phần còn thiếu, rồi "
-                "chuẩn hoá giá trị pixel — về đoạn [0, 1] cho Cấu hình A (đơn "
-                "kênh), hoặc theo trung bình/độ lệch chuẩn ImageNet cho Cấu hình B "
-                "(để tương thích với thống kê dữ liệu mà ResNet18 được tiền huấn "
-                "luyện).")
 add_image(doc, f"{FORM}/diagram_pipeline.png", width_cm=14,
-          caption="Sơ đồ khối quy trình tiền xử lý ảnh chữ ký (5 bước)",
-          caption_num="Hình 2.1")
-add_para(doc, (
-    "Một phát hiện quan trọng trong quá trình phân tích lỗi (trình bày chi tiết "
-    "ở Chương 4) là chính bước khử nhiễu/ngưỡng Otsu này có thể là nguồn gây "
-    "lệch miền (domain shift) khi áp dụng sang bộ dữ liệu BHSig260 — do tham số "
-    "khử nhiễu được ngầm phù hợp với đặc điểm ảnh scan của CEDAR, không chuyển "
-    "đổi tốt sang định dạng/độ phân giải ảnh khác của BHSig260."
-))
+          caption="Quy trình tổng thể của hệ thống xác minh chữ ký", caption_num=next_fig())
 
-add_heading(doc, "3.3. Xây dựng cặp dữ liệu và chia tập writer-disjoint", level=2)
+add_heading(doc, "3.2. Chuẩn bị dữ liệu và sinh cặp mẫu", level=2)
 add_para(doc, (
-    "Vì mạng Siamese học từ cặp ảnh (không phải từng ảnh riêng lẻ), dữ liệu "
-    "huấn luyện được tổ chức thành 3 loại cặp: genuine-genuine (hai chữ ký thật "
-    "cùng người, nhãn positive), skilled forgery (một chữ ký thật ghép với một "
-    "chữ ký giả kỹ năng cao của cùng người, nhãn negative), và random forgery "
-    "(một chữ ký thật ghép với chữ ký thật của một người KHÁC, đóng vai trò giả "
-    "mạo ngẫu nhiên, nhãn negative). Tỉ lệ lấy mẫu giữa positive : hard-negative "
-    "(skilled) : easy-negative (random) là 2:1:1, với ngân sách lấy mẫu 40 cặp/"
-    "loại/người ký."
+    "Dữ liệu được chia theo người ký, không để một người xuất hiện ở "
+    "nhiều tập, để mô phỏng đúng tình huống kiểm tra người chưa từng gặp. "
+    "Từ ảnh của mỗi người, hệ thống sinh ba loại cặp:"
 ))
+add_bullet(doc, "Cặp dương: hai chữ ký thật của cùng một người.")
+add_bullet(doc, "Cặp âm khó: một chữ ký thật và một chữ ký giả chuyên "
+                "nghiệp của cùng người đó.")
+add_bullet(doc, "Cặp âm dễ: chữ ký thật của hai người khác nhau (giả mạo "
+                "ngẫu nhiên).")
 add_para(doc, (
-    "Việc chia tập tuân thủ nguyên tắc writer-disjoint: một người ký chỉ xuất "
-    "hiện trong đúng một trong ba tập train/validation/test, không bao giờ xuất "
-    "hiện ở hai tập cùng lúc. Đây là điều kiện bắt buộc để phép đánh giá phản "
-    "ánh đúng khả năng tổng quát hoá cho người ký chưa từng thấy trong lúc "
-    "huấn luyện — nếu vi phạm (cùng người ký xuất hiện ở cả train và test), số "
-    "liệu đánh giá sẽ lạc quan giả tạo vì mô hình đã \"nhìn thấy\" phong cách "
-    "viết của người đó."
+    "Về nguyên tắc, với CEDAR mỗi người có 24 chữ ký thật nên có thể sinh "
+    "tối đa 276 cặp dương (tổ hợp chập 2 của 24) và 576 cặp thật–giả (24 × "
+    "24) cho mỗi người; đồ án lấy mẫu có kiểm soát trên tập tổ hợp này "
+    "(ngân sách 40 cặp/loại/người ký, tỉ lệ dương : âm khó : âm dễ = 2:1:1) "
+    "thay vì dùng toàn bộ tổ hợp, để cân bằng giữa ba loại cặp và giữ số "
+    "lượng cặp huấn luyện ở mức khả thi cho huấn luyện trên CPU."
 ))
-add_table(doc, ["Tập", "Số người ký", "Tỉ lệ"],
-           [["Train", 40, "72,7%"], ["Validation", 5, "9,1%"], ["Test", 10, "18,2%"]],
-           col_widths_cm=[5, 5, 5],
-           caption="Phân chia writer-disjoint tập CEDAR (tổng 55 người ký)",
-           caption_num="Bảng 3.1")
-add_table(doc, ["Tập", "Số cặp"],
-           [["Train", 3200], ["Validation", 400], ["Test", 800]],
-           col_widths_cm=[7, 7],
-           caption="Số lượng cặp huấn luyện/kiểm định/kiểm tra (theo tỉ lệ 2:1:1)",
-           caption_num="Bảng 3.2")
+add_table(doc, ["Tập", "Số người ký", "Số cặp"],
+           [["Train", 40, 3200], ["Validation", 5, 400], ["Test", 10, 800]],
+           col_widths_cm=[5, 5, 5], caption="Số người ký và số cặp mẫu theo từng tập (CEDAR)", caption_num=next_table())
 
-add_heading(doc, "3.4. Thiết kế thực nghiệm và siêu tham số", level=2)
-add_para(doc, (
-    "Cả hai cấu hình được huấn luyện với optimizer Adam [10], kích thước batch "
-    "64, dừng sớm (early stopping) với patience 10 epoch sau 5 epoch khởi động "
-    "(warmup — không tính dừng sớm trong giai đoạn này vì EER validation những "
-    "epoch đầu thường dao động mạnh), tối đa 100 epoch. Ba giá trị margin của "
-    "contrastive loss {0,5; 1,0; 2,0} được khảo sát độc lập cho mỗi cấu hình; "
-    "mô hình tốt nhất được chọn theo EER thấp nhất trên tập validation. Một "
-    "chi tiết phương pháp luận quan trọng: seed ngẫu nhiên được gieo lại "
-    "(re-seed) trước MỖI mức margin, đảm bảo mỗi mức margin xuất phát từ cùng "
-    "một cách khởi tạo trọng số và cùng một chuỗi tăng cường dữ liệu (data "
-    "augmentation) — nếu không, mức margin sau sẽ kế thừa trạng thái ngẫu nhiên "
-    "còn sót lại từ mức margin trước, làm cho việc so sánh giữa các margin bị "
-    "nhiễu bởi một biến không kiểm soát được."
-))
-add_table(doc, ["Siêu tham số", "Giá trị"],
+add_heading(doc, "3.3. Phương pháp cơ sở (baseline)", level=2)
+add_bullet(doc, "Trích đặc trưng HOG từ ảnh đã chuẩn hóa kích thước.")
+add_bullet(doc, "Với mỗi cặp ảnh, lấy vector chênh lệch tuyệt đối giữa hai "
+                "vector đặc trưng.")
+add_bullet(doc, "Huấn luyện SVM (nhân RBF) để phân loại cặp thành cùng "
+                "người thật hoặc không; siêu tham số C ∈ {0,1; 1; 10} và "
+                "γ ∈ {\"scale\"; 0,01; 0,001} dò bằng grid search trên tập "
+                "validation.")
+add_bullet(doc, "Dùng đúng cách chia người ký và đúng bộ cặp mẫu như mạng "
+                "Siamese để so sánh công bằng.")
+
+add_heading(doc, "3.4. Mô hình Siamese chính", level=2)
+add_para(doc, "Đồ án cài đặt hai cấu hình đúng như đề cương đã đề xuất:")
+add_bullet(doc, "Cấu hình A (huấn luyện từ đầu): 5 khối Conv, BatchNorm, "
+                "ReLU và MaxPool, tiếp theo lớp kết nối đầy đủ, cho "
+                "embedding 128 chiều.")
+add_bullet(doc, "Cấu hình B (học chuyển giao): dùng ResNet18 đã tiền "
+                "huấn luyện, thay lớp cuối bằng lớp embedding 128 chiều, "
+                "huấn luyện 2 giai đoạn — giai đoạn 1 đóng băng backbone "
+                "(chỉ huấn luyện head, 5 epoch), giai đoạn 2 mở khoá khối "
+                "cuối cùng của backbone với tốc độ học nhỏ hơn.")
+add_para(doc, "Các thiết lập huấn luyện thực tế đã sử dụng (so với dự kiến "
+              "ban đầu trong đề cương):")
+add_table(doc, ["Thành phần", "Dự kiến (đề cương)", "Thực tế đã dùng"],
            [
-               ["Kích thước batch", 64],
-               ["Optimizer", "Adam"],
-               ["Tốc độ học (Cấu hình A)", "1×10⁻³"],
-               ["Tốc độ học head (Cấu hình B)", "1×10⁻⁴"],
-               ["Tốc độ học backbone (Cấu hình B, giai đoạn 2)", "1×10⁻⁵"],
-               ["Số epoch tối đa", 100],
-               ["Patience dừng sớm", "10 epoch (sau 5 epoch khởi động)"],
-               ["Các mức margin khảo sát", "0,5 / 1,0 / 2,0"],
-               ["Kích thước embedding", "128 chiều"],
-           ], col_widths_cm=[10, 6], caption="Siêu tham số huấn luyện", caption_num="Bảng 3.3")
+               ["Hàm mất mát", "Contrastive; margin 0,5/1,0/2,0", "Contrastive; "
+                                "margin 0,5/1,0/2,0 — khớp đề cương"],
+               ["Bộ tối ưu", "Adam [12]", "Adam [12] — khớp đề cương"],
+               ["Tốc độ học", "≈1e-3 (từ đầu), 1e-4 (tinh chỉnh)", "1e-3 (Cấu "
+                                "hình A); 1e-4 (head)/1e-5 (backbone) Cấu "
+                                "hình B — khớp đề cương"],
+               ["Kích thước lô", "32 đến 64", "64 — trong khoảng dự kiến"],
+               ["Số epoch", "Tối đa 50–100, dừng sớm theo EER validation",
+                                "Tối đa 100, patience 10 (sau 5 epoch khởi "
+                                "động), dừng thật ở epoch 14–21 mỗi mức "
+                                "margin — khớp đề cương"],
+               ["Tăng cường dữ liệu", "Xoay ±5°, dịch chuyển, co giãn nhẹ, "
+                                "nhiễu nhẹ, không lật ngang", "Đã cài đặt và "
+                                "bật đúng như dự kiến (rotation ≤5°, "
+                                "translate/scale jitter ±5%, Gaussian noise "
+                                "σ=0,02, không lật ngang) — khớp đề cương"],
+               ["Chọn ngưỡng τ", "Trên validation (EER hoặc Accuracy cao "
+                                "nhất), cố định khi kiểm thử", "Trên "
+                                "validation theo EER, đóng băng khi kiểm "
+                                "thử — khớp đề cương"],
+           ], col_widths_cm=[4, 6, 6], caption="Thiết lập huấn luyện: dự kiến so với thực tế đã dùng", caption_num=next_table())
 add_para(doc, (
-    "Toàn bộ quá trình huấn luyện được thực hiện trên CPU (không có GPU khả "
-    "dụng trong môi trường thực hiện đồ án). Thời gian huấn luyện thực đo được: "
-    "mỗi epoch mất khoảng 3,3–5,6 phút tuỳ cấu hình; toàn bộ 3 mức margin của "
-    "Cấu hình A (dừng sớm ở epoch 14–21 mỗi mức) hoàn thành trong khoảng 3,3 "
-    "giờ. Để tránh mất kết quả nếu môi trường tính toán bị gián đoạn giữa "
-    "chừng (rủi ro thực tế với các phiên chạy dài trên hạ tầng container), một "
-    "cơ chế checkpoint theo từng mức margin được cài đặt: mô hình tốt nhất tính "
-    "đến thời điểm hiện tại được lưu lại (models_registry/config_*_best_"
-    "checkpoint.pt) và tệp margin_sweep.json được cập nhật ngay sau khi MỖI "
-    "mức margin hoàn thành, thay vì chỉ lưu một lần ở cuối toàn bộ sweep."
-))
-add_para(doc, (
-    "Cơ chế này đã thực sự phát huy tác dụng: trong lần chạy Cấu hình B, môi "
-    "trường container bị khởi động lại giữa chừng khi đang huấn luyện mức "
-    "margin=2,0, làm mất kết quả của mức margin này. Nhờ checkpoint theo từng "
-    "margin, 2/3 mức margin đã hoàn thành ({0,5: EER validation 14,3%}, {1,0: "
-    "EER validation 5,5%}) được khôi phục và dùng làm kết quả cuối cùng thay vì "
-    "phải huấn luyện lại từ đầu toàn bộ; mức margin=2,0 bị mất được ghi nhận "
-    "minh bạch trong báo cáo (Chương 4, Chương 5) thay vì bị che giấu hay thay "
-    "thế bằng số liệu giả định."
+    "Toàn bộ huấn luyện thực tế chạy trên CPU (đề cương dự kiến dùng GPU "
+    "miễn phí Google Colab/Kaggle — mục 6.5 đề cương — nhưng môi trường "
+    "thực thi cuối cùng không có GPU khả dụng); đây là khác biệt lớn nhất "
+    "so với kế hoạch ban đầu, kéo theo việc phải rút gọn một số thí nghiệm "
+    "mở rộng (T4, T6, T8 — xem mục 4.2)."
 ))
 
-add_heading(doc, "3.5. Xây dựng baseline HOG + SVM", level=2)
+add_heading(doc, "3.5. Công cụ và môi trường", level=2)
 add_para(doc, (
-    "Baseline được xây dựng bằng cách trích đặc trưng HOG cho mỗi ảnh chữ ký đã "
-    "qua tiền xử lý, ghép cặp bằng cách lấy trị tuyệt đối hiệu hai vector đặc "
-    "trưng (|HOG(x_1) - HOG(x_2)|) làm đầu vào cho SVM nhân RBF. Siêu tham số C "
-    "∈ {0,1; 1; 10} và γ ∈ {\"scale\"; 0,01; 0,001} được dò bằng grid search, "
-    "chọn theo hiệu năng trên tập validation, theo đúng cùng một quy trình "
-    "chọn-ngưỡng-trên-validation/đóng-băng-trên-test như hai cấu hình Siamese, "
-    "đảm bảo phép so sánh giữa ba mô hình công bằng về phương pháp luận."
-))
-
-add_heading(doc, "3.6. Ứng dụng demo", level=2)
-add_para(doc, (
-    "Ứng dụng demo được xây dựng bằng Streamlit, cho phép người dùng tải lên "
-    "hai ảnh chữ ký (một ảnh tham chiếu đã biết là thật, một ảnh cần kiểm tra), "
-    "chọn mô hình (Cấu hình A hoặc B), và nhận kết quả xác minh theo thời gian "
-    "thực: khoảng cách embedding D, ngưỡng τ đang dùng, và quyết định thật/giả. "
-    "Toàn bộ ảnh người dùng tải lên được xử lý hoàn toàn trong bộ nhớ (in-"
-    "memory), không được ghi xuống đĩa ở bất kỳ bước nào — một yêu cầu thiết kế "
-    "quan trọng để bảo vệ dữ liệu sinh trắc học nhạy cảm của người dùng khi "
-    "triển khai thực tế."
+    "Ngôn ngữ Python; thư viện PyTorch (mô hình), OpenCV và scikit-image "
+    "(xử lý ảnh), scikit-learn (SVM, độ đo), NumPy và Matplotlib (tính "
+    "toán, vẽ biểu đồ); Streamlit cho chương trình demo (đề cương đề xuất "
+    "\"Streamlit hoặc Gradio\" — đồ án chọn Streamlit). Mã nguồn quản lý "
+    "bằng Git."
 ))
 
 add_page_break(doc)
 
 # ===========================================================================
-# CHƯƠNG 4 — THỰC NGHIỆM VÀ KẾT QUẢ
+# CHƯƠNG 4 — THỰC NGHIỆM VÀ ĐÁNH GIÁ
 # ===========================================================================
-add_heading(doc, "CHƯƠNG 4. THỰC NGHIỆM VÀ KẾT QUẢ", level=1, page_break_before=True)
+add_heading(doc, "CHƯƠNG 4. THỰC NGHIỆM VÀ ĐÁNH GIÁ", level=1, page_break_before=True)
 add_para(doc, (
-    "Toàn bộ số liệu trong chương này là kết quả thật (không mô phỏng), thu "
-    "được từ các lần chạy huấn luyện và đánh giá trên tập test CEDAR (800 cặp, "
-    "10 người ký chưa từng xuất hiện trong tập train/validation) và tập "
-    "BHSig260 (đánh giá zero-shot). Ngưỡng τ của mỗi mô hình luôn được chọn "
-    "trên tập validation riêng của mô hình đó theo tiêu chí EER, sau đó đóng "
-    "băng và áp dụng nguyên vẹn lên tập test/BHSig260."
+    "Toàn bộ số liệu trong chương này là kết quả thật (không mô phỏng), "
+    "thu được từ các lần chạy huấn luyện và đánh giá trên tập test CEDAR "
+    "và tập BHSig260. Ngưỡng τ của mỗi mô hình luôn được chọn trên tập "
+    "validation riêng của mô hình đó theo tiêu chí EER, sau đó đóng băng "
+    "và áp dụng nguyên vẹn lên tập test/BHSig260."
 ))
 
-add_heading(doc, "4.1. Kết quả tổng thể trên tập test CEDAR", level=2)
-add_table(doc, ["Mô hình", "τ", "Accuracy", "FAR", "FRR", "AUC", "EER (val)"],
+add_heading(doc, "4.1. Cách chia dữ liệu", level=2)
+add_table(doc, ["Tập", "Số người ký (thực tế đã dùng)", "Vai trò"],
            [
-               ["Baseline HOG+SVM", "0,1388", "78,50%", "23,50%", "19,50%", "0,887", "—"],
-               ["Cấu hình A (margin=1,0)", "0,2471", "84,63%", "20,25%", "10,50%", "0,915", "9,75%"],
-               ["Cấu hình B (margin=1,0)", "0,4763", "87,88%", "7,75%", "16,50%", "0,955", "5,50%"],
-           ], col_widths_cm=[6, 3, 3, 3, 3, 3, 3],
-           caption="Kết quả tổng thể trên tập test CEDAR (800 cặp)", caption_num="Bảng 4.1")
+               ["Huấn luyện", 40, "Huấn luyện mô hình"],
+               ["Validation", 5, "Chọn siêu tham số, dừng sớm, chọn ngưỡng τ"],
+               ["Kiểm thử", 10, "Đánh giá cuối cùng, dùng một lần cho mỗi "
+                                 "cấu hình đã chốt"],
+           ], col_widths_cm=[4, 6, 6], caption="Cách chia dữ liệu trên bộ CEDAR (55 người ký)", caption_num=next_table())
 add_para(doc, (
-    "Cấu hình B vượt trội cả baseline và Cấu hình A ở AUC tổng thể (0,955 so "
-    "với 0,915 và 0,887) và EER trên tập validation (5,50% — rất sát chỉ tiêu "
-    "5% đề ra ban đầu — so với 9,75% của Cấu hình A). Đáng chú ý, Cấu hình B có "
-    "FRR (16,50%) cao hơn cả Cấu hình A (10,50%) dù AUC và FAR tốt hơn hẳn — "
-    "điều này phản ánh việc ngưỡng τ của mỗi mô hình được chọn độc lập theo "
-    "điểm cân bằng EER trên validation riêng của mô hình đó (τ càng lớn có xu "
-    "hướng giảm FAR nhưng tăng FRR); so sánh Accuracy/FAR/FRR tại một τ cụ thể "
-    "vì vậy có ý nghĩa hạn chế hơn so sánh bằng AUC (không phụ thuộc τ) khi "
-    "đánh giá khả năng phân biệt thuần tuý của mô hình."
+    "Số người ký thực tế khớp hoàn toàn với đề xuất trong đề cương "
+    "(40/5/10). Đề cương còn đề xuất lặp lại các thí nghiệm chính với ít "
+    "nhất 3 cách chia người ký khác nhau và báo cáo trung bình kèm độ lệch "
+    "chuẩn (mục 7.1 đề cương); do giới hạn thời gian huấn luyện trên CPU, "
+    "đồ án chỉ chạy được một cách chia duy nhất — đây là một khác biệt so "
+    "với đề cương, được ghi nhận ở mục 4.8 và phần Kết luận."
 ))
 
-add_heading(doc, "4.2. Kết quả phân theo loại giả mạo", level=2)
+add_heading(doc, "4.2. Các thí nghiệm đã thực hiện", level=2)
+add_para(doc, "Đối chiếu với danh sách thí nghiệm T1–T8 đề xuất trong đề cương:")
+add_table(doc, ["Mã", "Mục đích", "Trạng thái thực tế"],
+           [
+               ["T1", "Mốc so sánh (HOG + SVM trên CEDAR)", "Hoàn thành đầy đủ"],
+               ["T2", "Mô hình chính A (Siamese CNN từ đầu trên CEDAR)", "Hoàn thành đầy đủ (cả 3 mức margin)"],
+               ["T3", "Mô hình chính B (Siamese ResNet18 trên CEDAR)", "Hoàn thành 2/3 mức margin — mất margin=2,0 do container tính toán khởi động lại giữa chừng, không phục hồi được"],
+               ["T4", "Ảnh hưởng của tiền xử lý (nhị phân hoá, kích thước ảnh)", "Chưa thực hiện — thiếu thời gian trên CPU"],
+               ["T5", "Ảnh hưởng của huấn luyện (tăng cường dữ liệu, margin)", "Một phần: đã khảo sát 3 mức margin cho cả 2 cấu hình; chưa chạy so sánh riêng có/không tăng cường dữ liệu"],
+               ["T6", "So sánh hàm mất mát (contrastive và triplet)", "Chưa thực hiện — thí nghiệm bổ sung tùy chọn theo đề cương"],
+               ["T7", "Khả năng tổng quát (huấn luyện CEDAR, kiểm thử BHSig260 zero-shot)", "Hoàn thành đầy đủ (Cấu hình A và baseline)"],
+               ["T8", "Mẫu tự thu thập (tùy chọn)", "Chưa thực hiện — thí nghiệm tùy chọn theo đề cương"],
+           ], col_widths_cm=[2, 7, 7], caption="Danh sách thí nghiệm T1–T8: kết quả thực tế", caption_num=next_table())
+add_para(doc, (
+    "Theo đề cương, T1–T5 và T7 là bắt buộc, T6 và T8 chỉ làm khi còn thời "
+    "gian. Đồ án hoàn thành đầy đủ T1, T2, T7 và một phần lớn T3 (2/3 "
+    "margin, không phải lỗi thiết kế mà do sự cố hạ tầng tính toán ngoài "
+    "kiểm soát — xem mục 4.8), hoàn thành một phần T5 (margin, chưa "
+    "augmentation on/off); T4 — một thí nghiệm BẮT BUỘC theo đề cương — "
+    "chưa kịp thực hiện, là hạn chế lớn nhất so với kế hoạch ban đầu và "
+    "được ghi nhận trung thực ở đây thay vì bỏ qua."
+))
+
+add_heading(doc, "4.3. Kết quả tổng thể trên tập test CEDAR", level=2)
+add_table(doc, ["Mô hình", "τ", "Accuracy", "FAR", "FRR", "AUC", "EER (val, toàn bộ loại cặp)"],
+           [
+               ["Baseline HOG+SVM (T1)", "0,1388", "78,50%", "23,50%", "19,50%", "0,887", "—"],
+               ["Cấu hình A (T2, margin=1,0)", "0,2471", "84,63%", "20,25%", "10,50%", "0,915", "9,75%"],
+               ["Cấu hình B (T3, margin=1,0)", "0,4763", "87,88%", "7,75%", "16,50%", "0,955", "5,50%"],
+           ], col_widths_cm=[6, 3, 3, 3, 3, 3, 4],
+           caption="Kết quả tổng thể trên tập test CEDAR (800 cặp)", caption_num=next_table())
+add_para(doc, (
+    "Lưu ý về chỉ tiêu đề xuất (Bảng 9 đề cương, \"EER trên tập kiểm thử "
+    "CEDAR — giả mạo chuyên nghiệp — không quá 5%\"): giá trị EER 5,50% "
+    "(Cấu hình B) ở bảng trên được tính trên TOÀN BỘ tập validation (gồm "
+    "cả cặp genuine-genuine, skilled và random forgery trộn lẫn), KHÔNG "
+    "phải EER tính riêng chỉ trên cặp giả mạo chuyên nghiệp như chỉ tiêu "
+    "đề cương yêu cầu chặt chẽ. Một EER riêng cho skilled-forgery-only "
+    "chưa được tính tách biệt trong lần chạy này. Kết quả gần nhất có thể "
+    "dùng để suy luận là AUC skilled forgery của Cấu hình B đạt 0,984 (FAR "
+    "2,50% — Bảng 4.4), cho thấy khả năng cao là EER riêng cho skilled "
+    "forgery sẽ thấp hơn 5,50% nói trên, nhưng đây KHÔNG được xem là số đo "
+    "chính thức đạt chỉ tiêu; việc tính EER tách riêng theo đúng định "
+    "nghĩa chỉ tiêu là một việc còn thiếu, nêu ở mục 4.8 và phần Kết luận."
+))
+
+add_heading(doc, "4.4. Kết quả phân theo loại giả mạo", level=2)
 add_table(doc, ["Loại giả mạo", "Accuracy", "FAR", "FRR", "AUC"],
            [
                ["Skilled forgery", "92,67%", "1,00%", "10,50%", "0,997"],
                ["Random forgery", "79,83%", "39,50%", "10,50%", "0,834"],
            ], col_widths_cm=[6, 4, 4, 4, 4],
-           caption="Kết quả phân theo loại giả mạo — Cấu hình A", caption_num="Bảng 4.2")
+           caption="Kết quả phân theo loại giả mạo — Cấu hình A (T2)", caption_num=next_table())
 add_table(doc, ["Loại giả mạo", "Accuracy", "FAR", "FRR", "AUC"],
            [
                ["Skilled forgery", "88,17%", "2,50%", "16,50%", "0,984"],
                ["Random forgery", "84,67%", "13,00%", "16,50%", "0,927"],
            ], col_widths_cm=[6, 4, 4, 4, 4],
-           caption="Kết quả phân theo loại giả mạo — Cấu hình B", caption_num="Bảng 4.3")
+           caption="Kết quả phân theo loại giả mạo — Cấu hình B (T3)", caption_num=next_table())
 add_para(doc, (
-    "Kết quả đáng chú ý nhất của toàn bộ thực nghiệm: cả hai cấu hình đều phân "
-    "biệt skilled forgery gần như hoàn hảo (AUC 0,997 và 0,984) nhưng gặp khó "
-    "khăn rõ rệt hơn hẳn với random forgery (AUC 0,834 và 0,927) — NGƯỢC với "
-    "trực giác thông thường rằng giả mạo có kỹ năng cao khó phân biệt hơn giả "
-    "mạo ngẫu nhiên. Cách đọc hợp lý nhất từ phân tích định tính (mục 4.4): các "
-    "chữ ký giả trong CEDAR có nét bút thiếu tự nhiên khá đặc trưng, dễ phân "
-    "biệt ở mức thô với nét bút thật; trong khi đó, hai người viết thật khác "
-    "nhau đôi khi có \"gestalt\" chữ ký tổng thể (độ nghiêng, mật độ nét, tỉ lệ "
-    "khung) tương tự nhau, dễ gây nhầm lẫn hơn. Cấu hình B cải thiện mạnh nhất "
-    "đúng vào điểm yếu này của Cấu hình A: FAR random forgery giảm từ 39,50% "
-    "xuống 13,00% (giảm hơn 2/3), trong khi FAR skilled forgery chỉ tăng nhẹ từ "
-    "1,00% lên 2,50% — một sự đánh đổi rất thuận lợi."
+    "Kết quả đáng chú ý nhất của toàn bộ thực nghiệm: cả hai cấu hình đều "
+    "phân biệt skilled forgery gần như hoàn hảo (AUC 0,997 và 0,984) nhưng "
+    "gặp khó khăn rõ rệt hơn hẳn với random forgery (AUC 0,834 và 0,927) — "
+    "NGƯỢC với trực giác thông thường rằng giả mạo có kỹ năng cao khó phân "
+    "biệt hơn giả mạo ngẫu nhiên. Cách đọc hợp lý nhất từ phân tích định "
+    "tính (mục 4.6): các chữ ký giả trong CEDAR có nét bút thiếu tự nhiên "
+    "khá đặc trưng, dễ phân biệt ở mức thô với nét bút thật; trong khi đó, "
+    "hai người viết thật khác nhau đôi khi có \"gestalt\" chữ ký tổng thể "
+    "(độ nghiêng, mật độ nét, tỉ lệ khung) tương tự nhau, dễ gây nhầm lẫn "
+    "hơn. Cấu hình B cải thiện mạnh nhất đúng vào điểm yếu này của Cấu "
+    "hình A: FAR random forgery giảm từ 39,50% xuống 13,00% (giảm hơn "
+    "2/3), trong khi FAR skilled forgery chỉ tăng nhẹ từ 1,00% lên 2,50% "
+    "— một sự đánh đổi rất thuận lợi."
 ))
 add_table(doc, ["Chỉ số", "Cấu hình A", "Cấu hình B", "Chênh lệch"],
            [
@@ -1079,96 +1121,68 @@ add_table(doc, ["Chỉ số", "Cấu hình A", "Cấu hình B", "Chênh lệch"]
                ["AUC random forgery", "0,834", "0,927", "+0,093"],
                ["FAR skilled forgery", "1,00%", "2,50%", "+1,50 điểm %"],
                ["AUC skilled forgery", "0,997", "0,984", "−0,013"],
-               ["EER validation", "9,75%", "5,50%", "−4,25 điểm %"],
+               ["EER validation (toàn bộ loại cặp)", "9,75%", "5,50%", "−4,25 điểm %"],
            ], col_widths_cm=[6, 4, 4, 4],
-           caption="So sánh Cấu hình A và Cấu hình B theo loại giả mạo", caption_num="Bảng 4.4")
+           caption="So sánh Cấu hình A và Cấu hình B theo loại giả mạo", caption_num=next_table())
 
-add_heading(doc, "4.3. Đường cong ROC", level=2)
+add_heading(doc, "4.5. Đường cong ROC", level=2)
 add_image(doc, f"{RES}/baseline/roc.png", width_cm=13,
-          caption="Đường cong ROC — baseline HOG + SVM", caption_num="Hình 4.1")
+          caption="Đường cong ROC — baseline HOG + SVM (T1)", caption_num=next_fig())
 add_image(doc, f"{RES}/config_a/roc.png", width_cm=13,
-          caption="Đường cong ROC — Cấu hình A (from-scratch CNN)", caption_num="Hình 4.2")
+          caption="Đường cong ROC — Cấu hình A (T2)", caption_num=next_fig())
 add_image(doc, f"{RES}/config_b/roc.png", width_cm=13,
-          caption="Đường cong ROC — Cấu hình B (transfer learning ResNet18)", caption_num="Hình 4.3")
+          caption="Đường cong ROC — Cấu hình B (T3)", caption_num=next_fig())
 
-add_heading(doc, "4.4. Phân tích định tính các ca lỗi", level=2)
-add_heading(doc, "4.4.1. Trên tập test CEDAR (cùng miền dữ liệu huấn luyện)", level=3)
+add_heading(doc, "4.6. Phân tích định tính các ca lỗi", level=2)
 add_para(doc, (
-    "Hình 4.4 minh hoạ một ca chấp nhận nhầm (false accept) điển hình ở random "
-    "forgery của Cấu hình A: cặp chữ ký của hai người hoàn toàn khác nhau về "
-    "nội dung tên (\"Melissa N. Dumble\" và \"Rrand R. Co\") nhưng có khoảng "
-    "cách D rất nhỏ so với τ=0,2471. Cả hai chữ ký có nét gạch ngang/uốn lượn "
-    "kéo dài đặc trưng phía trên chữ và độ nghiêng cursive tương tự nhau — mô "
-    "hình dường như học mạnh các đặc trưng hình dạng tổng thể (độ nghiêng, mật "
-    "độ nét, tỉ lệ khung) hơn là chi tiết nhận dạng nét chữ riêng của từng "
-    "người."
+    "Hình dưới đây minh hoạ một ca chấp nhận nhầm (false accept) điển "
+    "hình ở random forgery của Cấu hình A: cặp chữ ký của hai người hoàn "
+    "toàn khác nhau về nội dung tên (\"Melissa N. Dumble\" và \"Rrand R. "
+    "Co\") nhưng có khoảng cách D rất nhỏ so với τ=0,2471. Cả hai chữ ký "
+    "có nét gạch ngang/uốn lượn kéo dài đặc trưng phía trên chữ và độ "
+    "nghiêng cursive tương tự nhau — mô hình dường như học mạnh các đặc "
+    "trưng hình dạng tổng thể hơn là chi tiết nhận dạng nét chữ riêng của "
+    "từng người."
 ))
 add_image(doc, f"{EA}/cedar_test/random_forgery_false_accept_006.png", width_cm=13,
-          caption="Ca lỗi false-accept, giả mạo ngẫu nhiên, Cấu hình A", caption_num="Hình 4.4")
+          caption="Ca lỗi false-accept, giả mạo ngẫu nhiên, Cấu hình A", caption_num=next_fig())
 add_para(doc, (
-    "Hình 4.5 minh hoạ một ca từ chối nhầm (false reject) ở cặp genuine-"
-    "genuine: hai chữ ký của cùng một người nhưng D cao hơn τ, do biến thiên tự "
-    "nhiên trong cách ký của chính người đó giữa các lần ký khác nhau (một chữ "
-    "ký chụm tròn hơn, một chữ ký dàn trải nghiêng hơn) mà mô hình dừng sớm ở "
-    "epoch 18 chưa học đủ để dung nạp."
+    "Hình dưới minh hoạ một ca từ chối nhầm (false reject) ở cặp "
+    "genuine-genuine: hai chữ ký của cùng một người nhưng D cao hơn τ, do "
+    "biến thiên tự nhiên trong cách ký của chính người đó giữa các lần ký "
+    "khác nhau mà mô hình dừng sớm ở epoch 18 chưa học đủ để dung nạp."
 ))
 add_image(doc, f"{EA}/cedar_test/genuine_genuine_false_reject_000.png", width_cm=13,
-          caption="Ca lỗi false-reject, cùng người ký, Cấu hình A", caption_num="Hình 4.5")
+          caption="Ca lỗi false-reject, cùng người ký, Cấu hình A", caption_num=next_fig())
 add_para(doc, (
-    "Hình 4.6 minh hoạ ca chấp nhận nhầm hiếm gặp ở skilled forgery (D=0,1938, "
-    "sát dưới τ=0,2471): cả hai chữ ký (thật và giả) đều có nét nghiêng chéo và "
-    "các vòng loop lặp lại theo cùng một hướng — hoạ tiết hình học tổng thể "
-    "giống nhau đủ để \"đánh lừa\" mô hình dù đây là chữ ký giả."
+    "Hình dưới minh hoạ ca chấp nhận nhầm hiếm gặp ở skilled forgery "
+    "(D=0,1938, sát dưới τ=0,2471): cả hai chữ ký (thật và giả) đều có "
+    "nét nghiêng chéo và các vòng loop lặp lại theo cùng một hướng — hoạ "
+    "tiết hình học tổng thể giống nhau đủ để \"đánh lừa\" mô hình dù đây "
+    "là chữ ký giả."
 ))
 add_image(doc, f"{EA}/cedar_test/skilled_forgery_false_accept_012.png", width_cm=13,
-          caption="Ca lỗi false-accept, giả mạo kỹ năng cao, Cấu hình A", caption_num="Hình 4.6")
-
-add_heading(doc, "4.4.2. So sánh Cấu hình A và Cấu hình B", level=3)
+          caption="Ca lỗi false-accept, giả mạo kỹ năng cao, Cấu hình A", caption_num=next_fig())
 add_para(doc, (
-    "Hình 4.7 cho thấy Cấu hình B vẫn mắc cùng loại lỗi random-forgery đã quan "
-    "sát ở Cấu hình A (nhầm hai người khác nhau, \"Glorimar Vicente\" và "
-    "\"Melissa N. Dumble\", có nét nghiêng cursive tương tự) — nhưng với D="
-    "0,3247 gần τ=0,4763 hơn (tỉ lệ D/τ ≈ 0,68) so với ca tương ứng ở Cấu hình "
-    "A (tỉ lệ D/τ ≈ 0,05–0,08, tức gần như bằng 0). Nói cách khác, Cấu hình B "
-    "vẫn mắc cùng loại lỗi định tính nhưng \"tự tin sai\" ít hơn nhiều — đặc "
-    "trưng pretrained ImageNet của ResNet18 tổng quát hoá tốt hơn CNN train-"
-    "from-scratch trên tập chỉ 40 người ký."
+    "So sánh Cấu hình A và Cấu hình B trên cùng loại lỗi: hình dưới cho "
+    "thấy Cấu hình B vẫn mắc cùng loại lỗi random-forgery đã quan sát ở "
+    "Cấu hình A (nhầm hai người khác nhau, \"Glorimar Vicente\" và "
+    "\"Melissa N. Dumble\") — nhưng với D=0,3247 gần τ=0,4763 hơn (tỉ lệ "
+    "D/τ ≈ 0,68) so với ca tương ứng ở Cấu hình A (tỉ lệ D/τ ≈ 0,05–0,08). "
+    "Nói cách khác, Cấu hình B vẫn mắc cùng loại lỗi định tính nhưng \"tự "
+    "tin sai\" ít hơn nhiều — đặc trưng pretrained ImageNet của ResNet18 "
+    "tổng quát hoá tốt hơn CNN train-from-scratch trên tập chỉ 40 người "
+    "ký."
 ))
 add_image(doc, f"{EA}/cedar_test_config_b/random_forgery_false_accept_004.png", width_cm=13,
-          caption="Ca lỗi false-accept, giả mạo ngẫu nhiên, Cấu hình B (so sánh)", caption_num="Hình 4.7")
+          caption="Ca lỗi false-accept, giả mạo ngẫu nhiên, Cấu hình B (so sánh)", caption_num=next_fig())
 
-add_heading(doc, "4.4.3. Trên BHSig260 (zero-shot, khác miền dữ liệu)", level=3)
+add_heading(doc, "4.7. Đánh giá tổng quát hoá zero-shot trên BHSig260 (T7)", level=2)
 add_para(doc, (
-    "Hình 4.8 minh hoạ ca từ chối nhầm nghiêm trọng nhất quan sát được: hai "
-    "chữ ký \"sandeep\" (chữ Devanagari) của cùng một người, nhìn ảnh gốc khá "
-    "giống nhau, nhưng D=1,9224 — cao gấp gần 8 lần τ=0,2471 lấy từ CEDAR. "
-    "Quan sát ảnh đã qua tiền xử lý cho thấy ảnh A hiện ra đậm/dày nét hẳn so "
-    "với ảnh B mảnh/nhạt, dù ảnh gốc trông tương đồng về độ đậm — dấu hiệu rõ "
-    "của lệch miền (domain shift) ở khâu tiền xử lý: tham số khử nhiễu/ngưỡng "
-    "Otsu được ngầm phù hợp với đặc điểm ảnh scan CEDAR, không chuyển đổi tốt "
-    "sang định dạng/độ phân giải/độ tương phản khác của ảnh BHSig260. Đây là "
-    "nguyên nhân khả dĩ, nhất quán (quan sát được ở cả hai lần chạy mô hình) "
-    "cho tỉ lệ FRR rất cao (44,3%) khi đánh giá zero-shot trên BHSig260."
-))
-add_image(doc, f"{EA}/bhsig260/genuine_genuine_false_reject_000.png", width_cm=13,
-          caption="Ca lỗi false-reject nghiêm trọng trên BHSig260 (lệch miền tiền xử lý)", caption_num="Hình 4.8")
-add_para(doc, (
-    "Hình 4.9 minh hoạ ca chấp nhận nhầm ở skilled forgery tiếng Hindi "
-    "(\"ravindra kaur\", D=0,0176, rất gần 0) — nội dung chữ và phong cách nét "
-    "gần như giống hệt nhau bằng mắt thường, càng củng cố giả thuyết mô hình "
-    "nhạy với hình dạng/mật độ nét thô hơn là danh tính chi tiết, đặc biệt rõ "
-    "hơn khi chuyển miền dữ liệu sang hệ chữ Devanagari có mật độ nét và kiểu "
-    "nối chữ khác hẳn chữ Latin của CEDAR."
-))
-add_image(doc, f"{EA}/bhsig260/skilled_forgery_false_accept_008.png", width_cm=13,
-          caption="Ca lỗi false-accept giả mạo kỹ năng cao trên BHSig260", caption_num="Hình 4.9")
-
-add_heading(doc, "4.5. Đánh giá tổng quát hoá zero-shot trên BHSig260", level=2)
-add_para(doc, (
-    "Mô hình Cấu hình A huấn luyện trên CEDAR được áp thẳng lên BHSig260 KHÔNG "
-    "tinh chỉnh lại, dùng nguyên ngưỡng τ đã đóng băng từ CEDAR validation — "
-    "phép thử trực tiếp nhất cho tuyên bố writer-independent tổng quát hoá "
-    "ngoài miền dữ liệu:"
+    "Mô hình Cấu hình A huấn luyện trên CEDAR được áp thẳng lên BHSig260 "
+    "KHÔNG tinh chỉnh lại, dùng nguyên ngưỡng τ đã đóng băng từ CEDAR "
+    "validation — phép thử trực tiếp nhất cho tuyên bố writer-independent "
+    "tổng quát hoá ngoài miền dữ liệu, đúng tinh thần thí nghiệm T7:"
 ))
 add_table(doc, ["Mô hình", "Loại giả mạo", "FAR", "FRR", "AUC", "Đạt chỉ tiêu EER≤20%?"],
            [
@@ -1177,168 +1191,288 @@ add_table(doc, ["Mô hình", "Loại giả mạo", "FAR", "FRR", "AUC", "Đạt 
                ["Baseline HOG+SVM", "Skilled forgery", "41,85%", "21,65%", "0,767", "Chưa đạt"],
                ["Baseline HOG+SVM", "Random forgery", "5,69%", "21,65%", "0,923", "—"],
            ], col_widths_cm=[5, 4, 3, 3, 3, 4],
-           caption="Kết quả zero-shot trên BHSig260 (Cấu hình A và baseline)", caption_num="Bảng 4.5")
+           caption="Kết quả zero-shot trên BHSig260 (T7): Cấu hình A và baseline", caption_num=next_table())
 add_para(doc, (
-    "Cả hai mô hình chưa đạt chỉ tiêu EER≤20% đề ra ban đầu cho bài toán zero-"
-    "shot, nhưng AUC vẫn ở mức 0,75–0,92 — cao hơn hẳn ngẫu nhiên (0,5) — cho "
-    "thấy embedding học được vẫn giữ tín hiệu phân biệt nhất định dù khác hoàn "
-    "toàn ngôn ngữ/hệ chữ viết. FRR rất cao (44,31% với Siamese) phù hợp với "
-    "giả thuyết lệch miền tiền xử lý nêu ở mục 4.4.3: vì FRR đo lỗi trên chính "
-    "các cặp cùng-người-thật, một sai lệch hệ thống ở bước tiền xử lý (không "
-    "phải ở khả năng phân biệt của embedding) là lời giải thích nhất quán hơn "
-    "so với việc mô hình \"không học được đặc trưng chữ ký nói chung\"."
+    "Cả hai mô hình chưa đạt chỉ tiêu EER≤20% đề ra ban đầu, nhưng AUC vẫn "
+    "ở mức 0,75–0,92 — cao hơn hẳn ngẫu nhiên — cho thấy embedding học "
+    "được vẫn giữ tín hiệu phân biệt nhất định dù khác hoàn toàn ngôn "
+    "ngữ/hệ chữ viết. Cấu hình B chưa được đo zero-shot trên BHSig260 "
+    "trong phạm vi đồ án này (chỉ Cấu hình A và baseline được chạy T7) — "
+    "nêu ở mục 4.8 như một việc còn thiếu."
 ))
 add_para(doc, (
-    "Do đây là phép đánh giá zero-shot, ngưỡng τ KHÔNG được hiệu chỉnh lại theo "
-    "BHSig260 (điều này sẽ vi phạm chính tính chất zero-shot/writer-independent "
-    "muốn kiểm chứng) — nên số liệu ở Bảng 4.5 phản ánh đúng khả năng tổng quát "
-    "hoá thực tế của mô hình khi gặp một hệ chữ viết hoàn toàn mới, mà không "
-    "được \"ăn gian\" bằng cách điều chỉnh ngưỡng cho vừa dữ liệu đích."
+    "Hình dưới minh hoạ ca từ chối nhầm nghiêm trọng nhất quan sát được: "
+    "hai chữ ký \"sandeep\" (chữ Devanagari) của cùng một người, nhìn ảnh "
+    "gốc khá giống nhau, nhưng D=1,9224 — cao gấp gần 8 lần τ=0,2471 lấy "
+    "từ CEDAR. Ảnh đã qua tiền xử lý cho thấy ảnh A hiện ra đậm/dày nét "
+    "hẳn so với ảnh B mảnh/nhạt — dấu hiệu lệch miền (domain shift) ở khâu "
+    "tiền xử lý: tham số khử nhiễu/ngưỡng Otsu được ngầm phù hợp với đặc "
+    "điểm ảnh scan CEDAR, không chuyển đổi tốt sang định dạng/độ tương "
+    "phản khác của ảnh BHSig260."
+))
+add_image(doc, f"{EA}/bhsig260/genuine_genuine_false_reject_000.png", width_cm=13,
+          caption="Ca lỗi false-reject nghiêm trọng trên BHSig260 (lệch miền tiền xử lý)", caption_num=next_fig())
+add_image(doc, f"{EA}/bhsig260/skilled_forgery_false_accept_008.png", width_cm=13,
+          caption="Ca lỗi false-accept giả mạo kỹ năng cao trên BHSig260", caption_num=next_fig())
+
+add_heading(doc, "4.8. Thảo luận", level=2)
+add_para(doc, "So với các rủi ro đã nêu trước trong đề cương (mục 7.4):")
+add_table(doc, ["Rủi ro đã dự kiến", "Có xảy ra không", "Xử lý thực tế"],
+           [
+               ["Ít người ký nên mô hình dễ học vẹt", "Có, một phần — quan "
+                    "sát được ở lỗi random-forgery (mục 4.4, 4.6)", "Đã dùng "
+                    "tăng cường dữ liệu, dừng sớm, học chuyển giao (Cấu hình "
+                    "B cải thiện rõ rệt); kiểm tra thêm trên BHSig260 (T7)"],
+               ["Không tải được bộ dữ liệu thứ hai đúng hạn", "Không xảy ra",
+                    "BHSig260 tải và dùng được đúng kế hoạch"],
+               ["Thời gian huấn luyện lâu, giới hạn GPU miễn phí", "Có, "
+                    "nghiêm trọng hơn dự kiến — không có GPU khả dụng, phải "
+                    "chạy hoàn toàn trên CPU", "Dùng checkpoint theo từng "
+                    "mức margin (không có trong kế hoạch gốc, bổ sung sau "
+                    "khi thấy cần); vẫn không đủ thời gian cho T4, T6, T8"],
+               ["Kết quả khó tái lập", "Một sự cố liên quan xảy ra: seed chỉ "
+                    "gieo một lần đầu script thay vì gieo lại mỗi mức margin "
+                    "ở lần chạy đầu tiên", "Phát hiện và sửa lỗi (gieo lại "
+                    "seed mỗi margin) cho các lần chạy sau; ghi nhận minh "
+                    "bạch trong Phụ lục"],
+           ], col_widths_cm=[5, 4, 7], caption="Rủi ro đã dự kiến so với thực tế xảy ra", caption_num=next_table())
+add_para(doc, (
+    "Một rủi ro KHÔNG có trong danh sách dự kiến ban đầu cũng đã xảy ra "
+    "thực tế: môi trường tính toán (container) bị khởi động lại giữa "
+    "chừng khi đang huấn luyện mức margin=2,0 của Cấu hình B, làm mất kết "
+    "quả của mức margin này (không phục hồi được). Nhờ cơ chế checkpoint "
+    "theo từng margin, 2/3 mức margin đã hoàn thành vẫn được giữ lại và "
+    "dùng làm kết quả cuối cùng thay vì phải huấn luyện lại từ đầu."
+))
+add_para(doc, (
+    "Tổng kết mức đạt chỉ tiêu định lượng đề xuất (Bảng 9 đề cương): chỉ "
+    "tiêu EER≤5% trên CEDAR skilled-forgery CHƯA được đo đúng định nghĩa "
+    "(chỉ có EER trộn lẫn mọi loại cặp = 5,50% cho Cấu hình B — xem lưu ý "
+    "ở mục 4.3); chỉ tiêu EER≤20% trên BHSig260 skilled-forgery CHƯA đạt "
+    "(19,77% FAR / 44,31% FRR cho Cấu hình A, một phép đo gần nhưng không "
+    "tương đương EER); chỉ tiêu \"EER Siamese thấp hơn baseline\" đã ĐẠT "
+    "một cách nhất quán trên cả AUC tổng thể và AUC theo từng loại giả "
+    "mạo, ở cả hai bộ dữ liệu; chỉ tiêu \"kiểm tra chéo giữa các bộ dữ "
+    "liệu có phân tích nguyên nhân chênh lệch\" đã ĐẠT (mục 4.7, phân tích "
+    "lệch miền tiền xử lý)."
 ))
 
-add_heading(doc, "4.6. Ứng dụng demo", level=2)
+add_page_break(doc)
+
+# ===========================================================================
+# CHƯƠNG 5 — CHƯƠNG TRÌNH DEMO
+# ===========================================================================
+add_heading(doc, "CHƯƠNG 5. CHƯƠNG TRÌNH DEMO", level=1, page_break_before=True)
 add_para(doc, (
-    "Hình 4.10–4.12 là ảnh chụp màn hình thực tế của ứng dụng demo Streamlit, "
-    "sử dụng mô hình Cấu hình B đã huấn luyện, thử nghiệm với ảnh chữ ký thật "
-    "lấy từ người ký #2 trong tập test CEDAR (chưa từng xuất hiện trong tập "
-    "train/validation)."
+    "Chương trình demo là một ứng dụng web nhỏ, chạy trên máy cá nhân, "
+    "cho phép kiểm tra một cặp chữ ký và quan sát ảnh hưởng của ngưỡng "
+    "quyết định, đúng như thiết kế đề ra trong đề cương (mục 8)."
+))
+
+add_heading(doc, "5.1. Chức năng", level=2)
+add_bullet(doc, "Tải lên ảnh chữ ký mẫu (thật) và một ảnh chữ ký cần kiểm "
+                "tra.")
+add_bullet(doc, "Hiển thị ảnh gốc và ảnh sau tiền xử lý để người dùng "
+                "thấy hệ thống đang \"nhìn\" gì.")
+add_bullet(doc, "Trả về kết quả thật hoặc giả, kèm khoảng cách D giữa hai "
+                "embedding.")
+add_bullet(doc, "Thanh trượt ngưỡng τ: khi người dùng kéo, kết quả thay "
+                "đổi theo, minh họa sự đánh đổi giữa FAR và FRR.")
+
+add_heading(doc, "5.2. Luồng sử dụng", level=2)
+add_bullet(doc, "Người dùng mở ứng dụng và tải lên chữ ký mẫu.")
+add_bullet(doc, "Người dùng tải lên chữ ký cần kiểm tra.")
+add_bullet(doc, "Ứng dụng tiền xử lý hai ảnh, đưa qua mô hình đã huấn "
+                "luyện (Cấu hình B) và tính khoảng cách D.")
+add_bullet(doc, "Ứng dụng so D với ngưỡng τ, hiển thị kết quả và điểm "
+                "tương đồng.")
+
+add_heading(doc, "5.3. Kiến trúc và công cụ", level=2)
+add_table(doc, ["Thành phần", "Nhiệm vụ", "Công cụ"],
+           [
+               ["Giao diện", "Nhận ảnh, hiển thị kết quả, thanh trượt "
+                              "ngưỡng", "Streamlit"],
+               ["Mô-đun tiền xử lý", "Dùng chung mã với lúc huấn luyện để "
+                              "tránh lệch (train-serving skew)", "OpenCV, "
+                              "NumPy"],
+               ["Mô-đun mô hình", "Tải checkpoint tốt nhất, tính embedding "
+                              "và khoảng cách", "PyTorch"],
+           ], col_widths_cm=[4, 7, 5], caption="Kiến trúc và công cụ của chương trình demo", caption_num=next_table())
+add_para(doc, (
+    "Ảnh người dùng tải lên chỉ được xử lý trong bộ nhớ và không lưu lại "
+    "xuống đĩa ở bất kỳ bước nào, vì chữ ký là dữ liệu cá nhân — đúng yêu "
+    "cầu thiết kế nêu trong đề cương (mục 8.3)."
+))
+
+add_heading(doc, "5.4. Kết quả trình diễn", level=2)
+add_para(doc, (
+    "Hình dưới là ảnh chụp màn hình thực tế của ứng dụng, sử dụng mô hình "
+    "Cấu hình B đã huấn luyện, thử nghiệm với ảnh chữ ký thật lấy từ người "
+    "ký #2 trong tập test CEDAR (chưa từng xuất hiện trong tập train/"
+    "validation)."
 ))
 add_image(doc, f"{SCR}/demo_empty.png", width_cm=13,
-          caption="Giao diện demo Streamlit — trạng thái ban đầu", caption_num="Hình 4.10")
+          caption="Giao diện demo Streamlit — trạng thái ban đầu", caption_num=next_fig())
 add_image(doc, f"{SCR}/demo_genuine.png", width_cm=13,
-          caption="Giao diện demo Streamlit — kết quả với cặp chữ ký thật", caption_num="Hình 4.11")
+          caption="Giao diện demo Streamlit — kết quả với cặp chữ ký thật", caption_num=next_fig())
 add_image(doc, f"{SCR}/demo_forged.png", width_cm=13,
-          caption="Giao diện demo Streamlit — kết quả với cặp chữ ký giả", caption_num="Hình 4.12")
+          caption="Giao diện demo Streamlit — kết quả với cặp chữ ký giả", caption_num=next_fig())
 add_para(doc, (
-    "Cả hai trường hợp thử nghiệm thật (cặp chữ ký thật và cặp chữ ký giả) đều "
-    "được ứng dụng phân loại đúng, khớp với nhãn thật của dữ liệu test, minh "
-    "chứng rằng mô hình đã huấn luyện hoạt động đúng khi triển khai qua giao "
-    "diện người dùng thực tế, không chỉ trên script đánh giá offline."
+    "Cả hai trường hợp thử nghiệm thật (cặp chữ ký thật và cặp chữ ký "
+    "giả) đều được ứng dụng phân loại đúng, khớp với nhãn thật của dữ "
+    "liệu test, minh chứng rằng mô hình đã huấn luyện hoạt động đúng khi "
+    "triển khai qua giao diện người dùng thực tế, không chỉ trên script "
+    "đánh giá offline. Việc chuẩn bị các cặp mẫu cố định lấy từ tập kiểm "
+    "thử để trình diễn khi bảo vệ (mục 8.4 đề cương) có thể thực hiện "
+    "trực tiếp bằng các ảnh test đã có sẵn trong `data/splits/test_pairs."
+    "csv`."
 ))
 
 add_page_break(doc)
 
 # ===========================================================================
-# CHƯƠNG 5 — KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
+# KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN (không đánh số chương, giống Mở đầu)
 # ===========================================================================
-add_heading(doc, "CHƯƠNG 5. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN", level=1, page_break_before=True)
+add_heading(doc, "KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN", level=1, center=True)
 
-add_heading(doc, "5.1. Kết quả đạt được", level=2)
-add_bullet(doc, "Xây dựng hoàn chỉnh một hệ thống xác minh chữ ký offline writer-"
-                "independent, từ tiền xử lý ảnh, sinh cặp dữ liệu writer-disjoint, "
-                "huấn luyện, đến đánh giá và demo tương tác — toàn bộ chạy được "
-                "trên dữ liệu thật (CEDAR, BHSig260), không phải dữ liệu mô "
-                "phỏng.")
-add_bullet(doc, "Cấu hình B (học chuyển giao ResNet18) đạt AUC 0,955 và EER "
-                "validation 5,50% trên tập test CEDAR, vượt Cấu hình A (huấn "
-                "luyện từ đầu, AUC 0,915) và baseline HOG+SVM (AUC 0,887), rất "
-                "sát chỉ tiêu ban đầu EER≤5%.")
-add_bullet(doc, "Phát hiện định tính đáng chú ý: cả hai mô hình học sâu phân "
-                "biệt giả mạo kỹ năng cao (skilled forgery) tốt hơn hẳn giả mạo "
-                "ngẫu nhiên (random forgery) — ngược trực giác thông thường — do "
-                "xu hướng học đặc trưng hình dạng/độ nghiêng tổng thể trước chi "
-                "tiết danh tính từng người ký.")
-add_bullet(doc, "Đánh giá zero-shot trên BHSig260 cho thấy mô hình vẫn giữ tín "
-                "hiệu phân biệt có ý nghĩa (AUC 0,75–0,92) qua một hệ chữ viết "
-                "hoàn toàn khác, dù chưa đạt chỉ tiêu EER≤20%; nguyên nhân khả dĩ "
-                "(lệch miền ở khâu tiền xử lý) đã được xác định qua phân tích "
+add_heading(doc, "1. Kết quả đạt được", level=2)
+add_bullet(doc, "Xây dựng hoàn chỉnh một hệ thống xác minh chữ ký offline "
+                "writer-independent, từ tiền xử lý ảnh, sinh cặp dữ liệu "
+                "writer-disjoint, huấn luyện, đến đánh giá và demo tương "
+                "tác — toàn bộ chạy trên dữ liệu thật (CEDAR, BHSig260).")
+add_bullet(doc, "Hoàn thành đầy đủ T1 (baseline), T2 (Cấu hình A), phần "
+                "lớn T3 (Cấu hình B, 2/3 margin) và T7 (kiểm tra chéo "
+                "BHSig260) trong 8 thí nghiệm đề ra ở đề cương.")
+add_bullet(doc, "Cấu hình B (học chuyển giao ResNet18) đạt AUC 0,955 trên "
+                "tập test CEDAR, vượt Cấu hình A (AUC 0,915) và baseline "
+                "HOG+SVM (AUC 0,887), cải thiện rõ rệt nhất ở khả năng "
+                "chống giả mạo ngẫu nhiên (FAR giảm từ 39,5% xuống 13,0%).")
+add_bullet(doc, "Phát hiện định tính đáng chú ý: cả hai mô hình học sâu "
+                "phân biệt giả mạo kỹ năng cao tốt hơn hẳn giả mạo ngẫu "
+                "nhiên — ngược trực giác thông thường — do xu hướng học "
+                "đặc trưng hình dạng/độ nghiêng tổng thể trước chi tiết "
+                "danh tính từng người ký.")
+add_bullet(doc, "Đánh giá zero-shot trên BHSig260 (T7) cho thấy mô hình "
+                "vẫn giữ tín hiệu phân biệt có ý nghĩa (AUC 0,75–0,92) qua "
+                "một hệ chữ viết hoàn toàn khác; nguyên nhân khả dĩ (lệch "
+                "miền ở khâu tiền xử lý) đã được xác định qua phân tích "
                 "định tính trực tiếp trên ảnh lỗi thật.")
-add_bullet(doc, "Xây dựng được cơ chế huấn luyện có khả năng phục hồi (per-"
-                "margin checkpointing), đã thực sự cứu được 2/3 kết quả của Cấu "
-                "hình B khi môi trường tính toán bị gián đoạn giữa chừng.")
 
-add_heading(doc, "5.2. Hạn chế", level=2)
-add_bullet(doc, "Cấu hình B chưa hoàn thành huấn luyện đầy đủ ở mức margin=2,0 "
-                "do sự cố khởi động lại môi trường tính toán, nên phép so sánh "
-                "3 mức margin của Cấu hình B chưa trọn vẹn như Cấu hình A (đã "
-                "hoàn thành cả 3 mức).")
-add_bullet(doc, "Toàn bộ huấn luyện thực hiện trên CPU do không có GPU khả dụng "
-                "trong môi trường thực hiện đồ án, giới hạn quy mô thực nghiệm có "
-                "thể thực hiện được trong thời gian cho phép (ví dụ: không thể "
-                "chạy nhiều lần lặp lại với các seed khác nhau để ước lượng "
-                "phương sai của kết quả).")
-add_bullet(doc, "Khả năng tổng quát hoá sang hệ chữ viết khác (BHSig260) chưa "
-                "đạt chỉ tiêu đề ra, cho thấy giới hạn thực sự của writer-"
-                "independent khi chuyển miền dữ liệu quá xa so với miền huấn "
-                "luyện.")
-add_bullet(doc, "Đồ án chưa thử nghiệm các hàm mất mát thay thế (ví dụ triplet "
-                "loss) hay các kỹ thuật tăng cường dữ liệu mạnh hơn, vốn có thể "
-                "giải quyết triệt để hơn xu hướng học hình dạng thô đã quan sát "
-                "được.")
+add_heading(doc, "2. Hạn chế", level=2)
+add_bullet(doc, "T4 (ảnh hưởng tiền xử lý) — thí nghiệm BẮT BUỘC theo đề "
+                "cương — chưa thực hiện do giới hạn thời gian trên CPU.")
+add_bullet(doc, "T5 chỉ hoàn thành một phần: đã khảo sát margin, chưa "
+                "khảo sát riêng tác động của tăng cường dữ liệu.")
+add_bullet(doc, "T6 (triplet loss) và T8 (mẫu tự thu thập) — hai thí "
+                "nghiệm tùy chọn theo đề cương — chưa thực hiện.")
+add_bullet(doc, "Cấu hình B chưa hoàn thành huấn luyện đầy đủ ở mức "
+                "margin=2,0 do sự cố khởi động lại môi trường tính toán "
+                "giữa chừng.")
+add_bullet(doc, "Chưa lặp lại thí nghiệm với ít nhất 3 cách chia người ký "
+                "khác nhau như đề cương đề xuất (mục 7.1), nên chưa có ước "
+                "lượng độ lệch chuẩn của kết quả.")
+add_bullet(doc, "EER dùng để đối chiếu với chỉ tiêu định lượng (Bảng 9 đề "
+                "cương) hiện được tính trên toàn bộ loại cặp trộn lẫn, "
+                "chưa tính riêng cho skilled-forgery-only như định nghĩa "
+                "chỉ tiêu yêu cầu chặt chẽ; Cấu hình B chưa được đo "
+                "zero-shot trên BHSig260 (chỉ Cấu hình A và baseline).")
+add_bullet(doc, "Toàn bộ huấn luyện thực hiện trên CPU, giới hạn quy mô "
+                "thực nghiệm có thể thực hiện được trong thời gian cho "
+                "phép.")
 
-add_heading(doc, "5.3. Hướng phát triển", level=2)
-add_bullet(doc, "Hoàn thành huấn luyện Cấu hình B ở mức margin=2,0 (và lý tưởng "
-                "là chạy lại cả 3 mức với seed sạch mỗi mức) trên GPU, nhiều khả "
-                "năng đạt hoặc vượt chỉ tiêu EER≤5%.")
-add_bullet(doc, "Chuẩn hoá bước tiền xử lý bất biến hơn với độ phân giải/độ "
-                "tương phản nguồn (ví dụ: chuẩn hoá độ tương phản thích ứng thay "
-                "vì kernel khử nhiễu cố định), nhằm giảm phần lệch miền quan sát "
+add_heading(doc, "3. Hướng phát triển", level=2)
+add_bullet(doc, "Hoàn thành T4 (ảnh hưởng tiền xử lý: nhị phân hoá đầu "
+                "ra, kích thước ảnh) và phần còn lại của T5 (tăng cường dữ "
+                "liệu bật/tắt) trên GPU.")
+add_bullet(doc, "Hoàn thành huấn luyện Cấu hình B ở mức margin=2,0 (lý "
+                "tưởng là chạy lại cả 3 mức với seed sạch mỗi mức).")
+add_bullet(doc, "Tính riêng EER cho tập con skilled-forgery-only để đối "
+                "chiếu đúng định nghĩa với chỉ tiêu đề xuất ban đầu (Bảng "
+                "9 đề cương), và đo zero-shot BHSig260 cho Cấu hình B.")
+add_bullet(doc, "Thử nghiệm T6 (triplet loss, công thức đã trình bày ở "
+                "mục 2.4) và T8 (thu thập một tập mẫu chữ ký người Việt "
+                "nhỏ, có sự đồng ý của người ký).")
+add_bullet(doc, "Lặp lại các thí nghiệm chính với ít nhất 3 cách chia "
+                "người ký khác nhau để báo cáo trung bình kèm độ lệch "
+                "chuẩn, như đề cương đã đề xuất.")
+add_bullet(doc, "Chuẩn hoá bước tiền xử lý bất biến hơn với độ phân giải/"
+                "độ tương phản nguồn, nhằm giảm phần lệch miền quan sát "
                 "được khi đánh giá trên BHSig260.")
-add_bullet(doc, "Đo lại BHSig260 zero-shot với Cấu hình B (chưa thực hiện trong "
-                "phạm vi đồ án này) để kiểm tra cải thiện quan sát được trên "
-                "CEDAR có chuyển sang miền dữ liệu khác hay không.")
-add_bullet(doc, "Thử nghiệm triplet loss hoặc các kỹ thuật tăng cường dữ liệu "
-                "mạnh hơn (biến dạng đàn hồi, thay đổi độ nghiêng có kiểm soát) "
-                "để giảm xu hướng học hình dạng thô trước chi tiết danh tính.")
-add_bullet(doc, "Mở rộng ứng dụng demo thành dịch vụ API để tích hợp vào quy "
-                "trình xử lý hồ sơ/tài liệu thực tế.")
+add_bullet(doc, "Các hướng mở rộng dài hạn khác theo đề cương: mở rộng "
+                "sang chữ ký online, thử các kiến trúc mới hơn (ví dụ mô "
+                "hình dựa trên attention), bổ sung tập chữ ký người Việt, "
+                "và tăng khả năng chống lại ảnh in hoặc photocopy.")
 
 add_page_break(doc)
 
 # ===========================================================================
-# TÀI LIỆU THAM KHẢO (IEEE)
+# TÀI LIỆU THAM KHẢO (21 mục, đúng theo đề cương đã duyệt, định dạng IEEE)
 # ===========================================================================
 add_heading(doc, "TÀI LIỆU THAM KHẢO", level=1, center=True)
 references = [
-    "[1] J. Bromley, I. Guyon, Y. LeCun, E. Säckinger, and R. Shah, \"Signature "
-    "verification using a 'Siamese' time delay neural network,\" in Advances in "
-    "Neural Information Processing Systems (NeurIPS), 1993, pp. 737-744.",
-    "[2] R. Hadsell, S. Chopra, and Y. LeCun, \"Dimensionality reduction by "
-    "learning an invariant mapping,\" in Proc. IEEE Conf. Computer Vision and "
-    "Pattern Recognition (CVPR), 2006, pp. 1735-1742.",
-    "[3] M. K. Kalera, S. Srihari, and A. Xu, \"Offline signature verification "
-    "and identification using distance statistics,\" Int. J. Pattern "
-    "Recognition and Artificial Intelligence, vol. 18, no. 7, pp. 1339-1360, "
-    "2004.",
-    "[4] S. Pal, A. Alaei, U. Pal, and M. Blumenstein, \"Performance of an "
-    "off-line signature verification method based on texture features on a "
-    "large Indic-script signature dataset,\" in Proc. 12th IAPR Workshop on "
-    "Document Analysis Systems (DAS), 2016, pp. 72-77.",
-    "[5] N. Dalal and B. Triggs, \"Histograms of oriented gradients for human "
-    "detection,\" in Proc. IEEE Conf. Computer Vision and Pattern Recognition "
-    "(CVPR), 2005, pp. 886-893.",
-    "[6] T. Ojala, M. Pietikäinen, and T. Mäenpää, \"Multiresolution gray-scale "
-    "and rotation invariant texture classification with local binary "
-    "patterns,\" IEEE Trans. Pattern Analysis and Machine Intelligence, vol. "
-    "24, no. 7, pp. 971-987, 2002.",
-    "[7] C. Cortes and V. Vapnik, \"Support-vector networks,\" Machine "
-    "Learning, vol. 20, no. 3, pp. 273-297, 1995.",
-    "[8] K. He, X. Zhang, S. Ren, and J. Sun, \"Deep residual learning for "
-    "image recognition,\" in Proc. IEEE Conf. Computer Vision and Pattern "
-    "Recognition (CVPR), 2016, pp. 770-778.",
-    "[9] J. Deng, W. Dong, R. Socher, L.-J. Li, K. Li, and L. Fei-Fei, "
-    "\"ImageNet: A large-scale hierarchical image database,\" in Proc. IEEE "
-    "Conf. Computer Vision and Pattern Recognition (CVPR), 2009, pp. 248-255.",
-    "[10] D. P. Kingma and J. Ba, \"Adam: A method for stochastic "
-    "optimization,\" in Proc. Int. Conf. Learning Representations (ICLR), "
-    "2015.",
-    "[11] S. Ioffe and C. Szegedy, \"Batch normalization: Accelerating deep "
-    "network training by reducing internal covariate shift,\" in Proc. Int. "
-    "Conf. Machine Learning (ICML), 2015, pp. 448-456.",
-    "[12] N. Srivastava, G. Hinton, A. Krizhevsky, I. Sutskever, and R. "
-    "Salakhutdinov, \"Dropout: A simple way to prevent neural networks from "
-    "overfitting,\" J. Machine Learning Research, vol. 15, no. 1, pp. "
-    "1929-1958, 2014.",
-    "[13] N. Otsu, \"A threshold selection method from gray-level "
-    "histograms,\" IEEE Trans. Systems, Man, and Cybernetics, vol. 9, no. 1, "
-    "pp. 62-66, 1979.",
-    "[14] L. G. Hafemann, R. Sabourin, and L. S. Oliveira, \"Offline "
-    "handwritten signature verification — literature review,\" in Proc. Int. "
-    "Conf. Image Processing Theory, Tools and Applications (IPTA), 2017, pp. "
-    "1-8.",
-    "[15] S. J. Pan and Q. Yang, \"A survey on transfer learning,\" IEEE "
-    "Trans. Knowledge and Data Engineering, vol. 22, no. 10, pp. 1345-1359, "
-    "2010.",
+    "[1] J. Bromley, I. Guyon, Y. LeCun, E. Säckinger, and R. Shah, "
+    "\"Signature verification using a 'Siamese' time delay neural "
+    "network,\" in Advances in Neural Information Processing Systems, "
+    "1994, pp. 737-744.",
+    "[2] S. Chopra, R. Hadsell, and Y. LeCun, \"Learning a similarity "
+    "metric discriminatively, with application to face verification,\" "
+    "in Proc. CVPR, 2005, pp. 539-546.",
+    "[3] N. Dalal and B. Triggs, \"Histograms of oriented gradients for "
+    "human detection,\" in Proc. CVPR, 2005.",
+    "[4] S. Dey, A. Dutta, J. I. Toledo, S. K. Ghosh, J. Lladós, and U. "
+    "Pal, \"SigNet: Convolutional Siamese network for writer independent "
+    "offline signature verification,\" arXiv:1707.02131, 2017.",
+    "[5] M. A. Ferrer, M. Diaz-Cabrera, and A. Morales, \"Static "
+    "signature synthesis: a neuromotor inspired approach for "
+    "biometrics,\" IEEE Trans. Pattern Anal. Mach. Intell., vol. 37, no. "
+    "3, 2015.",
+    "[6] R. Hadsell, S. Chopra, and Y. LeCun, \"Dimensionality reduction "
+    "by learning an invariant mapping,\" in Proc. CVPR, 2006.",
+    "[7] L. G. Hafemann, R. Sabourin, and L. S. Oliveira, \"Offline "
+    "handwritten signature verification: literature review,\" in Proc. "
+    "IPTA, 2017. [arXiv:1507.07909]",
+    "[8] L. G. Hafemann, R. Sabourin, and L. S. Oliveira, \"Learning "
+    "features for offline handwritten signature verification using deep "
+    "convolutional neural networks,\" Pattern Recognition, vol. 70, pp. "
+    "163-176, 2017.",
+    "[9] K. He, X. Zhang, S. Ren, and J. Sun, \"Deep residual learning "
+    "for image recognition,\" in Proc. CVPR, 2016.",
+    "[10] D. Impedovo and G. Pirlo, \"Automatic signature verification: "
+    "the state of the art,\" IEEE Trans. Syst., Man, Cybern., Part C, "
+    "vol. 38, no. 5, pp. 609-635, 2008.",
+    "[11] M. K. Kalera, S. Srihari, and A. Xu, \"Offline signature "
+    "verification and identification using distance statistics,\" Int. "
+    "J. Pattern Recognit. Artif. Intell., vol. 18, no. 7, 2004. (Bộ dữ "
+    "liệu CEDAR)",
+    "[12] D. P. Kingma and J. Ba, \"Adam: A method for stochastic "
+    "optimization,\" in Proc. ICLR, 2015.",
+    "[13] G. Koch, R. Zemel, and R. Salakhutdinov, \"Siamese neural "
+    "networks for one-shot image recognition,\" in ICML Deep Learning "
+    "Workshop, 2015.",
+    "[14] T. Ojala, M. Pietikäinen, and T. Mäenpää, \"Multiresolution "
+    "gray-scale and rotation invariant texture classification with "
+    "local binary patterns,\" IEEE Trans. Pattern Anal. Mach. Intell., "
+    "vol. 24, no. 7, 2002.",
+    "[15] J. Ortega-Garcia et al., \"MCYT baseline corpus: a bimodal "
+    "biometric database,\" IEE Proc. -- Vis., Image, Signal Process., "
+    "vol. 150, no. 6, 2003. (Bộ dữ liệu MCYT)",
+    "[16] N. Otsu, \"A threshold selection method from gray-level "
+    "histograms,\" IEEE Trans. Syst., Man, Cybern., vol. 9, no. 1, 1979.",
+    "[17] S. Pal, A. Alaei, U. Pal, and M. Blumenstein, \"Performance of "
+    "an off-line signature verification method based on texture "
+    "features on a large Indic-script signature dataset,\" in Proc. "
+    "DAS, 2016. (Bộ dữ liệu BHSig260)",
+    "[18] R. Plamondon and S. N. Srihari, \"Online and off-line "
+    "handwriting recognition: a comprehensive survey,\" IEEE Trans. "
+    "Pattern Anal. Mach. Intell., vol. 22, no. 1, pp. 63-84, 2000.",
+    "[19] F. Schroff, D. Kalenichenko, and J. Philbin, \"FaceNet: A "
+    "unified embedding for face recognition and clustering,\" in Proc. "
+    "CVPR, 2015, pp. 815-823.",
+    "[20] K. Simonyan and A. Zisserman, \"Very deep convolutional "
+    "networks for large-scale image recognition,\" in Proc. ICLR, 2015.",
+    "[21] J. F. Vargas, M. A. Ferrer, C. M. Travieso, and J. B. Alonso, "
+    "\"Off-line handwritten signature GPDS-960 corpus,\" in Proc. ICDAR, "
+    "2007, pp. 764-768.",
 ]
 for ref in references:
     add_para(doc, ref, justify=True, size=13, space_after=8)
@@ -1351,65 +1485,81 @@ add_page_break(doc)
 add_heading(doc, "PHỤ LỤC", level=1, center=True)
 
 add_heading(doc, "Phụ lục A. Cấu trúc mã nguồn", level=2)
-add_para(doc, (
-    "Mã nguồn được tổ chức thành các module theo chức năng, mỗi module có bộ "
-    "unit test riêng (tổng cộng 55 test đơn vị chạy trên dữ liệu tổng hợp trước "
-    "khi tiến hành huấn luyện trên dữ liệu thật):"
-))
-add_bullet(doc, "src/sigverify/preprocessing/ — pipeline.py (5 bước tiền xử "
-                "lý), datasets.py (đọc CEDAR/BHSig260), augment.py (tăng cường "
-                "dữ liệu).")
+add_bullet(doc, "src/sigverify/preprocessing/ — pipeline.py (tiền xử lý), "
+                "datasets.py (đọc CEDAR/BHSig260), augment.py (tăng cường "
+                "dữ liệu: rotation ≤5°, translate/scale jitter, Gaussian "
+                "noise, không lật ngang — khớp Bảng thiết lập huấn luyện "
+                "trong đề cương).")
 add_bullet(doc, "src/sigverify/pairs/ — generator.py (sinh cặp genuine/"
                 "skilled/random), splits.py (chia writer-disjoint).")
 add_bullet(doc, "src/sigverify/models/ — siamese_scratch.py (Cấu hình A), "
-                "siamese_transfer.py (Cấu hình B), losses.py (contrastive loss).")
+                "siamese_transfer.py (Cấu hình B), losses.py (contrastive "
+                "loss).")
 add_bullet(doc, "src/sigverify/training/train_siamese.py — vòng lặp huấn "
                 "luyện dùng chung cho cả hai cấu hình.")
 add_bullet(doc, "src/sigverify/evaluation/metrics.py — FAR/FRR/EER, chọn "
                 "ngưỡng trên validation, đánh giá đóng băng trên test.")
-add_bullet(doc, "scripts/train_config_a.py, train_config_b.py — script huấn "
-                "luyện đầy đủ, có checkpoint theo từng margin.")
-add_bullet(doc, "scripts/error_analysis.py — trích xuất và phân tích các ca "
-                "lỗi định tính.")
-add_bullet(doc, "app/demo_app.py, app/inference.py — ứng dụng demo Streamlit.")
+add_bullet(doc, "scripts/train_config_a.py, train_config_b.py — script "
+                "huấn luyện đầy đủ, có checkpoint theo từng margin.")
+add_bullet(doc, "scripts/run_ablations.py, configs/ablation_variants/ — "
+                "mã nguồn cho T4/T5 đã viết sẵn nhưng CHƯA chạy với dữ "
+                "liệu thật (xem mục 4.2, Chương 4).")
+add_bullet(doc, "scripts/error_analysis.py — trích xuất và phân tích các "
+                "ca lỗi định tính.")
+add_bullet(doc, "app/demo_app.py, app/inference.py — ứng dụng demo "
+                "Streamlit (Chương 5).")
 
 add_heading(doc, "Phụ lục B. Cấu hình siêu tham số đầy đủ (default.yaml)", level=2)
-add_para(doc, "seed: 42", size=12)
-add_para(doc, "image.size_scratch: [220, 150]   (Cấu hình A)", size=12)
-add_para(doc, "image.size_transfer: [224, 224]  (Cấu hình B)", size=12)
-add_para(doc, "preprocessing.denoise: gaussian", size=12)
-add_para(doc, "preprocessing.binarize_output: false", size=12)
-add_para(doc, "pairs.ratio_pos_hardneg_easyneg: [2, 1, 1]", size=12)
-add_para(doc, "pairs.pairs_per_writer: 40", size=12)
-add_para(doc, "split.train_writers / val_writers / test_writers: 40 / 5 / 10", size=12)
-add_para(doc, "train.batch_size: 64", size=12)
-add_para(doc, "train.max_epochs: 100", size=12)
-add_para(doc, "train.early_stop_patience: 10  (warmup 5 epoch)", size=12)
-add_para(doc, "train.margins: [0.5, 1.0, 2.0]", size=12)
-add_para(doc, "model.embedding_dim: 128", size=12)
-add_para(doc, "model.transfer_backbone: resnet18", size=12)
+for line in [
+    "seed: 42",
+    "image.size_scratch: [220, 150]   (Cấu hình A)",
+    "image.size_transfer: [224, 224]  (Cấu hình B)",
+    "preprocessing.denoise: gaussian",
+    "preprocessing.binarize_output: false",
+    "pairs.ratio_pos_hardneg_easyneg: [2, 1, 1]",
+    "pairs.pairs_per_writer: 40",
+    "split.train_writers / val_writers / test_writers: 40 / 5 / 10",
+    "train.batch_size: 64",
+    "train.max_epochs: 100",
+    "train.early_stop_patience: 10  (warmup 5 epoch)",
+    "train.margins: [0.5, 1.0, 2.0]",
+    "model.embedding_dim: 128",
+    "model.transfer_backbone: resnet18",
+]:
+    add_para(doc, line, size=12)
 
 add_heading(doc, "Phụ lục C. Ghi chú minh bạch về phương pháp luận", level=2)
 add_para(doc, (
-    "Trong lần chạy huấn luyện đầy đủ đầu tiên, seed ngẫu nhiên chỉ được gieo "
-    "một lần ở đầu script thay vì gieo lại cho từng mức margin, khiến các mức "
-    "margin 1,0 và 2,0 kế thừa một phần trạng thái ngẫu nhiên còn lại từ mức "
-    "margin trước đó. Lỗi này đã được phát hiện và sửa (gieo lại seed trước mỗi "
-    "mức margin) trong scripts/train_config_a.py và scripts/train_config_b.py "
-    "cho các lần chạy sau; số liệu trình bày trong Chương 4 vẫn là kết quả "
-    "thật hợp lệ (không phải số liệu bịa đặt), chỉ nên đọc phần so sánh GIỮA "
-    "CÁC MỨC MARGIN của cùng một cấu hình với mức thận trọng vừa phải — phép "
-    "so sánh GIỮA HAI CẤU HÌNH A và B (ở mức margin=1,0, cả hai đều đã dùng "
-    "quy trình seed đã sửa) không bị ảnh hưởng bởi hạn chế này."
+    "Trong lần chạy huấn luyện đầy đủ đầu tiên, seed ngẫu nhiên chỉ được "
+    "gieo một lần ở đầu script thay vì gieo lại cho từng mức margin, "
+    "khiến các mức margin 1,0 và 2,0 kế thừa một phần trạng thái ngẫu "
+    "nhiên còn lại từ mức margin trước đó. Lỗi này đã được phát hiện và "
+    "sửa (gieo lại seed trước mỗi mức margin) trong scripts/"
+    "train_config_a.py và scripts/train_config_b.py cho các lần chạy sau; "
+    "số liệu trình bày trong Chương 4 vẫn là kết quả thật hợp lệ, chỉ nên "
+    "đọc phần so sánh GIỮA CÁC MỨC MARGIN của cùng một cấu hình với mức "
+    "thận trọng vừa phải — phép so sánh GIỮA HAI CẤU HÌNH A và B (ở mức "
+    "margin=1,0, cả hai đều đã dùng quy trình seed đã sửa) không bị ảnh "
+    "hưởng bởi hạn chế này."
 ))
 add_para(doc, (
-    "Mức margin=2,0 của Cấu hình B không hoàn thành huấn luyện do môi trường "
-    "tính toán bị khởi động lại giữa chừng và không thể khôi phục lại từ điểm "
-    "dừng — đây là hạn chế thực tế của hạ tầng thực nghiệm, không phải lựa chọn "
-    "thiết kế, và được ghi nhận minh bạch thay vì thay thế bằng số liệu ước "
-    "lượng hay giả định."
+    "Mức margin=2,0 của Cấu hình B không hoàn thành huấn luyện do môi "
+    "trường tính toán bị khởi động lại giữa chừng và không thể khôi phục "
+    "lại từ điểm dừng — đây là hạn chế thực tế của hạ tầng thực nghiệm, "
+    "không phải lựa chọn thiết kế, và được ghi nhận minh bạch thay vì "
+    "thay thế bằng số liệu ước lượng hay giả định."
+))
+add_para(doc, (
+    "Tiêu đề trên trang bìa của đề cương chi tiết gốc ghi \"NHẬN DẠNG CHỮ "
+    "SỐ VIẾT TAY\" — không khớp với toàn bộ 12 mục nội dung của đề cương "
+    "(đều nói về xác minh chữ ký viết tay, chữ ký, giả mạo, mạng "
+    "Siamese...). Đây được xem là lỗi đánh máy còn sót lại từ mẫu đề "
+    "cương cũ (nhầm \"chữ số\" thành \"chữ ký\"); tiêu đề trên trang bìa "
+    "báo cáo này đã được sửa lại cho khớp với nội dung thực tế, cần sinh "
+    "viên và giảng viên hướng dẫn xác nhận lại trước khi nộp chính thức."
 ))
 
 print("Base document configured.")
 doc.save(f"{BASE}/thesis/docgen/thesis.docx")
+print(f"Total: {Counter.fig} Hình, {Counter.table} Bảng, {Counter.eq} công thức đánh số.")
 print("Thesis document generated.")
