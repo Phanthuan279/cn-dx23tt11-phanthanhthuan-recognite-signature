@@ -1723,7 +1723,7 @@ for line in [
 ]:
     add_para(doc, line, size=12)
 
-add_heading(doc, "Phụ lục C. Ghi chú minh bạch và các giả định cần xác nhận", level=2)
+add_heading(doc, "Phụ lục C. Ghi chú minh bạch về phương pháp luận", level=2)
 add_para(doc, (
     "Trong lần chạy huấn luyện đầy đủ đầu tiên, seed ngẫu nhiên chỉ được "
     "gieo một lần ở đầu script thay vì gieo lại cho từng mức margin, "
@@ -1763,9 +1763,9 @@ add_para(doc, (
 ))
 add_para(doc, (
     f"\"Khoá: {STUDENT_COHORT}\" và \"Ngành: {MAJOR}\" trên bìa và trên "
-    "hai bản nhận xét mẫu là suy luận hợp lý nhất từ mã lớp "
-    f"\"{STUDENT_CLASS}\" và tên khoa \"{FACULTY}\" — chưa có nguồn xác "
-    "nhận trực tiếp, cần sinh viên xác nhận lại trước khi nộp chính thức."
+    "hai bản nhận xét mẫu được suy luận từ mã lớp "
+    f"\"{STUDENT_CLASS}\" và tên khoa \"{FACULTY}\", và đã được sinh viên "
+    "xác nhận là chính xác."
 ))
 add_para(doc, (
     "Biểu mẫu trình bày chính thức của trường quy định danh mục tài liệu "
@@ -1778,8 +1778,8 @@ add_para(doc, (
     "hợp hơn với lĩnh vực công nghệ thông tin, và ví dụ tham khảo trong "
     "biểu mẫu chung của trường — về \"lúa lai\", kinh tế — cho thấy biểu "
     "mẫu đó vốn dùng chung cho nhiều ngành khác nhau, không chuyên biệt "
-    "cho ngành công nghệ thông tin). Đề nghị sinh viên/giảng viên hướng "
-    "dẫn xác nhận lại lựa chọn này trước khi nộp chính thức."
+    "cho ngành công nghệ thông tin). Sinh viên đã xác nhận giữ định dạng "
+    "IEEE theo đề cương chi tiết đã duyệt."
 ))
 add_para(doc, (
     "Trang bìa cứng và bìa lót trong bản in cuối cùng thường không đánh "
