@@ -1,0 +1,33 @@
+{
+  "backbone": "resnet18",
+  "best_margin": 1.0,
+  "val_eer": 0.055,
+  "tau": 0.47632678414709007,
+  "overall": {
+    "accuracy": 0.87875,
+    "far": 0.0775,
+    "frr": 0.165,
+    "tau": 0.47632678414709007,
+    "n_pairs": 800,
+    "auc": 0.9552875
+  },
+  "by_forgery_type": {
+    "skilled_forgery": {
+      "accuracy": 0.8816666666666667,
+      "far": 0.025,
+      "frr": 0.165,
+      "tau": 0.47632678414709007,
+      "n_pairs": 600,
+      "auc": 0.9836375
+    },
+    "random_forgery": {
+      "accuracy": 0.8466666666666667,
+      "far": 0.13,
+      "frr": 0.165,
+      "tau": 0.47632678414709007,
+      "n_pairs": 600,
+      "auc": 0.9269375
+    }
+  },
+  "note": "Finalized from a checkpoint after the margin sweep was interrupted (container restart) partway through the last margin; see margin_sweep.json for exactly which margins completed."
+}

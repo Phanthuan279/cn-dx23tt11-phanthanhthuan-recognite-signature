@@ -52,6 +52,35 @@ với nét bút thật ở mức thô, trong khi hai người viết thật vớ
 nhau lại dễ gây nhầm hơn — và mẫu này vẫn nhất quán qua cả lần chạy rút gọn
 lẫn lần chạy full-sweep, nên đáng tin hơn là ngẫu nhiên.
 
+## Config B (transfer learning ResNet18) — so sánh với Config A
+
+Huấn luyện đầy đủ trên GPU không khả dụng trong môi trường này; đã hoàn thành
+thật 2/3 margin ({0.5: val_eer=14,3%}, {1.0: val_eer=5,5%}) trước khi container
+bị khởi động lại giữa chừng margin=2.0 (mất, không phục hồi được — xem
+`scripts/finalize_config_b_from_checkpoint.py`). Margin=1.0 được chọn làm kết
+quả cuối cùng.
+
+**Config B vượt Config A rõ rệt, đặc biệt ở đúng điểm yếu của Config A:**
+
+| | Config A (margin=1.0) | Config B (margin=1.0) |
+|---|---|---|
+| AUC tổng thể | 0,915 | **0,955** |
+| FAR random forgery | 39,5% | **13,0%** |
+| AUC random forgery | 0,834 | 0,927 |
+| FAR skilled forgery | 1,0% | 2,5% |
+| AUC skilled forgery | 0,997 | 0,984 |
+| Val EER | 9,75% | **5,50%** (rất sát mục tiêu 5%) |
+
+Ví dụ `random_forgery_false_accept_004.png` (Config B) vẫn cho thấy đúng mẫu
+lỗi đã quan sát ở Config A — hai người khác nhau ("Glorimar Vicente" vs
+"Melissa N. Dumble") với nét nghiêng cursive tương tự bị nhầm — nhưng D=0,3247
+gần τ=0,4763 hơn (tỉ lệ D/τ ≈ 0,68) so với các ca tương ứng ở Config A (tỉ lệ
+D/τ ≈ 0,05–0,08, tức gần như bằng 0). Nói cách khác, Config B vẫn mắc cùng
+loại lỗi nhưng "tự tin sai" ít hơn nhiều — đặc trưng pretrained ImageNet của
+ResNet18 tổng quát hoá tốt hơn CNN train-from-scratch trên tập chỉ 40 người
+ký, dù cả hai vẫn chia sẻ cùng một xu hướng học hình dạng thô trước chi tiết
+danh tính.
+
 ## BHSig260 (zero-shot, khác miền dữ liệu — Bengali/Hindi)
 
 Kết quả zero-shot (mô hình Config A full-sweep, τ đóng băng từ CEDAR — xem
@@ -84,15 +113,20 @@ chữ Latin của CEDAR).
 
 ## Hàm ý cho các bước tiếp theo
 
-1. **Chuẩn hoá tiền xử lý bất biến hơn với độ phân giải nguồn** (ví dụ: chuẩn
+1. **Config B (transfer learning) là lựa chọn nên ưu tiên** cho bản cuối của
+   đồ án: val EER 5,5% đã rất sát chỉ tiêu 5%, và cải thiện mạnh nhất đúng vào
+   điểm yếu của Config A (random forgery). Hoàn thành nốt margin=2.0 (và lý
+   tưởng là chạy lại cả 3 margin với seed sạch mỗi margin, trên GPU) nhiều khả
+   năng đạt hoặc vượt chỉ tiêu EER≤5%.
+2. **Chuẩn hoá tiền xử lý bất biến hơn với độ phân giải nguồn** (ví dụ: chuẩn
    hoá độ tương phản thích ứng thay vì kernel khử nhiễu cố định) có thể giảm
    phần domain-shift quan sát được ở BHSig260.
-2. **Không thể tái hiệu chỉnh ngưỡng τ theo BHSig260** làm số liệu chính (vi
-   phạm tính "writer-independent"/zero-shot) — nhưng huấn luyện trên GPU với
-   augmentation/kiến trúc mạnh hơn (Config B, hoặc Config A chạy đủ patience
-   lớn hơn với seed sạch mỗi margin) nhiều khả năng thu hẹp khoảng cách.
-3. Kết quả CEDAR test AUC=0,915 (full-sweep) > baseline AUC=0,887 dù model
-   chỉ dừng sớm ở epoch 14–21 — có cơ sở để kỳ vọng huấn luyện với ngân sách
-   epoch/patience lớn hơn trên GPU sẽ tiến gần hơn chỉ tiêu EER≤5% (skilled
-   forgery CEDAR) đề ra trong `plan.md`. Điểm yếu rõ nhất hiện tại là FAR
-   random-forgery (39,5% trên CEDAR) — đáng ưu tiên khi huấn luyện tiếp.
+3. **Không thể tái hiệu chỉnh ngưỡng τ theo BHSig260** làm số liệu chính (vi
+   phạm tính "writer-independent"/zero-shot) — nên đo lại BHSig260 zero-shot
+   với Config B (chưa thực hiện trong lần chạy này) để xem cải thiện tương tự
+   CEDAR có chuyển sang miền dữ liệu khác hay không.
+4. Cả Config A và Config B đều chia sẻ cùng một xu hướng lỗi định tính (học
+   hình dạng/độ nghiêng tổng thể trước chi tiết danh tính) — đây có thể là do
+   đặc điểm chung của contrastive loss + kiến trúc CNN ở quy mô dữ liệu này
+   (chỉ 40 người ký huấn luyện), không riêng một kiến trúc nào; đáng thử thêm
+   triplet loss hoặc tăng cường dữ liệu mạnh hơn nếu muốn giải quyết triệt để.
