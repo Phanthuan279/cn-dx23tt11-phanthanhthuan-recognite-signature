@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
-"""Generate the graduation thesis report (.docx), following the department's
-own outline (đề cương chi tiết) structure and the formatting regulation
-MauQuyDinhLuanVan_v1.1.pdf: Times New Roman 13pt, line spacing 1.5, paragraph
-spacing 6pt before/after, margins top 2cm / bottom 2cm / left 3cm / right 2cm,
-page number bottom-right, IEEE reference format.
+"""Generate the graduation thesis report (.docx) for the offline signature
+verification project, following:
+  - MauQuyDinhLuanVan_v1.1.pdf: Times New Roman 13pt, line spacing 1.5,
+    paragraph spacing 6pt before/after, margins top 2cm / bottom 2cm /
+    left 3cm / right 2cm, page number bottom-right.
+  - The approved đề cương chi tiết (Phan_Thanh_Thuan_170123591.docx): chapter
+    breakdown, dataset scope, T1-T8 experiment plan, 21-reference IEEE list.
+  - The official Trường Đại học Trà Vinh formatting appendix
+    ("biểu mẫu trình bày"): cover/bìa lót layout, front-matter page order,
+    nhận xét pages, BẢNG/SƠ ĐỒ/HÌNH numbered per-chapter, page numbers
+    starting (Arabic) at Chương 1, front matter in lowercase Roman numerals.
 """
 
 from docx import Document
@@ -12,7 +18,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
-from docx.enum.section import WD_ORIENT
+from docx.enum.section import WD_ORIENT, WD_SECTION_START
 from docx.enum.text import WD_TAB_ALIGNMENT, WD_TAB_LEADER
 
 BASE = "/home/user/Recognite-signature"
@@ -23,16 +29,25 @@ EA = f"{BASE}/results/error_analysis"
 RES = f"{BASE}/results"
 
 # ---------------------------------------------------------------------------
-# Student / school identifying info -- taken from the approved đề cương
-# chi tiết (Phan_Thanh_Thuan_170123591.docx)
+# Student / school identifying info
 # ---------------------------------------------------------------------------
+# From the official biểu mẫu (this school's real 3-level structure):
+UNIVERSITY = "TRƯỜNG ĐẠI HỌC TRÀ VINH"
+# From the approved đề cương chi tiết's own cover block:
 SCHOOL = "TRƯỜNG KỸ THUẬT VÀ CÔNG NGHỆ"
 FACULTY = "KHOA CÔNG NGHỆ THÔNG TIN"
 STUDENT_NAME = "Phan Thành Thuận"
 STUDENT_ID = "170123591"
 STUDENT_CLASS = "DX23TT11"
+STUDENT_COHORT = "2023"  # inferred from class code "DX23TT11" -- flagged in Phụ lục C
+MAJOR = "Công nghệ thông tin"
 ADVISOR = "ThS. Nguyễn Nhứt Lam"
-LOCATION_DATE = "Vĩnh Long, tháng 9 năm 2026"
+LOCATION = "Trà Vinh"
+SUBMIT_DATE = f"{LOCATION}, tháng 9 năm 2026"
+# Official biểu mẫu's exact wording (used verbatim on the cover and on both
+# formal nhận xét forms) -- previously this report used "ĐỒ ÁN CHUYÊN NGÀNH";
+# corrected here to match the binding template, flagged in Phụ lục C.
+PROJECT_TYPE = "ĐỒ ÁN THỰC TẬP CHUYÊN NGÀNH"
 # NOTE: the source đề cương's own cover page reads "NHẬN DẠNG CHỮ SỐ VIẾT
 # TAY" (handwritten DIGIT recognition), but every one of its 12 sections
 # (đặt vấn đề, mục tiêu, cơ sở lý thuyết, phương pháp, thực nghiệm, demo,
@@ -46,7 +61,7 @@ THESIS_TITLE = "XÂY DỰNG HỆ THỐNG XÁC MINH CHỮ KÝ VIẾT TAY OFFLINE\
 # Low-level helpers
 # ---------------------------------------------------------------------------
 
-def set_cell_text(cell, text, bold=False, size=12, align=None):
+def set_cell_text(cell, text, bold=False, size=12, align=None, italic=False):
     cell.text = ""
     p = cell.paragraphs[0]
     if align:
@@ -55,6 +70,7 @@ def set_cell_text(cell, text, bold=False, size=12, align=None):
     run.font.size = Pt(size)
     run.font.name = "Times New Roman"
     run.bold = bold
+    run.italic = italic
 
 
 def add_field(paragraph, instr, placeholder_text=""):
@@ -80,6 +96,17 @@ def add_field(paragraph, instr, placeholder_text=""):
 
 def add_page_break(doc):
     doc.add_page_break()
+
+
+def set_page_number_format(section, fmt, start=None):
+    sectPr = section._sectPr
+    pgNumType = sectPr.find(qn("w:pgNumType"))
+    if pgNumType is None:
+        pgNumType = OxmlElement("w:pgNumType")
+        sectPr.append(pgNumType)
+    pgNumType.set(qn("w:fmt"), fmt)
+    if start is not None:
+        pgNumType.set(qn("w:start"), str(start))
 
 
 def add_heading(doc, text, level=1, size=None, center=False, page_break_before=False):
@@ -121,7 +148,16 @@ def add_bullet(doc, text, size=13):
     return p
 
 
-def add_image(doc, path, width_cm=14, caption=None, caption_num=None):
+def add_source_note(doc, source):
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = p.add_run(f"({source})")
+    run.italic = True
+    run.font.size = Pt(11)
+    run.font.name = "Times New Roman"
+
+
+def add_image(doc, path, width_cm=14, caption=None, caption_num=None, source=None):
     doc.add_picture(path, width=Cm(width_cm))
     last_p = doc.paragraphs[-1]
     last_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -132,9 +168,11 @@ def add_image(doc, path, width_cm=14, caption=None, caption_num=None):
         run.italic = True
         run.font.size = Pt(12)
         run.font.name = "Times New Roman"
+    if source:
+        add_source_note(doc, source)
 
 
-def add_table(doc, headers, rows, col_widths_cm=None, caption=None, caption_num=None):
+def add_table(doc, headers, rows, col_widths_cm=None, caption=None, caption_num=None, source=None):
     if caption:
         p = doc.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -156,6 +194,8 @@ def add_table(doc, headers, rows, col_widths_cm=None, caption=None, caption_num=
         for row in table.rows:
             for i, w in enumerate(col_widths_cm):
                 row.cells[i].width = Cm(w)
+    if source:
+        add_source_note(doc, source)
     doc.add_paragraph()
     return table
 
@@ -188,25 +228,58 @@ def add_toc_entry(doc, level, text, page):
     run.bold = (level == 1)
 
 
+def add_letterhead(doc, left_lines, right_lines):
+    """Borderless 2-column admin letterhead (UBND .../CỘNG HOÀ... block)."""
+    n = max(len(left_lines), len(right_lines))
+    table = doc.add_table(rows=n, cols=2)
+    for i in range(n):
+        lc = table.rows[i].cells[0]
+        rc = table.rows[i].cells[1]
+        set_cell_text(lc, left_lines[i] if i < len(left_lines) else "", bold=True, size=13, align=WD_ALIGN_PARAGRAPH.LEFT)
+        set_cell_text(rc, right_lines[i] if i < len(right_lines) else "", bold=True, size=13, align=WD_ALIGN_PARAGRAPH.CENTER)
+    doc.add_paragraph()
+
+
+def add_blank_lines(doc, n=12, width=100):
+    for _ in range(n):
+        doc.add_paragraph("." * width)
+
+
 # ---------------------------------------------------------------------------
-# Sequential Hình / Bảng / equation counters (global numbering, matching the
-# đề cương's own convention: "Hình 1", "Bảng 1"... across the whole report,
-# not per-chapter)
+# BẢNG / SƠ ĐỒ / HÌNH counters: per-chapter numbering "BẢNG x.y", "SƠ ĐỒ
+# x.y", "HÌNH x.y" (uppercase), reset at each CHƯƠNG heading -- per the
+# official biểu mẫu's own numbering rule. Equations are NOT covered by that
+# rule (the biểu mẫu only numbers Bảng/Sơ đồ/Hình this way); they keep plain
+# sequential (1), (2), (3)... across the whole report.
 # ---------------------------------------------------------------------------
 class Counter:
-    fig = 0
+    chapter = 0
     table = 0
+    fig = 0
+    diagram = 0
     eq = 0
 
 
-def next_fig():
-    Counter.fig += 1
-    return f"Hình {Counter.fig}"
+def start_chapter(n):
+    Counter.chapter = n
+    Counter.table = 0
+    Counter.fig = 0
+    Counter.diagram = 0
 
 
 def next_table():
     Counter.table += 1
-    return f"Bảng {Counter.table}"
+    return f"BẢNG {Counter.chapter}.{Counter.table}"
+
+
+def next_fig():
+    Counter.fig += 1
+    return f"HÌNH {Counter.chapter}.{Counter.fig}"
+
+
+def next_diagram():
+    Counter.diagram += 1
+    return f"SƠ ĐỒ {Counter.chapter}.{Counter.diagram}"
 
 
 def next_eq():
@@ -251,91 +324,58 @@ footer = section.footer
 fp = footer.paragraphs[0]
 fp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
 add_field(fp, "PAGE", "1")
+# Front matter (bìa through danh mục từ viết tắt) uses lowercase Roman page
+# numbers; Arabic numbering restarts at 1 on Chương 1 (see the second
+# section created further below) -- per the official biểu mẫu's rule
+# "Bắt đầu đánh số trang từ chương 1".
+set_page_number_format(section, "lowerRoman", start=1)
+
+
+def cover_page(sub_label):
+    add_para(doc, UNIVERSITY, bold=True, center=True, size=16, space_after=0)
+    add_para(doc, SCHOOL, bold=True, center=True, size=16, space_after=0)
+    add_para(doc, FACULTY, bold=True, center=True, size=14, space_after=0)
+    for _ in range(5):
+        doc.add_paragraph()
+    add_para(doc, PROJECT_TYPE, bold=True, center=True, size=16, space_after=6)
+    add_para(doc, THESIS_TITLE, bold=True, center=True, size=18, space_after=6)
+    for _ in range(6):
+        doc.add_paragraph()
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r = p.add_run("Giảng viên hướng dẫn : ")
+    r.font.name = "Times New Roman"
+    r.font.size = Pt(14)
+    r.bold = True
+    r = p.add_run(ADVISOR.upper())
+    r.font.name = "Times New Roman"
+    r.font.size = Pt(14)
+    r.bold = True
+    add_para(doc, "", space_after=0)
+    add_para(doc, "Sinh viên thực hiện", bold=True, center=True, size=14, space_after=6)
+    add_para(doc, STUDENT_NAME.upper(), bold=True, center=True, size=14, space_after=0)
+    add_para(doc, f"Mã số sinh viên : {STUDENT_ID}", bold=True, center=True, size=14, space_after=0)
+    add_para(doc, f"Lớp : {STUDENT_CLASS}", bold=True, center=True, size=14, space_after=0)
+    add_para(doc, f"Khoá : {STUDENT_COHORT}", bold=True, center=True, size=14, space_after=0)
+    for _ in range(4):
+        doc.add_paragraph()
+    add_para(doc, SUBMIT_DATE, bold=True, center=True, size=13)
+    add_page_break(doc)
+
 
 # ===========================================================================
-# BÌA CHÍNH (theo đúng bố cục bìa của đề cương chi tiết đã duyệt)
+# BÌA CHÍNH (in trên bìa cứng, chữ nhũ vàng) -- theo đúng biểu mẫu chính thức
 # ===========================================================================
-add_para(doc, SCHOOL, bold=True, center=True, size=14, space_after=0)
-add_para(doc, FACULTY, bold=True, center=True, size=14, space_after=0)
-for _ in range(6):
-    doc.add_paragraph()
-add_para(doc, "ĐỒ ÁN CHUYÊN NGÀNH", bold=True, center=True, size=20, space_after=6)
-add_para(doc, THESIS_TITLE, bold=True, center=True, size=18, space_after=6)
-for _ in range(6):
-    doc.add_paragraph()
-p = doc.add_paragraph()
-p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-r = p.add_run("Giảng viên hướng dẫn: ")
-r.font.name = "Times New Roman"
-r.font.size = Pt(13)
-r = p.add_run(ADVISOR)
-r.font.name = "Times New Roman"
-r.font.size = Pt(13)
-r.bold = True
-add_para(doc, "", space_after=0)
-add_para(doc, "Sinh viên thực hiện", bold=True, center=True, size=13, space_after=6)
-add_para(doc, f"Họ và tên: {STUDENT_NAME}", center=True, size=13, space_after=0)
-add_para(doc, f"MSSV: {STUDENT_ID}", center=True, size=13, space_after=0)
-add_para(doc, f"Lớp: {STUDENT_CLASS}", center=True, size=13, space_after=0)
-for _ in range(4):
-    doc.add_paragraph()
-add_para(doc, LOCATION_DATE, center=True, size=13, italic=True)
-add_page_break(doc)
+cover_page("bìa chính")
 
 # ===========================================================================
-# NHẬN XÉT CỦA GIẢNG VIÊN HƯỚNG DẪN
+# BÌA LÓT (in giấy thường, nội dung giống bìa chính)
 # ===========================================================================
-add_heading(doc, "NHẬN XÉT CỦA GIẢNG VIÊN HƯỚNG DẪN", level=1, center=True)
-for _ in range(12):
-    doc.add_paragraph("..........................................................................................................")
-add_para(doc, "")
-p = doc.add_paragraph()
-p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-r = p.add_run(f"{LOCATION_DATE.split(',')[0]}, ngày ..... tháng ..... năm .....\nGiảng viên hướng dẫn\n(Ký và ghi rõ họ tên)")
-r.font.name = "Times New Roman"
-r.font.size = Pt(13)
-r.italic = True
-add_page_break(doc)
+cover_page("bìa lót")
 
 # ===========================================================================
-# LỜI CẢM ƠN
-# ===========================================================================
-add_heading(doc, "LỜI CẢM ƠN", level=1, center=True)
-add_para(doc, (
-    f"Em xin gửi lời cảm ơn chân thành đến giảng viên hướng dẫn {ADVISOR} đã "
-    "tận tình định hướng, góp ý và hỗ trợ em trong suốt quá trình thực hiện "
-    "đồ án chuyên ngành này, từ lúc xây dựng đề cương chi tiết đến khi hoàn "
-    "thiện báo cáo. Những nhận xét về phương pháp luận, đặc biệt là yêu cầu "
-    "nghiêm ngặt về việc tránh rò rỉ dữ liệu khi đánh giá mô hình sinh trắc "
-    "học và việc phải báo cáo trung thực cả những phần chưa hoàn thành đúng "
-    "kế hoạch, đã giúp em xây dựng được một quy trình thực nghiệm đáng tin "
-    "cậy hơn."
-))
-add_para(doc, (
-    f"Em cũng xin cảm ơn quý thầy cô {FACULTY}, {SCHOOL} đã truyền đạt kiến "
-    "thức nền tảng về học máy, thị giác máy tính trong suốt quá trình học "
-    "tập, là cơ sở để em có thể tiếp cận và triển khai đồ án ở mức độ kỹ "
-    "thuật như trình bày trong báo cáo này."
-))
-add_para(doc, (
-    "Do thời gian và điều kiện phần cứng thực nghiệm (huấn luyện hoàn toàn "
-    "trên CPU, không có GPU) còn hạn chế, một số nội dung khảo sát trong đề "
-    "cương (T4, T5 phần tăng cường dữ liệu, T6, T8 — mục 4.2 Chương 4) chưa "
-    "kịp thực hiện đầy đủ; đồ án ghi nhận minh bạch những giới hạn này thay "
-    "vì che giấu. Em rất mong nhận được sự góp ý của quý thầy cô để hoàn "
-    "thiện hơn."
-))
-add_para(doc, "Em xin chân thành cảm ơn.")
-p = doc.add_paragraph()
-p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-r = p.add_run(STUDENT_NAME)
-r.font.name = "Times New Roman"
-r.font.size = Pt(13)
-r.italic = True
-add_page_break(doc)
-
-# ===========================================================================
-# TÓM TẮT
+# TÓM TẮT (bổ sung hợp lý, không có trong biểu mẫu nhưng không mâu thuẫn --
+# đặt trước Mục lục)
 # ===========================================================================
 add_heading(doc, "TÓM TẮT ĐỒ ÁN", level=1, center=True)
 add_para(doc, (
@@ -372,7 +412,7 @@ add_para(doc, (
     "chéo BHSig260); T5 hoàn thành một phần (khảo sát margin, chưa khảo sát "
     "riêng tắt/bật tăng cường dữ liệu); T4, T6, T8 chưa thực hiện do giới "
     "hạn thời gian/phần cứng — được ghi nhận minh bạch làm hướng phát triển "
-    "ở Chương cuối. Một ứng dụng demo tương tác được xây dựng bằng "
+    "ở phần Kết luận. Một ứng dụng demo tương tác được xây dựng bằng "
     "Streamlit, xử lý ảnh hoàn toàn trong bộ nhớ, sử dụng mô hình Cấu hình "
     "B đã huấn luyện."
 ))
@@ -427,99 +467,65 @@ add_para(doc, "Keywords: offline signature verification, Siamese network, "
 add_page_break(doc)
 
 # ===========================================================================
-# MỤC LỤC (đánh số trang thật, đo từ bản render cuối cùng)
+# MỤC LỤC (đánh số trang thật, đo từ bản render cuối cùng; front matter =
+# số La Mã thường, nội dung chương = số Ả Rập bắt đầu từ 1 tại Chương 1)
 # ===========================================================================
 add_heading(doc, "MỤC LỤC", level=1, center=True)
 TOC_ENTRIES = [
-    (1, "MỞ ĐẦU", 13),
-    (2, "1. Lý do chọn đề tài", 13),
-    (2, "2. Mục tiêu nghiên cứu", 14),
-    (2, "3. Đối tượng và phạm vi nghiên cứu", 14),
-    (2, "4. Phương pháp nghiên cứu", 16),
-    (2, "5. Cấu trúc báo cáo", 16),
-    (1, "CHƯƠNG 1. TỔNG QUAN", 17),
-    (2, "1.1. Bài toán xác minh chữ ký", 17),
-    (2, "1.2. Hướng dùng đặc trưng thủ công", 17),
-    (2, "1.3. Hướng học sâu", 18),
-    (2, "1.4. Các bộ dữ liệu công khai thường dùng", 18),
-    (2, "1.5. Khoảng trống và hướng tiếp cận của đồ án", 19),
-    (1, "CHƯƠNG 2. CƠ SỞ LÝ THUYẾT", 20),
-    (2, "2.1. Tiền xử lý ảnh", 20),
-    (2, "2.2. Mạng nơ-ron tích chập (CNN)", 20),
-    (2, "2.3. Mạng Siamese", 20),
-    (2, "2.4. Hàm mất mát", 21),
-    (2, "2.5. Học chuyển giao (transfer learning)", 22),
-    (2, "2.6. Các độ đo đánh giá", 22),
-    (1, "CHƯƠNG 3. PHƯƠNG PHÁP THỰC HIỆN", 24),
-    (2, "3.1. Quy trình tổng thể", 24),
-    (2, "3.2. Chuẩn bị dữ liệu và sinh cặp mẫu", 24),
-    (2, "3.3. Phương pháp cơ sở (baseline)", 25),
-    (2, "3.4. Mô hình Siamese chính", 25),
-    (2, "3.5. Công cụ và môi trường", 26),
-    (1, "CHƯƠNG 4. THỰC NGHIỆM VÀ ĐÁNH GIÁ", 27),
-    (2, "4.1. Cách chia dữ liệu", 27),
-    (2, "4.2. Các thí nghiệm đã thực hiện", 27),
-    (2, "4.3. Kết quả tổng thể trên tập test CEDAR", 29),
-    (2, "4.4. Kết quả phân theo loại giả mạo", 30),
-    (2, "4.5. Đường cong ROC", 31),
-    (2, "4.6. Phân tích định tính các ca lỗi", 32),
-    (2, "4.7. Đánh giá tổng quát hoá zero-shot trên BHSig260 (T7)", 36),
-    (2, "4.8. Thảo luận", 39),
-    (1, "CHƯƠNG 5. CHƯƠNG TRÌNH DEMO", 41),
-    (2, "5.1. Chức năng", 41),
-    (2, "5.2. Luồng sử dụng", 41),
-    (2, "5.3. Kiến trúc và công cụ", 41),
-    (2, "5.4. Kết quả trình diễn", 42),
-    (1, "KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN", 45),
-    (2, "1. Kết quả đạt được", 45),
-    (2, "2. Hạn chế", 45),
-    (2, "3. Hướng phát triển", 46),
-    (1, "TÀI LIỆU THAM KHẢO", 47),
-    (1, "PHỤ LỤC", 49),
+    (1, "LỜI MỞ ĐẦU", "ix"),
+    (2, "1. Lý do chọn đề tài", "ix"),
+    (2, "2. Mục tiêu nghiên cứu", "x"),
+    (2, "3. Đối tượng và phạm vi nghiên cứu", "x"),
+    (2, "4. Phương pháp nghiên cứu", "xii"),
+    (2, "5. Cấu trúc báo cáo", "xii"),
+    (1, "CHƯƠNG 1. TỔNG QUAN", "1"),
+    (2, "1.1. Bài toán xác minh chữ ký", "1"),
+    (2, "1.2. Hướng dùng đặc trưng thủ công", "1"),
+    (2, "1.3. Hướng học sâu", "2"),
+    (2, "1.4. Các bộ dữ liệu công khai thường dùng", "2"),
+    (2, "1.5. Khoảng trống và hướng tiếp cận của đồ án", "3"),
+    (1, "CHƯƠNG 2. CƠ SỞ LÝ THUYẾT", "5"),
+    (2, "2.1. Tiền xử lý ảnh", "5"),
+    (2, "2.2. Mạng nơ-ron tích chập (CNN)", "5"),
+    (2, "2.3. Mạng Siamese", "5"),
+    (2, "2.4. Hàm mất mát", "6"),
+    (2, "2.5. Học chuyển giao (transfer learning)", "7"),
+    (2, "2.6. Các độ đo đánh giá", "7"),
+    (1, "CHƯƠNG 3. PHƯƠNG PHÁP THỰC HIỆN", "9"),
+    (2, "3.1. Quy trình tổng thể", "9"),
+    (2, "3.2. Chuẩn bị dữ liệu và sinh cặp mẫu", "9"),
+    (2, "3.3. Phương pháp cơ sở (baseline)", "10"),
+    (2, "3.4. Mô hình Siamese chính", "10"),
+    (2, "3.5. Công cụ và môi trường", "11"),
+    (1, "CHƯƠNG 4. THỰC NGHIỆM VÀ ĐÁNH GIÁ", "12"),
+    (2, "4.1. Cách chia dữ liệu", "12"),
+    (2, "4.2. Các thí nghiệm đã thực hiện", "12"),
+    (2, "4.3. Kết quả tổng thể trên tập test CEDAR", "14"),
+    (2, "4.4. Kết quả phân theo loại giả mạo", "15"),
+    (2, "4.5. Đường cong ROC", "17"),
+    (2, "4.6. Phân tích định tính các ca lỗi", "18"),
+    (2, "4.7. Đánh giá tổng quát hoá zero-shot trên BHSig260 (T7)", "22"),
+    (2, "4.8. Thảo luận", "25"),
+    (1, "CHƯƠNG 5. CHƯƠNG TRÌNH DEMO", "27"),
+    (2, "5.1. Chức năng", "27"),
+    (2, "5.2. Luồng sử dụng", "27"),
+    (2, "5.3. Kiến trúc và công cụ", "27"),
+    (2, "5.4. Kết quả trình diễn", "28"),
+    (1, "KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN", "31"),
+    (2, "1. Kết quả đạt được", "31"),
+    (2, "2. Hạn chế", "31"),
+    (2, "3. Hướng phát triển", "32"),
+    (1, "PHỤ LỤC", "33"),
+    (1, "TÀI LIỆU THAM KHẢO", "36"),
 ]
 for lvl, text, pg in TOC_ENTRIES:
     add_toc_entry(doc, lvl, text, pg)
 add_page_break(doc)
 
 # ===========================================================================
-# DANH MỤC HÌNH ẢNH / BẢNG BIỂU / TỪ VIẾT TẮT
-# (nội dung điền lại sau khi biết số Hình/Bảng thật -- xem cuối file)
+# LỜI MỞ ĐẦU
 # ===========================================================================
-FIGLIST_ANCHOR = len(doc.paragraphs)  # placeholder marker, unused directly
-add_heading(doc, "DANH MỤC HÌNH ẢNH", level=1, center=True)
-FIGURE_LIST_HEADING_INDEX = len(doc.paragraphs) - 1
-add_para(doc, "(xem danh sách đầy đủ ở bảng bên dưới, đánh số theo thứ tự xuất hiện trong báo cáo)")
-add_page_break(doc)
-
-add_heading(doc, "DANH MỤC BẢNG BIỂU", level=1, center=True)
-add_para(doc, "(xem danh sách đầy đủ ở bảng bên dưới, đánh số theo thứ tự xuất hiện trong báo cáo)")
-add_page_break(doc)
-
-add_heading(doc, "DANH MỤC TỪ VIẾT TẮT", level=1, center=True)
-abbr = [
-    ("CNN", "Convolutional Neural Network — Mạng nơ-ron tích chập"),
-    ("SVM", "Support Vector Machine — Máy vector hỗ trợ"),
-    ("HOG", "Histogram of Oriented Gradients — Lược đồ hướng gradient"),
-    ("LBP", "Local Binary Pattern — Mẫu nhị phân cục bộ"),
-    ("FAR", "False Acceptance Rate — Tỉ lệ chấp nhận nhầm"),
-    ("FRR", "False Rejection Rate — Tỉ lệ từ chối nhầm"),
-    ("EER", "Equal Error Rate — Điểm cân bằng lỗi (FAR = FRR)"),
-    ("ROC", "Receiver Operating Characteristic — Đường cong đặc trưng vận hành"),
-    ("AUC", "Area Under the Curve — Diện tích dưới đường cong ROC"),
-    ("ResNet", "Residual Network — Mạng tích chập dư"),
-    ("VGG", "Visual Geometry Group — Kiến trúc CNN của nhóm VGG, Oxford"),
-    ("GPU/CPU", "Graphics/Central Processing Unit — Bộ xử lý đồ hoạ/trung tâm"),
-    ("BN", "Batch Normalization — Chuẩn hoá theo lô"),
-    ("τ (tau)", "Ngưỡng quyết định (decision threshold)"),
-    ("T1–T8", "Ký hiệu các thí nghiệm theo đề cương chi tiết (mục 4.2, Chương 4)"),
-]
-add_table(doc, ["Từ viết tắt", "Giải nghĩa"], abbr, col_widths_cm=[3, 13])
-add_page_break(doc)
-
-# ===========================================================================
-# MỞ ĐẦU
-# ===========================================================================
-add_heading(doc, "MỞ ĐẦU", level=1, center=True)
+add_heading(doc, "LỜI MỞ ĐẦU", level=1, center=True)
 
 add_heading(doc, "1. Lý do chọn đề tài", level=2)
 add_para(doc, (
@@ -561,10 +567,10 @@ add_para(doc, (
     "tay offline sử dụng mạng Siamese, kèm một chương trình demo cho phép "
     "tải hai ảnh lên và nhận kết quả \"thật\" hoặc \"giả\". Đề tài có bộ "
     "dữ liệu công khai, phương pháp đã được nghiên cứu rõ và kết quả đo "
-    "được bằng các chỉ số chuẩn, nên phù hợp với quy mô một đồ án chuyên "
-    "ngành. Báo cáo này trình bày đầy đủ kết quả THẬT thu được sau khi "
-    "thực hiện đề cương đã duyệt, bao gồm cả những phần đạt được và những "
-    "phần chưa hoàn thành đúng kế hoạch."
+    "được bằng các chỉ số chuẩn, nên phù hợp với quy mô một đồ án thực tập "
+    "chuyên ngành. Báo cáo này trình bày đầy đủ kết quả THẬT thu được sau "
+    "khi thực hiện đề cương đã duyệt, bao gồm cả những phần đạt được và "
+    "những phần chưa hoàn thành đúng kế hoạch."
 ))
 
 add_heading(doc, "2. Mục tiêu nghiên cứu", level=2)
@@ -627,7 +633,8 @@ add_table(doc, ["Khía cạnh", "Lựa chọn của đồ án", "Lý do"],
                              "luyện; bộ thứ hai lớn và khó hơn"],
                ["Đầu ra", "Nhãn thật hoặc giả, kèm điểm tương đồng", "Dễ "
                              "hiểu, dễ trình bày khi bảo vệ"],
-           ], col_widths_cm=[3, 7, 6], caption="Phạm vi và các lựa chọn của đồ án", caption_num=next_table())
+           ], col_widths_cm=[3, 7, 6], caption="Phạm vi và các lựa chọn của đồ án",
+           source="Nguồn: đề cương chi tiết đã duyệt")
 add_heading(doc, "3.3. Những nội dung không thực hiện", level=3)
 add_bullet(doc, "Chữ ký online (có tọa độ, áp lực, tốc độ bút).")
 add_bullet(doc, "Định danh chủ nhân của chữ ký trong một tập nhiều người.")
@@ -647,8 +654,9 @@ add_para(doc, (
 ))
 
 add_heading(doc, "5. Cấu trúc báo cáo", level=2)
-add_para(doc, "Ngoài phần Mở đầu và Kết luận, nội dung báo cáo gồm 5 chương, "
-              "bám sát cấu trúc báo cáo dự kiến trong đề cương chi tiết:")
+add_para(doc, "Ngoài phần Lời mở đầu và Kết luận, nội dung báo cáo gồm 5 "
+              "chương, bám sát cấu trúc báo cáo dự kiến trong đề cương chi "
+              "tiết:")
 add_bullet(doc, "Chương 1 — Tổng quan: bài toán xác minh chữ ký, các hướng "
                 "tiếp cận (đặc trưng thủ công và học sâu), các bộ dữ liệu "
                 "công khai, khoảng trống nghiên cứu.")
@@ -669,9 +677,236 @@ add_bullet(doc, "Kết luận và hướng phát triển: tổng kết những g
 add_page_break(doc)
 
 # ===========================================================================
+# LỜI CẢM ƠN
+# ===========================================================================
+add_heading(doc, "LỜI CẢM ƠN", level=1, center=True)
+add_para(doc, (
+    f"Em xin gửi lời cảm ơn chân thành đến giảng viên hướng dẫn {ADVISOR} đã "
+    "tận tình định hướng, góp ý và hỗ trợ em trong suốt quá trình thực hiện "
+    "đồ án thực tập chuyên ngành này, từ lúc xây dựng đề cương chi tiết đến "
+    "khi hoàn thiện báo cáo. Những nhận xét về phương pháp luận, đặc biệt "
+    "là yêu cầu nghiêm ngặt về việc tránh rò rỉ dữ liệu khi đánh giá mô "
+    "hình sinh trắc học và việc phải báo cáo trung thực cả những phần chưa "
+    "hoàn thành đúng kế hoạch, đã giúp em xây dựng được một quy trình thực "
+    "nghiệm đáng tin cậy hơn."
+))
+add_para(doc, (
+    f"Em cũng xin cảm ơn quý thầy cô {FACULTY}, {SCHOOL}, {UNIVERSITY} đã "
+    "truyền đạt kiến thức nền tảng về học máy, thị giác máy tính trong "
+    "suốt quá trình học tập, là cơ sở để em có thể tiếp cận và triển khai "
+    "đồ án ở mức độ kỹ thuật như trình bày trong báo cáo này."
+))
+add_para(doc, (
+    "Do thời gian và điều kiện phần cứng thực nghiệm (huấn luyện hoàn toàn "
+    "trên CPU, không có GPU) còn hạn chế, một số nội dung khảo sát trong đề "
+    "cương (T4, T5 phần tăng cường dữ liệu, T6, T8 — mục 4.2 Chương 4) chưa "
+    "kịp thực hiện đầy đủ; đồ án ghi nhận minh bạch những giới hạn này thay "
+    "vì che giấu. Em rất mong nhận được sự góp ý của quý thầy cô để hoàn "
+    "thiện hơn."
+))
+add_para(doc, "Em xin chân thành cảm ơn.")
+p = doc.add_paragraph()
+p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+r = p.add_run(STUDENT_NAME)
+r.font.name = "Times New Roman"
+r.font.size = Pt(13)
+r.italic = True
+add_page_break(doc)
+
+# ===========================================================================
+# NHẬN XÉT (của cơ quan thực tập, nếu có)
+# ===========================================================================
+add_heading(doc, "NHẬN XÉT", level=1, center=True)
+add_para(doc, "(Của cơ quan thực tập, nếu có)", center=True, italic=True, size=13)
+add_para(doc, (
+    "Đồ án này được thực hiện hoàn toàn trong phạm vi học thuật tại "
+    "trường (xây dựng và huấn luyện mô hình học máy trên dữ liệu công "
+    "khai), không có giai đoạn thực tập tại một cơ quan/doanh nghiệp ngoài "
+    "trường, nên không có nhận xét của cơ quan thực tập cho mục này."
+), center=True, justify=False)
+add_page_break(doc)
+
+# ===========================================================================
+# NHẬN XÉT (của giảng viên hướng dẫn trong đồ án của sinh viên)
+# ===========================================================================
+add_heading(doc, "NHẬN XÉT", level=1, center=True)
+add_para(doc, "(Của giảng viên hướng dẫn trong đồ án của sinh viên)", center=True, italic=True, size=13)
+add_blank_lines(doc, 12)
+p = doc.add_paragraph()
+p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+r = p.add_run(f"{LOCATION}, ngày ..... tháng ..... năm .....\nGiảng viên hướng dẫn\n(Ký và ghi rõ họ tên)")
+r.font.name = "Times New Roman"
+r.font.size = Pt(13)
+r.italic = True
+add_page_break(doc)
+
+# ===========================================================================
+# BẢN NHẬN XÉT ĐỒ ÁN THỰC TẬP CHUYÊN NGÀNH (mẫu, của giảng viên hướng dẫn)
+# ===========================================================================
+add_letterhead(doc,
+    ["UBND TỈNH TRÀ VINH", UNIVERSITY],
+    ["CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM", "Độc lập – Tự do – Hạnh phúc"])
+add_heading(doc, f"BẢN NHẬN XÉT {PROJECT_TYPE}", level=2, center=True)
+add_para(doc, "(Của giảng viên hướng dẫn)", center=True, italic=True, size=13)
+add_para(doc, f"Họ và tên sinh viên: {STUDENT_NAME}\t\tMSSV: {STUDENT_ID}", justify=False)
+add_para(doc, f"Ngành: {MAJOR}\t\tKhoá: {STUDENT_COHORT}", justify=False)
+add_para(doc, f"Tên đồ án: {THESIS_TITLE.replace(chr(10), ' ')}", justify=False)
+add_para(doc, f"Họ và tên Giáo viên hướng dẫn: {ADVISOR}", justify=False)
+add_para(doc, "Chức danh: ..........................\t\tHọc vị: Thạc sĩ", justify=False)
+add_heading(doc, "NHẬN XÉT", level=3)
+for item in [
+    "1. Nội dung đồ án:",
+    "2. Ưu điểm:",
+    "3. Khuyết điểm:",
+    "4. Điểm mới đồ án:",
+    "5. Giá trị thực trên đồ án:",
+]:
+    add_para(doc, item, justify=False)
+    add_blank_lines(doc, 2)
+for item in ["7. Đề nghị sửa chữa bổ sung:", "8. Đánh giá:"]:
+    add_para(doc, item, justify=False)
+    add_blank_lines(doc, 2)
+p = doc.add_paragraph()
+p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+r = p.add_run(f"{LOCATION}, ngày ..... tháng ..... năm 20.....\nGiảng viên hướng dẫn\n(Ký & ghi rõ họ tên)")
+r.font.name = "Times New Roman"
+r.font.size = Pt(13)
+r.italic = True
+add_page_break(doc)
+
+# ===========================================================================
+# NHẬN XÉT (của giảng viên chấm trong đồ án của sinh viên)
+# ===========================================================================
+add_heading(doc, "NHẬN XÉT", level=1, center=True)
+add_para(doc, "(Của giảng viên chấm trong đồ án của sinh viên)", center=True, italic=True, size=13)
+add_blank_lines(doc, 12)
+p = doc.add_paragraph()
+p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+r = p.add_run("Giảng viên chấm\n(ký và ghi rõ họ tên)")
+r.font.name = "Times New Roman"
+r.font.size = Pt(13)
+r.italic = True
+add_page_break(doc)
+
+# ===========================================================================
+# BẢN NHẬN XÉT ĐỒ ÁN THỰC TẬP CHUYÊN NGÀNH (mẫu, của cán bộ chấm đồ án)
+# ===========================================================================
+add_letterhead(doc,
+    ["UBND TỈNH TRÀ VINH", UNIVERSITY],
+    ["CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM", "Độc lập - Tự do - Hạnh phúc"])
+add_heading(doc, f"BẢN NHẬN XÉT {PROJECT_TYPE}", level=2, center=True)
+add_para(doc, "(Của cán bộ chấm đồ án)", center=True, italic=True, size=13)
+add_para(doc, "Họ và tên người nhận xét: ..........................................", justify=False)
+add_para(doc, "Chức danh: ..........................\t\tHọc vị: ..........................", justify=False)
+add_para(doc, "Chuyên ngành: ..........................................", justify=False)
+add_para(doc, "Cơ quan công tác: ..........................................", justify=False)
+add_para(doc, f"Tên sinh viên: {STUDENT_NAME}", justify=False)
+add_para(doc, f"Tên đề tài đồ án: {THESIS_TITLE.replace(chr(10), ' ')}", justify=False)
+add_heading(doc, "I. Ý KIẾN NHẬN XÉT", level=3)
+for item in ["1. Nội dung:", "2. Điểm mới các kết quả của đồ án:", "3. Ứng dụng thực tế:"]:
+    add_para(doc, item, justify=False)
+    add_blank_lines(doc, 2)
+add_heading(doc, "II. CÁC VẤN ĐỀ CẦN LÀM RÕ", level=3)
+add_para(doc, "(Các câu hỏi của giáo viên phản biện)", italic=True, justify=False)
+add_blank_lines(doc, 4)
+add_heading(doc, "III. KẾT LUẬN", level=3)
+add_para(doc, "(Ghi rõ đồng ý hay không đồng ý cho bảo vệ đồ án)", italic=True, justify=False)
+add_blank_lines(doc, 4)
+p = doc.add_paragraph()
+p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+r = p.add_run(f"..............., ngày ...... tháng ...... năm 20...\nNgười nhận xét\n(Ký & ghi rõ họ tên)")
+r.font.name = "Times New Roman"
+r.font.size = Pt(13)
+r.italic = True
+add_page_break(doc)
+
+# ===========================================================================
+# DANH MỤC CÁC BẢNG, SƠ ĐỒ, HÌNH
+# ===========================================================================
+add_heading(doc, "DANH MỤC CÁC BẢNG, SƠ ĐỒ, HÌNH", level=1, center=True)
+add_para(doc, (
+    "Chữ số thứ nhất chỉ số thứ tự chương, chữ số thứ hai chỉ thứ tự bảng "
+    "biểu/sơ đồ/hình trong chương đó (ví dụ BẢNG 1.1 là bảng thứ nhất của "
+    "Chương 1). Danh sách dưới đây liệt kê theo thứ tự xuất hiện trong báo "
+    "cáo."
+))
+figlist = [
+    ("BẢNG 1.1", "Các bộ dữ liệu chữ ký công khai thường dùng"),
+    ("SƠ ĐỒ 2.1", "Minh hoạ kiến trúc mạng Siamese"),
+    ("BẢNG 3.1", "Số người ký và số cặp mẫu theo từng tập (CEDAR)"),
+    ("BẢNG 3.2", "Thiết lập huấn luyện: dự kiến so với thực tế đã dùng"),
+    ("SƠ ĐỒ 3.1", "Quy trình tổng thể của hệ thống xác minh chữ ký"),
+    ("BẢNG 4.1", "Cách chia dữ liệu trên bộ CEDAR"),
+    ("BẢNG 4.2", "Danh sách thí nghiệm T1–T8: kết quả thực tế"),
+    ("BẢNG 4.3", "Kết quả tổng thể trên tập test CEDAR"),
+    ("BẢNG 4.4", "Kết quả phân theo loại giả mạo — Cấu hình A"),
+    ("BẢNG 4.5", "Kết quả phân theo loại giả mạo — Cấu hình B"),
+    ("BẢNG 4.6", "So sánh Cấu hình A và Cấu hình B theo loại giả mạo"),
+    ("HÌNH 4.1", "Đường cong ROC — baseline HOG + SVM"),
+    ("HÌNH 4.2", "Đường cong ROC — Cấu hình A"),
+    ("HÌNH 4.3", "Đường cong ROC — Cấu hình B"),
+    ("HÌNH 4.4", "Ca lỗi false-accept, giả mạo ngẫu nhiên, Cấu hình A"),
+    ("HÌNH 4.5", "Ca lỗi false-reject, cùng người ký, Cấu hình A"),
+    ("HÌNH 4.6", "Ca lỗi false-accept, giả mạo kỹ năng cao, Cấu hình A"),
+    ("HÌNH 4.7", "Ca lỗi false-accept, giả mạo ngẫu nhiên, Cấu hình B"),
+    ("HÌNH 4.8", "Ca lỗi false-reject nghiêm trọng trên BHSig260"),
+    ("HÌNH 4.9", "Ca lỗi false-accept giả mạo kỹ năng cao trên BHSig260"),
+    ("BẢNG 4.7", "Kết quả zero-shot trên BHSig260 (T7)"),
+    ("BẢNG 4.8", "Rủi ro đã dự kiến so với thực tế xảy ra"),
+    ("BẢNG 5.1", "Kiến trúc và công cụ của chương trình demo"),
+    ("HÌNH 5.1", "Giao diện demo Streamlit — trạng thái ban đầu"),
+    ("HÌNH 5.2", "Giao diện demo Streamlit — kết quả với cặp chữ ký thật"),
+    ("HÌNH 5.3", "Giao diện demo Streamlit — kết quả với cặp chữ ký giả"),
+]
+add_table(doc, ["Số hiệu", "Tên bảng / sơ đồ / hình"], figlist, col_widths_cm=[3, 13])
+add_page_break(doc)
+
+# ===========================================================================
+# DANH MỤC TỪ VIẾT TẮT
+# ===========================================================================
+add_heading(doc, "DANH MỤC TỪ VIẾT TẮT", level=1, center=True)
+abbr = [
+    ("CNN", "Convolutional Neural Network — Mạng nơ-ron tích chập"),
+    ("SVM", "Support Vector Machine — Máy vector hỗ trợ"),
+    ("HOG", "Histogram of Oriented Gradients — Lược đồ hướng gradient"),
+    ("LBP", "Local Binary Pattern — Mẫu nhị phân cục bộ"),
+    ("FAR", "False Acceptance Rate — Tỉ lệ chấp nhận nhầm"),
+    ("FRR", "False Rejection Rate — Tỉ lệ từ chối nhầm"),
+    ("EER", "Equal Error Rate — Điểm cân bằng lỗi (FAR = FRR)"),
+    ("ROC", "Receiver Operating Characteristic — Đường cong đặc trưng vận hành"),
+    ("AUC", "Area Under the Curve — Diện tích dưới đường cong ROC"),
+    ("ResNet", "Residual Network — Mạng tích chập dư"),
+    ("VGG", "Visual Geometry Group — Kiến trúc CNN của nhóm VGG, Oxford"),
+    ("GPU/CPU", "Graphics/Central Processing Unit — Bộ xử lý đồ hoạ/trung tâm"),
+    ("BN", "Batch Normalization — Chuẩn hoá theo lô"),
+    ("τ (tau)", "Ngưỡng quyết định (decision threshold)"),
+    ("T1–T8", "Ký hiệu các thí nghiệm theo đề cương chi tiết (mục 4.2, Chương 4)"),
+]
+add_table(doc, ["Từ viết tắt", "Giải nghĩa"], abbr, col_widths_cm=[3, 13])
+
+# ===========================================================================
+# [SECTION BREAK] Từ đây: số trang Ả Rập, bắt đầu lại từ 1 tại Chương 1,
+# theo đúng quy định của biểu mẫu chính thức.
+# ===========================================================================
+new_section = doc.add_section(WD_SECTION_START.NEW_PAGE)
+set_page_number_format(new_section, "decimal", start=1)
+
+
+def chapter_byline(doc):
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r = p.add_run(f"GVHD: {ADVISOR}          SVTH: {STUDENT_NAME}")
+    r.italic = True
+    r.font.size = Pt(12)
+    r.font.name = "Times New Roman"
+
+
+# ===========================================================================
 # CHƯƠNG 1 — TỔNG QUAN
 # ===========================================================================
-add_heading(doc, "CHƯƠNG 1. TỔNG QUAN", level=1, page_break_before=True)
+start_chapter(1)
+add_heading(doc, "CHƯƠNG 1. TỔNG QUAN", level=1)
+chapter_byline(doc)
 
 add_heading(doc, "1.1. Bài toán xác minh chữ ký", level=2)
 add_para(doc, (
@@ -709,7 +944,7 @@ add_para(doc, (
     "gradient cường độ trong mỗi ô, sau đó chuẩn hoá theo từng khối (block) "
     "ô lân cận:"
 ))
-add_formula(doc, f"{FORM}/f_hog.png", width_cm=8)
+add_formula(doc, f"{FORM}/f_hog.png", width_cm=8, eq_num=next_eq())
 add_para(doc, (
     "trong đó Gx, Gy là gradient ảnh theo hai trục, θ là hướng gradient "
     "dùng để phân bổ vào các bin của histogram. Bộ phân loại thường là "
@@ -752,14 +987,15 @@ add_table(doc, ["Bộ dữ liệu", "Số người ký", "Mẫu mỗi người",
                ["BHSig260 [17]", "260 (100 Bengali, 160 Hindi)", "24 thật, "
                                     "30 giả", "Chữ ký Bengali và Hindi — "
                                     "được đồ án chọn làm bộ thứ hai"],
-           ], col_widths_cm=[4, 3, 3, 6], caption="Các bộ dữ liệu chữ ký công khai thường dùng", caption_num=next_table())
+           ], col_widths_cm=[4, 3, 3, 6], caption="Các bộ dữ liệu chữ ký công khai thường dùng",
+           caption_num=next_table(), source="Nguồn: tổng hợp từ [5], [11], [15], [17], [21]")
 add_para(doc, (
     "Đồ án chọn CEDAR làm bộ chính (huấn luyện + đánh giá trong miền) và "
     "BHSig260 làm bộ thứ hai (chỉ đánh giá tổng quát hoá zero-shot, không "
-    "huấn luyện), đúng như phạm vi đã đề ra ở Bảng 1. Các bộ MCYT-75, "
-    "GPDS-960 và GPDS Synthetic không được sử dụng trong phạm vi đồ án "
-    "này, được nêu ở đây để có bức tranh tổng quan đầy đủ về các lựa chọn "
-    "dữ liệu khả dĩ cho bài toán."
+    "huấn luyện), đúng như phạm vi đã đề ra ở mục 3.2 (Lời mở đầu). Các bộ "
+    "MCYT-75, GPDS-960 và GPDS Synthetic không được sử dụng trong phạm vi "
+    "đồ án này, được nêu ở đây để có bức tranh tổng quan đầy đủ về các lựa "
+    "chọn dữ liệu khả dĩ cho bài toán."
 ))
 
 add_heading(doc, "1.5. Khoảng trống và hướng tiếp cận của đồ án", level=2)
@@ -787,7 +1023,9 @@ add_page_break(doc)
 # ===========================================================================
 # CHƯƠNG 2 — CƠ SỞ LÝ THUYẾT
 # ===========================================================================
-add_heading(doc, "CHƯƠNG 2. CƠ SỞ LÝ THUYẾT", level=1, page_break_before=True)
+start_chapter(2)
+add_heading(doc, "CHƯƠNG 2. CƠ SỞ LÝ THUYẾT", level=1)
+chapter_byline(doc)
 
 add_heading(doc, "2.1. Tiền xử lý ảnh", level=2)
 add_para(doc, (
@@ -841,7 +1079,8 @@ add_para(doc, (
     "không cần huấn luyện lại [13]."
 ))
 add_image(doc, f"{FORM}/diagram_siamese.png", width_cm=13,
-          caption="Minh hoạ kiến trúc mạng Siamese: hai nhánh CNN dùng chung trọng số")
+          caption="Minh hoạ kiến trúc mạng Siamese: hai nhánh CNN dùng chung trọng số",
+          caption_num=next_diagram(), source="Nguồn: minh hoạ tự vẽ")
 
 add_heading(doc, "2.4. Hàm mất mát", level=2)
 add_para(doc, (
@@ -912,7 +1151,9 @@ add_page_break(doc)
 # ===========================================================================
 # CHƯƠNG 3 — PHƯƠNG PHÁP THỰC HIỆN
 # ===========================================================================
-add_heading(doc, "CHƯƠNG 3. PHƯƠNG PHÁP THỰC HIỆN", level=1, page_break_before=True)
+start_chapter(3)
+add_heading(doc, "CHƯƠNG 3. PHƯƠNG PHÁP THỰC HIỆN", level=1)
+chapter_byline(doc)
 
 add_heading(doc, "3.1. Quy trình tổng thể", level=2)
 add_para(doc, (
@@ -921,7 +1162,8 @@ add_para(doc, (
     "ngưỡng."
 ))
 add_image(doc, f"{FORM}/diagram_pipeline.png", width_cm=14,
-          caption="Quy trình tổng thể của hệ thống xác minh chữ ký", caption_num=next_fig())
+          caption="Quy trình tổng thể của hệ thống xác minh chữ ký",
+          caption_num=next_diagram(), source="Nguồn: minh hoạ tự vẽ")
 
 add_heading(doc, "3.2. Chuẩn bị dữ liệu và sinh cặp mẫu", level=2)
 add_para(doc, (
@@ -944,7 +1186,8 @@ add_para(doc, (
 ))
 add_table(doc, ["Tập", "Số người ký", "Số cặp"],
            [["Train", 40, 3200], ["Validation", 5, 400], ["Test", 10, 800]],
-           col_widths_cm=[5, 5, 5], caption="Số người ký và số cặp mẫu theo từng tập (CEDAR)", caption_num=next_table())
+           col_widths_cm=[5, 5, 5], caption="Số người ký và số cặp mẫu theo từng tập (CEDAR)",
+           caption_num=next_table(), source="Nguồn: kết quả thực nghiệm của đồ án")
 
 add_heading(doc, "3.3. Phương pháp cơ sở (baseline)", level=2)
 add_bullet(doc, "Trích đặc trưng HOG từ ảnh đã chuẩn hóa kích thước.")
@@ -991,7 +1234,8 @@ add_table(doc, ["Thành phần", "Dự kiến (đề cương)", "Thực tế đ�
                                 "nhất), cố định khi kiểm thử", "Trên "
                                 "validation theo EER, đóng băng khi kiểm "
                                 "thử — khớp đề cương"],
-           ], col_widths_cm=[4, 6, 6], caption="Thiết lập huấn luyện: dự kiến so với thực tế đã dùng", caption_num=next_table())
+           ], col_widths_cm=[4, 6, 6], caption="Thiết lập huấn luyện: dự kiến so với thực tế đã dùng",
+           caption_num=next_table(), source="Nguồn: đề cương chi tiết và kết quả thực nghiệm của đồ án")
 add_para(doc, (
     "Toàn bộ huấn luyện thực tế chạy trên CPU (đề cương dự kiến dùng GPU "
     "miễn phí Google Colab/Kaggle — mục 6.5 đề cương — nhưng môi trường "
@@ -1014,7 +1258,9 @@ add_page_break(doc)
 # ===========================================================================
 # CHƯƠNG 4 — THỰC NGHIỆM VÀ ĐÁNH GIÁ
 # ===========================================================================
-add_heading(doc, "CHƯƠNG 4. THỰC NGHIỆM VÀ ĐÁNH GIÁ", level=1, page_break_before=True)
+start_chapter(4)
+add_heading(doc, "CHƯƠNG 4. THỰC NGHIỆM VÀ ĐÁNH GIÁ", level=1)
+chapter_byline(doc)
 add_para(doc, (
     "Toàn bộ số liệu trong chương này là kết quả thật (không mô phỏng), "
     "thu được từ các lần chạy huấn luyện và đánh giá trên tập test CEDAR "
@@ -1030,7 +1276,8 @@ add_table(doc, ["Tập", "Số người ký (thực tế đã dùng)", "Vai trò
                ["Validation", 5, "Chọn siêu tham số, dừng sớm, chọn ngưỡng τ"],
                ["Kiểm thử", 10, "Đánh giá cuối cùng, dùng một lần cho mỗi "
                                  "cấu hình đã chốt"],
-           ], col_widths_cm=[4, 6, 6], caption="Cách chia dữ liệu trên bộ CEDAR (55 người ký)", caption_num=next_table())
+           ], col_widths_cm=[4, 6, 6], caption="Cách chia dữ liệu trên bộ CEDAR (55 người ký)",
+           caption_num=next_table(), source="Nguồn: kết quả thực nghiệm của đồ án")
 add_para(doc, (
     "Số người ký thực tế khớp hoàn toàn với đề xuất trong đề cương "
     "(40/5/10). Đề cương còn đề xuất lặp lại các thí nghiệm chính với ít "
@@ -1052,7 +1299,8 @@ add_table(doc, ["Mã", "Mục đích", "Trạng thái thực tế"],
                ["T6", "So sánh hàm mất mát (contrastive và triplet)", "Chưa thực hiện — thí nghiệm bổ sung tùy chọn theo đề cương"],
                ["T7", "Khả năng tổng quát (huấn luyện CEDAR, kiểm thử BHSig260 zero-shot)", "Hoàn thành đầy đủ (Cấu hình A và baseline)"],
                ["T8", "Mẫu tự thu thập (tùy chọn)", "Chưa thực hiện — thí nghiệm tùy chọn theo đề cương"],
-           ], col_widths_cm=[2, 7, 7], caption="Danh sách thí nghiệm T1–T8: kết quả thực tế", caption_num=next_table())
+           ], col_widths_cm=[2, 7, 7], caption="Danh sách thí nghiệm T1–T8: kết quả thực tế",
+           caption_num=next_table(), source="Nguồn: đối chiếu đề cương chi tiết và kết quả thực nghiệm của đồ án")
 add_para(doc, (
     "Theo đề cương, T1–T5 và T7 là bắt buộc, T6 và T8 chỉ làm khi còn thời "
     "gian. Đồ án hoàn thành đầy đủ T1, T2, T7 và một phần lớn T3 (2/3 "
@@ -1070,7 +1318,8 @@ add_table(doc, ["Mô hình", "τ", "Accuracy", "FAR", "FRR", "AUC", "EER (val, t
                ["Cấu hình A (T2, margin=1,0)", "0,2471", "84,63%", "20,25%", "10,50%", "0,915", "9,75%"],
                ["Cấu hình B (T3, margin=1,0)", "0,4763", "87,88%", "7,75%", "16,50%", "0,955", "5,50%"],
            ], col_widths_cm=[6, 3, 3, 3, 3, 3, 4],
-           caption="Kết quả tổng thể trên tập test CEDAR (800 cặp)", caption_num=next_table())
+           caption="Kết quả tổng thể trên tập test CEDAR (800 cặp)",
+           caption_num=next_table(), source="Nguồn: kết quả thực nghiệm của đồ án")
 add_para(doc, (
     "Lưu ý về chỉ tiêu đề xuất (Bảng 9 đề cương, \"EER trên tập kiểm thử "
     "CEDAR — giả mạo chuyên nghiệp — không quá 5%\"): giá trị EER 5,50% "
@@ -1080,7 +1329,7 @@ add_para(doc, (
     "đề cương yêu cầu chặt chẽ. Một EER riêng cho skilled-forgery-only "
     "chưa được tính tách biệt trong lần chạy này. Kết quả gần nhất có thể "
     "dùng để suy luận là AUC skilled forgery của Cấu hình B đạt 0,984 (FAR "
-    "2,50% — Bảng 4.4), cho thấy khả năng cao là EER riêng cho skilled "
+    "2,50% — BẢNG 4.6), cho thấy khả năng cao là EER riêng cho skilled "
     "forgery sẽ thấp hơn 5,50% nói trên, nhưng đây KHÔNG được xem là số đo "
     "chính thức đạt chỉ tiêu; việc tính EER tách riêng theo đúng định "
     "nghĩa chỉ tiêu là một việc còn thiếu, nêu ở mục 4.8 và phần Kết luận."
@@ -1092,13 +1341,15 @@ add_table(doc, ["Loại giả mạo", "Accuracy", "FAR", "FRR", "AUC"],
                ["Skilled forgery", "92,67%", "1,00%", "10,50%", "0,997"],
                ["Random forgery", "79,83%", "39,50%", "10,50%", "0,834"],
            ], col_widths_cm=[6, 4, 4, 4, 4],
-           caption="Kết quả phân theo loại giả mạo — Cấu hình A (T2)", caption_num=next_table())
+           caption="Kết quả phân theo loại giả mạo — Cấu hình A (T2)",
+           caption_num=next_table(), source="Nguồn: kết quả thực nghiệm của đồ án")
 add_table(doc, ["Loại giả mạo", "Accuracy", "FAR", "FRR", "AUC"],
            [
                ["Skilled forgery", "88,17%", "2,50%", "16,50%", "0,984"],
                ["Random forgery", "84,67%", "13,00%", "16,50%", "0,927"],
            ], col_widths_cm=[6, 4, 4, 4, 4],
-           caption="Kết quả phân theo loại giả mạo — Cấu hình B (T3)", caption_num=next_table())
+           caption="Kết quả phân theo loại giả mạo — Cấu hình B (T3)",
+           caption_num=next_table(), source="Nguồn: kết quả thực nghiệm của đồ án")
 add_para(doc, (
     "Kết quả đáng chú ý nhất của toàn bộ thực nghiệm: cả hai cấu hình đều "
     "phân biệt skilled forgery gần như hoàn hảo (AUC 0,997 và 0,984) nhưng "
@@ -1123,15 +1374,19 @@ add_table(doc, ["Chỉ số", "Cấu hình A", "Cấu hình B", "Chênh lệch"]
                ["AUC skilled forgery", "0,997", "0,984", "−0,013"],
                ["EER validation (toàn bộ loại cặp)", "9,75%", "5,50%", "−4,25 điểm %"],
            ], col_widths_cm=[6, 4, 4, 4],
-           caption="So sánh Cấu hình A và Cấu hình B theo loại giả mạo", caption_num=next_table())
+           caption="So sánh Cấu hình A và Cấu hình B theo loại giả mạo",
+           caption_num=next_table(), source="Nguồn: kết quả thực nghiệm của đồ án")
 
 add_heading(doc, "4.5. Đường cong ROC", level=2)
 add_image(doc, f"{RES}/baseline/roc.png", width_cm=13,
-          caption="Đường cong ROC — baseline HOG + SVM (T1)", caption_num=next_fig())
+          caption="Đường cong ROC — baseline HOG + SVM (T1)",
+          caption_num=next_fig(), source="Nguồn: kết quả thực nghiệm của đồ án")
 add_image(doc, f"{RES}/config_a/roc.png", width_cm=13,
-          caption="Đường cong ROC — Cấu hình A (T2)", caption_num=next_fig())
+          caption="Đường cong ROC — Cấu hình A (T2)",
+          caption_num=next_fig(), source="Nguồn: kết quả thực nghiệm của đồ án")
 add_image(doc, f"{RES}/config_b/roc.png", width_cm=13,
-          caption="Đường cong ROC — Cấu hình B (T3)", caption_num=next_fig())
+          caption="Đường cong ROC — Cấu hình B (T3)",
+          caption_num=next_fig(), source="Nguồn: kết quả thực nghiệm của đồ án")
 
 add_heading(doc, "4.6. Phân tích định tính các ca lỗi", level=2)
 add_para(doc, (
@@ -1145,7 +1400,8 @@ add_para(doc, (
     "từng người."
 ))
 add_image(doc, f"{EA}/cedar_test/random_forgery_false_accept_006.png", width_cm=13,
-          caption="Ca lỗi false-accept, giả mạo ngẫu nhiên, Cấu hình A", caption_num=next_fig())
+          caption="Ca lỗi false-accept, giả mạo ngẫu nhiên, Cấu hình A",
+          caption_num=next_fig(), source="Nguồn: trích xuất từ predictions_test.csv của đồ án")
 add_para(doc, (
     "Hình dưới minh hoạ một ca từ chối nhầm (false reject) ở cặp "
     "genuine-genuine: hai chữ ký của cùng một người nhưng D cao hơn τ, do "
@@ -1153,7 +1409,8 @@ add_para(doc, (
     "khác nhau mà mô hình dừng sớm ở epoch 18 chưa học đủ để dung nạp."
 ))
 add_image(doc, f"{EA}/cedar_test/genuine_genuine_false_reject_000.png", width_cm=13,
-          caption="Ca lỗi false-reject, cùng người ký, Cấu hình A", caption_num=next_fig())
+          caption="Ca lỗi false-reject, cùng người ký, Cấu hình A",
+          caption_num=next_fig(), source="Nguồn: trích xuất từ predictions_test.csv của đồ án")
 add_para(doc, (
     "Hình dưới minh hoạ ca chấp nhận nhầm hiếm gặp ở skilled forgery "
     "(D=0,1938, sát dưới τ=0,2471): cả hai chữ ký (thật và giả) đều có "
@@ -1162,7 +1419,8 @@ add_para(doc, (
     "là chữ ký giả."
 ))
 add_image(doc, f"{EA}/cedar_test/skilled_forgery_false_accept_012.png", width_cm=13,
-          caption="Ca lỗi false-accept, giả mạo kỹ năng cao, Cấu hình A", caption_num=next_fig())
+          caption="Ca lỗi false-accept, giả mạo kỹ năng cao, Cấu hình A",
+          caption_num=next_fig(), source="Nguồn: trích xuất từ predictions_test.csv của đồ án")
 add_para(doc, (
     "So sánh Cấu hình A và Cấu hình B trên cùng loại lỗi: hình dưới cho "
     "thấy Cấu hình B vẫn mắc cùng loại lỗi random-forgery đã quan sát ở "
@@ -1175,7 +1433,8 @@ add_para(doc, (
     "ký."
 ))
 add_image(doc, f"{EA}/cedar_test_config_b/random_forgery_false_accept_004.png", width_cm=13,
-          caption="Ca lỗi false-accept, giả mạo ngẫu nhiên, Cấu hình B (so sánh)", caption_num=next_fig())
+          caption="Ca lỗi false-accept, giả mạo ngẫu nhiên, Cấu hình B (so sánh)",
+          caption_num=next_fig(), source="Nguồn: trích xuất từ predictions_test.csv của đồ án")
 
 add_heading(doc, "4.7. Đánh giá tổng quát hoá zero-shot trên BHSig260 (T7)", level=2)
 add_para(doc, (
@@ -1191,7 +1450,8 @@ add_table(doc, ["Mô hình", "Loại giả mạo", "FAR", "FRR", "AUC", "Đạt 
                ["Baseline HOG+SVM", "Skilled forgery", "41,85%", "21,65%", "0,767", "Chưa đạt"],
                ["Baseline HOG+SVM", "Random forgery", "5,69%", "21,65%", "0,923", "—"],
            ], col_widths_cm=[5, 4, 3, 3, 3, 4],
-           caption="Kết quả zero-shot trên BHSig260 (T7): Cấu hình A và baseline", caption_num=next_table())
+           caption="Kết quả zero-shot trên BHSig260 (T7): Cấu hình A và baseline",
+           caption_num=next_table(), source="Nguồn: kết quả thực nghiệm của đồ án")
 add_para(doc, (
     "Cả hai mô hình chưa đạt chỉ tiêu EER≤20% đề ra ban đầu, nhưng AUC vẫn "
     "ở mức 0,75–0,92 — cao hơn hẳn ngẫu nhiên — cho thấy embedding học "
@@ -1211,9 +1471,11 @@ add_para(doc, (
     "phản khác của ảnh BHSig260."
 ))
 add_image(doc, f"{EA}/bhsig260/genuine_genuine_false_reject_000.png", width_cm=13,
-          caption="Ca lỗi false-reject nghiêm trọng trên BHSig260 (lệch miền tiền xử lý)", caption_num=next_fig())
+          caption="Ca lỗi false-reject nghiêm trọng trên BHSig260 (lệch miền tiền xử lý)",
+          caption_num=next_fig(), source="Nguồn: trích xuất từ predictions_bhsig260.csv của đồ án")
 add_image(doc, f"{EA}/bhsig260/skilled_forgery_false_accept_008.png", width_cm=13,
-          caption="Ca lỗi false-accept giả mạo kỹ năng cao trên BHSig260", caption_num=next_fig())
+          caption="Ca lỗi false-accept giả mạo kỹ năng cao trên BHSig260",
+          caption_num=next_fig(), source="Nguồn: trích xuất từ predictions_bhsig260.csv của đồ án")
 
 add_heading(doc, "4.8. Thảo luận", level=2)
 add_para(doc, "So với các rủi ro đã nêu trước trong đề cương (mục 7.4):")
@@ -1235,7 +1497,8 @@ add_table(doc, ["Rủi ro đã dự kiến", "Có xảy ra không", "Xử lý th
                     "ở lần chạy đầu tiên", "Phát hiện và sửa lỗi (gieo lại "
                     "seed mỗi margin) cho các lần chạy sau; ghi nhận minh "
                     "bạch trong Phụ lục"],
-           ], col_widths_cm=[5, 4, 7], caption="Rủi ro đã dự kiến so với thực tế xảy ra", caption_num=next_table())
+           ], col_widths_cm=[5, 4, 7], caption="Rủi ro đã dự kiến so với thực tế xảy ra",
+           caption_num=next_table(), source="Nguồn: đối chiếu đề cương chi tiết và thực tế thực hiện đồ án")
 add_para(doc, (
     "Một rủi ro KHÔNG có trong danh sách dự kiến ban đầu cũng đã xảy ra "
     "thực tế: môi trường tính toán (container) bị khởi động lại giữa "
@@ -1262,7 +1525,9 @@ add_page_break(doc)
 # ===========================================================================
 # CHƯƠNG 5 — CHƯƠNG TRÌNH DEMO
 # ===========================================================================
-add_heading(doc, "CHƯƠNG 5. CHƯƠNG TRÌNH DEMO", level=1, page_break_before=True)
+start_chapter(5)
+add_heading(doc, "CHƯƠNG 5. CHƯƠNG TRÌNH DEMO", level=1)
+chapter_byline(doc)
 add_para(doc, (
     "Chương trình demo là một ứng dụng web nhỏ, chạy trên máy cá nhân, "
     "cho phép kiểm tra một cặp chữ ký và quan sát ảnh hưởng của ngưỡng "
@@ -1297,7 +1562,8 @@ add_table(doc, ["Thành phần", "Nhiệm vụ", "Công cụ"],
                               "NumPy"],
                ["Mô-đun mô hình", "Tải checkpoint tốt nhất, tính embedding "
                               "và khoảng cách", "PyTorch"],
-           ], col_widths_cm=[4, 7, 5], caption="Kiến trúc và công cụ của chương trình demo", caption_num=next_table())
+           ], col_widths_cm=[4, 7, 5], caption="Kiến trúc và công cụ của chương trình demo",
+           caption_num=next_table(), source="Nguồn: tự tổng hợp từ mã nguồn app/ của đồ án")
 add_para(doc, (
     "Ảnh người dùng tải lên chỉ được xử lý trong bộ nhớ và không lưu lại "
     "xuống đĩa ở bất kỳ bước nào, vì chữ ký là dữ liệu cá nhân — đúng yêu "
@@ -1312,11 +1578,14 @@ add_para(doc, (
     "validation)."
 ))
 add_image(doc, f"{SCR}/demo_empty.png", width_cm=13,
-          caption="Giao diện demo Streamlit — trạng thái ban đầu", caption_num=next_fig())
+          caption="Giao diện demo Streamlit — trạng thái ban đầu",
+          caption_num=next_fig(), source="Nguồn: ảnh chụp màn hình ứng dụng demo của đồ án")
 add_image(doc, f"{SCR}/demo_genuine.png", width_cm=13,
-          caption="Giao diện demo Streamlit — kết quả với cặp chữ ký thật", caption_num=next_fig())
+          caption="Giao diện demo Streamlit — kết quả với cặp chữ ký thật",
+          caption_num=next_fig(), source="Nguồn: ảnh chụp màn hình ứng dụng demo của đồ án")
 add_image(doc, f"{SCR}/demo_forged.png", width_cm=13,
-          caption="Giao diện demo Streamlit — kết quả với cặp chữ ký giả", caption_num=next_fig())
+          caption="Giao diện demo Streamlit — kết quả với cặp chữ ký giả",
+          caption_num=next_fig(), source="Nguồn: ảnh chụp màn hình ứng dụng demo của đồ án")
 add_para(doc, (
     "Cả hai trường hợp thử nghiệm thật (cặp chữ ký thật và cặp chữ ký "
     "giả) đều được ứng dụng phân loại đúng, khớp với nhãn thật của dữ "
@@ -1331,7 +1600,7 @@ add_para(doc, (
 add_page_break(doc)
 
 # ===========================================================================
-# KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN (không đánh số chương, giống Mở đầu)
+# KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN (không đánh số chương, giống Lời mở đầu)
 # ===========================================================================
 add_heading(doc, "KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN", level=1, center=True)
 
@@ -1406,7 +1675,125 @@ add_bullet(doc, "Các hướng mở rộng dài hạn khác theo đề cương: 
 add_page_break(doc)
 
 # ===========================================================================
-# TÀI LIỆU THAM KHẢO (21 mục, đúng theo đề cương đã duyệt, định dạng IEEE)
+# PHỤ LỤC (theo biểu mẫu, đặt trước Tài liệu tham khảo)
+# ===========================================================================
+add_heading(doc, "PHỤ LỤC", level=1, center=True)
+
+add_heading(doc, "Phụ lục A. Cấu trúc mã nguồn", level=2)
+add_bullet(doc, "src/sigverify/preprocessing/ — pipeline.py (tiền xử lý), "
+                "datasets.py (đọc CEDAR/BHSig260), augment.py (tăng cường "
+                "dữ liệu: rotation ≤5°, translate/scale jitter, Gaussian "
+                "noise, không lật ngang — khớp Bảng thiết lập huấn luyện "
+                "trong đề cương).")
+add_bullet(doc, "src/sigverify/pairs/ — generator.py (sinh cặp genuine/"
+                "skilled/random), splits.py (chia writer-disjoint).")
+add_bullet(doc, "src/sigverify/models/ — siamese_scratch.py (Cấu hình A), "
+                "siamese_transfer.py (Cấu hình B), losses.py (contrastive "
+                "loss).")
+add_bullet(doc, "src/sigverify/training/train_siamese.py — vòng lặp huấn "
+                "luyện dùng chung cho cả hai cấu hình.")
+add_bullet(doc, "src/sigverify/evaluation/metrics.py — FAR/FRR/EER, chọn "
+                "ngưỡng trên validation, đánh giá đóng băng trên test.")
+add_bullet(doc, "scripts/train_config_a.py, train_config_b.py — script "
+                "huấn luyện đầy đủ, có checkpoint theo từng margin.")
+add_bullet(doc, "scripts/run_ablations.py, configs/ablation_variants/ — "
+                "mã nguồn cho T4/T5 đã viết sẵn nhưng CHƯA chạy với dữ "
+                "liệu thật (xem mục 4.2, Chương 4).")
+add_bullet(doc, "scripts/error_analysis.py — trích xuất và phân tích các "
+                "ca lỗi định tính.")
+add_bullet(doc, "app/demo_app.py, app/inference.py — ứng dụng demo "
+                "Streamlit (Chương 5).")
+
+add_heading(doc, "Phụ lục B. Cấu hình siêu tham số đầy đủ (default.yaml)", level=2)
+for line in [
+    "seed: 42",
+    "image.size_scratch: [220, 150]   (Cấu hình A)",
+    "image.size_transfer: [224, 224]  (Cấu hình B)",
+    "preprocessing.denoise: gaussian",
+    "preprocessing.binarize_output: false",
+    "pairs.ratio_pos_hardneg_easyneg: [2, 1, 1]",
+    "pairs.pairs_per_writer: 40",
+    "split.train_writers / val_writers / test_writers: 40 / 5 / 10",
+    "train.batch_size: 64",
+    "train.max_epochs: 100",
+    "train.early_stop_patience: 10  (warmup 5 epoch)",
+    "train.margins: [0.5, 1.0, 2.0]",
+    "model.embedding_dim: 128",
+    "model.transfer_backbone: resnet18",
+]:
+    add_para(doc, line, size=12)
+
+add_heading(doc, "Phụ lục C. Ghi chú minh bạch và các giả định cần xác nhận", level=2)
+add_para(doc, (
+    "Trong lần chạy huấn luyện đầy đủ đầu tiên, seed ngẫu nhiên chỉ được "
+    "gieo một lần ở đầu script thay vì gieo lại cho từng mức margin, "
+    "khiến các mức margin 1,0 và 2,0 kế thừa một phần trạng thái ngẫu "
+    "nhiên còn lại từ mức margin trước đó. Lỗi này đã được phát hiện và "
+    "sửa (gieo lại seed trước mỗi mức margin) trong scripts/"
+    "train_config_a.py và scripts/train_config_b.py cho các lần chạy sau; "
+    "số liệu trình bày trong Chương 4 vẫn là kết quả thật hợp lệ, chỉ nên "
+    "đọc phần so sánh GIỮA CÁC MỨC MARGIN của cùng một cấu hình với mức "
+    "thận trọng vừa phải — phép so sánh GIỮA HAI CẤU HÌNH A và B (ở mức "
+    "margin=1,0, cả hai đều đã dùng quy trình seed đã sửa) không bị ảnh "
+    "hưởng bởi hạn chế này."
+))
+add_para(doc, (
+    "Mức margin=2,0 của Cấu hình B không hoàn thành huấn luyện do môi "
+    "trường tính toán bị khởi động lại giữa chừng và không thể khôi phục "
+    "lại từ điểm dừng — đây là hạn chế thực tế của hạ tầng thực nghiệm, "
+    "không phải lựa chọn thiết kế, và được ghi nhận minh bạch thay vì "
+    "thay thế bằng số liệu ước lượng hay giả định."
+))
+add_para(doc, (
+    "Tiêu đề trên trang bìa của đề cương chi tiết gốc ghi \"NHẬN DẠNG CHỮ "
+    "SỐ VIẾT TAY\" — không khớp với toàn bộ 12 mục nội dung của đề cương "
+    "(đều nói về xác minh chữ ký viết tay). Đây được xem là lỗi đánh máy "
+    "còn sót lại từ mẫu đề cương cũ (nhầm \"chữ số\" thành \"chữ ký\"); "
+    "tiêu đề trên trang bìa báo cáo này đã được sửa lại cho khớp với nội "
+    "dung thực tế."
+))
+add_para(doc, (
+    f"Tên loại đồ án trên trang bìa đã đổi từ \"ĐỒ ÁN CHUYÊN NGÀNH\" (dùng "
+    f"ở bản báo cáo trước) sang đúng cụm từ \"{PROJECT_TYPE}\" theo biểu "
+    "mẫu chính thức của trường; tương tự, tên trường trên bìa được bổ "
+    f"sung thêm dòng \"{UNIVERSITY}\" ở trên cùng (theo biểu mẫu), giữ "
+    f"nguyên hai dòng \"{SCHOOL}\" / \"{FACULTY}\" đã ghi trong đề cương "
+    f"chi tiết đã duyệt bên dưới, và địa danh/ngày tháng đổi từ \"Vĩnh "
+    f"Long\" (dùng ở bản trước) sang \"{LOCATION}\" theo đúng biểu mẫu."
+))
+add_para(doc, (
+    f"\"Khoá: {STUDENT_COHORT}\" và \"Ngành: {MAJOR}\" trên bìa và trên "
+    "hai bản nhận xét mẫu là suy luận hợp lý nhất từ mã lớp "
+    f"\"{STUDENT_CLASS}\" và tên khoa \"{FACULTY}\" — chưa có nguồn xác "
+    "nhận trực tiếp, cần sinh viên xác nhận lại trước khi nộp chính thức."
+))
+add_para(doc, (
+    "Biểu mẫu trình bày chính thức của trường quy định danh mục tài liệu "
+    "tham khảo theo kiểu tác giả-năm (xếp theo abc họ/tên tác giả, tách "
+    "\"Tiếng Việt\"/\"Tiếng Anh\"), khác với định dạng IEEE đánh số [1]-"
+    "[21] mà đề cương chi tiết đã duyệt của đồ án này yêu cầu rõ ràng (mục "
+    "12 đề cương: \"đánh số [1] đến [21]... theo định dạng IEEE\"). Đây là "
+    "hai nguồn tài liệu mâu thuẫn nhau về quy tắc này. Báo cáo GIỮ NGUYÊN "
+    "định dạng IEEE theo đúng đề cương đã duyệt riêng cho đồ án này (phù "
+    "hợp hơn với lĩnh vực công nghệ thông tin, và ví dụ tham khảo trong "
+    "biểu mẫu chung của trường — về \"lúa lai\", kinh tế — cho thấy biểu "
+    "mẫu đó vốn dùng chung cho nhiều ngành khác nhau, không chuyên biệt "
+    "cho ngành công nghệ thông tin). Đề nghị sinh viên/giảng viên hướng "
+    "dẫn xác nhận lại lựa chọn này trước khi nộp chính thức."
+))
+add_para(doc, (
+    "Trang bìa cứng và bìa lót trong bản in cuối cùng thường không đánh "
+    "số trang; bản .docx này đánh số La Mã liên tục bắt đầu từ trang bìa "
+    "để đơn giản hoá việc dựng tài liệu tự động — khi in chính thức, sinh "
+    "viên nên ẩn số trang thủ công trên hai trang bìa nếu muốn khớp tuyệt "
+    "đối với quy ước thường thấy."
+))
+
+add_page_break(doc)
+
+# ===========================================================================
+# TÀI LIỆU THAM KHẢO (21 mục, đúng theo đề cương đã duyệt, định dạng IEEE --
+# đặt SAU Phụ lục, đúng vị trí cuối cùng theo biểu mẫu chính thức)
 # ===========================================================================
 add_heading(doc, "TÀI LIỆU THAM KHẢO", level=1, center=True)
 references = [
@@ -1477,89 +1864,7 @@ references = [
 for ref in references:
     add_para(doc, ref, justify=True, size=13, space_after=8)
 
-add_page_break(doc)
-
-# ===========================================================================
-# PHỤ LỤC
-# ===========================================================================
-add_heading(doc, "PHỤ LỤC", level=1, center=True)
-
-add_heading(doc, "Phụ lục A. Cấu trúc mã nguồn", level=2)
-add_bullet(doc, "src/sigverify/preprocessing/ — pipeline.py (tiền xử lý), "
-                "datasets.py (đọc CEDAR/BHSig260), augment.py (tăng cường "
-                "dữ liệu: rotation ≤5°, translate/scale jitter, Gaussian "
-                "noise, không lật ngang — khớp Bảng thiết lập huấn luyện "
-                "trong đề cương).")
-add_bullet(doc, "src/sigverify/pairs/ — generator.py (sinh cặp genuine/"
-                "skilled/random), splits.py (chia writer-disjoint).")
-add_bullet(doc, "src/sigverify/models/ — siamese_scratch.py (Cấu hình A), "
-                "siamese_transfer.py (Cấu hình B), losses.py (contrastive "
-                "loss).")
-add_bullet(doc, "src/sigverify/training/train_siamese.py — vòng lặp huấn "
-                "luyện dùng chung cho cả hai cấu hình.")
-add_bullet(doc, "src/sigverify/evaluation/metrics.py — FAR/FRR/EER, chọn "
-                "ngưỡng trên validation, đánh giá đóng băng trên test.")
-add_bullet(doc, "scripts/train_config_a.py, train_config_b.py — script "
-                "huấn luyện đầy đủ, có checkpoint theo từng margin.")
-add_bullet(doc, "scripts/run_ablations.py, configs/ablation_variants/ — "
-                "mã nguồn cho T4/T5 đã viết sẵn nhưng CHƯA chạy với dữ "
-                "liệu thật (xem mục 4.2, Chương 4).")
-add_bullet(doc, "scripts/error_analysis.py — trích xuất và phân tích các "
-                "ca lỗi định tính.")
-add_bullet(doc, "app/demo_app.py, app/inference.py — ứng dụng demo "
-                "Streamlit (Chương 5).")
-
-add_heading(doc, "Phụ lục B. Cấu hình siêu tham số đầy đủ (default.yaml)", level=2)
-for line in [
-    "seed: 42",
-    "image.size_scratch: [220, 150]   (Cấu hình A)",
-    "image.size_transfer: [224, 224]  (Cấu hình B)",
-    "preprocessing.denoise: gaussian",
-    "preprocessing.binarize_output: false",
-    "pairs.ratio_pos_hardneg_easyneg: [2, 1, 1]",
-    "pairs.pairs_per_writer: 40",
-    "split.train_writers / val_writers / test_writers: 40 / 5 / 10",
-    "train.batch_size: 64",
-    "train.max_epochs: 100",
-    "train.early_stop_patience: 10  (warmup 5 epoch)",
-    "train.margins: [0.5, 1.0, 2.0]",
-    "model.embedding_dim: 128",
-    "model.transfer_backbone: resnet18",
-]:
-    add_para(doc, line, size=12)
-
-add_heading(doc, "Phụ lục C. Ghi chú minh bạch về phương pháp luận", level=2)
-add_para(doc, (
-    "Trong lần chạy huấn luyện đầy đủ đầu tiên, seed ngẫu nhiên chỉ được "
-    "gieo một lần ở đầu script thay vì gieo lại cho từng mức margin, "
-    "khiến các mức margin 1,0 và 2,0 kế thừa một phần trạng thái ngẫu "
-    "nhiên còn lại từ mức margin trước đó. Lỗi này đã được phát hiện và "
-    "sửa (gieo lại seed trước mỗi mức margin) trong scripts/"
-    "train_config_a.py và scripts/train_config_b.py cho các lần chạy sau; "
-    "số liệu trình bày trong Chương 4 vẫn là kết quả thật hợp lệ, chỉ nên "
-    "đọc phần so sánh GIỮA CÁC MỨC MARGIN của cùng một cấu hình với mức "
-    "thận trọng vừa phải — phép so sánh GIỮA HAI CẤU HÌNH A và B (ở mức "
-    "margin=1,0, cả hai đều đã dùng quy trình seed đã sửa) không bị ảnh "
-    "hưởng bởi hạn chế này."
-))
-add_para(doc, (
-    "Mức margin=2,0 của Cấu hình B không hoàn thành huấn luyện do môi "
-    "trường tính toán bị khởi động lại giữa chừng và không thể khôi phục "
-    "lại từ điểm dừng — đây là hạn chế thực tế của hạ tầng thực nghiệm, "
-    "không phải lựa chọn thiết kế, và được ghi nhận minh bạch thay vì "
-    "thay thế bằng số liệu ước lượng hay giả định."
-))
-add_para(doc, (
-    "Tiêu đề trên trang bìa của đề cương chi tiết gốc ghi \"NHẬN DẠNG CHỮ "
-    "SỐ VIẾT TAY\" — không khớp với toàn bộ 12 mục nội dung của đề cương "
-    "(đều nói về xác minh chữ ký viết tay, chữ ký, giả mạo, mạng "
-    "Siamese...). Đây được xem là lỗi đánh máy còn sót lại từ mẫu đề "
-    "cương cũ (nhầm \"chữ số\" thành \"chữ ký\"); tiêu đề trên trang bìa "
-    "báo cáo này đã được sửa lại cho khớp với nội dung thực tế, cần sinh "
-    "viên và giảng viên hướng dẫn xác nhận lại trước khi nộp chính thức."
-))
-
 print("Base document configured.")
 doc.save(f"{BASE}/thesis/docgen/thesis.docx")
-print(f"Total: {Counter.fig} Hình, {Counter.table} Bảng, {Counter.eq} công thức đánh số.")
+print(f"Total: {Counter.eq} công thức đánh số (xuyên suốt); Bảng/Sơ đồ/Hình đánh số theo từng chương.")
 print("Thesis document generated.")
