@@ -482,41 +482,46 @@ TOC_ENTRIES = [
     (2, "1.1. Bài toán xác minh chữ ký", "1"),
     (2, "1.2. Hướng dùng đặc trưng thủ công", "1"),
     (2, "1.3. Hướng học sâu", "2"),
-    (2, "1.4. Các bộ dữ liệu công khai thường dùng", "2"),
-    (2, "1.5. Khoảng trống và hướng tiếp cận của đồ án", "3"),
+    (2, "1.4. Các bộ dữ liệu công khai thường dùng", "3"),
+    (2, "1.5. Khoảng trống và hướng tiếp cận của đồ án", "4"),
+    (2, "1.6. Tổng kết chương", "4"),
     (1, "CHƯƠNG 2. CƠ SỞ LÝ THUYẾT", "5"),
     (2, "2.1. Tiền xử lý ảnh", "5"),
-    (2, "2.2. Mạng nơ-ron tích chập (CNN)", "5"),
-    (2, "2.3. Mạng Siamese", "5"),
-    (2, "2.4. Hàm mất mát", "6"),
-    (2, "2.5. Học chuyển giao (transfer learning)", "7"),
-    (2, "2.6. Các độ đo đánh giá", "7"),
-    (1, "CHƯƠNG 3. PHƯƠNG PHÁP THỰC HIỆN", "9"),
-    (2, "3.1. Quy trình tổng thể", "9"),
-    (2, "3.2. Chuẩn bị dữ liệu và sinh cặp mẫu", "9"),
-    (2, "3.3. Phương pháp cơ sở (baseline)", "10"),
-    (2, "3.4. Mô hình Siamese chính", "10"),
-    (2, "3.5. Công cụ và môi trường", "11"),
-    (1, "CHƯƠNG 4. THỰC NGHIỆM VÀ ĐÁNH GIÁ", "12"),
-    (2, "4.1. Cách chia dữ liệu", "12"),
-    (2, "4.2. Các thí nghiệm đã thực hiện", "12"),
-    (2, "4.3. Kết quả tổng thể trên tập test CEDAR", "14"),
-    (2, "4.4. Kết quả phân theo loại giả mạo", "15"),
-    (2, "4.5. Đường cong ROC", "17"),
-    (2, "4.6. Phân tích định tính các ca lỗi", "18"),
-    (2, "4.7. Đánh giá tổng quát hoá zero-shot trên BHSig260 (T7)", "22"),
-    (2, "4.8. Thảo luận", "25"),
-    (1, "CHƯƠNG 5. CHƯƠNG TRÌNH DEMO", "27"),
-    (2, "5.1. Chức năng", "27"),
-    (2, "5.2. Luồng sử dụng", "27"),
-    (2, "5.3. Kiến trúc và công cụ", "27"),
-    (2, "5.4. Kết quả trình diễn", "28"),
-    (1, "KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN", "31"),
-    (2, "1. Kết quả đạt được", "31"),
-    (2, "2. Hạn chế", "31"),
-    (2, "3. Hướng phát triển", "32"),
-    (1, "PHỤ LỤC", "33"),
-    (1, "TÀI LIỆU THAM KHẢO", "36"),
+    (2, "2.2. Mạng nơ-ron tích chập (CNN)", "6"),
+    (2, "2.3. Mạng Siamese", "7"),
+    (2, "2.4. Hàm mất mát", "8"),
+    (2, "2.5. Bộ tối ưu Adam", "9"),
+    (2, "2.6. Học chuyển giao (transfer learning)", "10"),
+    (2, "2.7. Các độ đo đánh giá", "10"),
+    (2, "2.8. Tổng kết chương", "11"),
+    (1, "CHƯƠNG 3. PHƯƠNG PHÁP THỰC HIỆN", "13"),
+    (2, "3.1. Quy trình tổng thể", "13"),
+    (2, "3.2. Chuẩn bị dữ liệu và sinh cặp mẫu", "13"),
+    (2, "3.3. Phương pháp cơ sở (baseline)", "14"),
+    (2, "3.4. Mô hình Siamese chính", "14"),
+    (2, "3.5. Công cụ và môi trường", "18"),
+    (2, "3.6. Tổng kết chương", "18"),
+    (1, "CHƯƠNG 4. THỰC NGHIỆM VÀ ĐÁNH GIÁ", "19"),
+    (2, "4.1. Cách chia dữ liệu", "19"),
+    (2, "4.2. Các thí nghiệm đã thực hiện", "19"),
+    (2, "4.3. Kết quả tổng thể trên tập test CEDAR", "21"),
+    (2, "4.4. Kết quả phân theo loại giả mạo", "22"),
+    (2, "4.5. Đường cong ROC", "24"),
+    (2, "4.6. Phân tích định tính các ca lỗi", "25"),
+    (2, "4.7. Đánh giá tổng quát hoá zero-shot trên BHSig260 (T7)", "29"),
+    (2, "4.8. Thảo luận", "32"),
+    (1, "CHƯƠNG 5. CHƯƠNG TRÌNH DEMO", "34"),
+    (2, "5.1. Chức năng", "34"),
+    (2, "5.2. Luồng sử dụng", "34"),
+    (2, "5.3. Kiến trúc và luồng xử lý", "34"),
+    (2, "5.4. Hạn chế của chương trình demo", "35"),
+    (2, "5.5. Kết quả trình diễn", "36"),
+    (1, "KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN", "39"),
+    (2, "1. Kết quả đạt được", "39"),
+    (2, "2. Hạn chế", "39"),
+    (2, "3. Hướng phát triển", "40"),
+    (1, "PHỤ LỤC", "41"),
+    (1, "TÀI LIỆU THAM KHẢO", "44"),
 ]
 for lvl, text, pg in TOC_ENTRIES:
     add_toc_entry(doc, lvl, text, pg)
@@ -833,9 +838,12 @@ add_para(doc, (
 figlist = [
     ("BẢNG 1.1", "Các bộ dữ liệu chữ ký công khai thường dùng"),
     ("SƠ ĐỒ 2.1", "Minh hoạ kiến trúc mạng Siamese"),
+    ("SƠ ĐỒ 3.1", "Quy trình tổng thể của hệ thống xác minh chữ ký"),
     ("BẢNG 3.1", "Số người ký và số cặp mẫu theo từng tập (CEDAR)"),
     ("BẢNG 3.2", "Thiết lập huấn luyện: dự kiến so với thực tế đã dùng"),
-    ("SƠ ĐỒ 3.1", "Quy trình tổng thể của hệ thống xác minh chữ ký"),
+    ("BẢNG 3.3", "Kiến trúc chi tiết Cấu hình A theo từng khối"),
+    ("BẢNG 3.4", "Kết quả khảo sát margin trong huấn luyện — Cấu hình A"),
+    ("BẢNG 3.5", "Kết quả khảo sát margin trong huấn luyện — Cấu hình B"),
     ("BẢNG 4.1", "Cách chia dữ liệu trên bộ CEDAR"),
     ("BẢNG 4.2", "Danh sách thí nghiệm T1–T8: kết quả thực tế"),
     ("BẢNG 4.3", "Kết quả tổng thể trên tập test CEDAR"),
@@ -854,6 +862,7 @@ figlist = [
     ("BẢNG 4.7", "Kết quả zero-shot trên BHSig260 (T7)"),
     ("BẢNG 4.8", "Rủi ro đã dự kiến so với thực tế xảy ra"),
     ("BẢNG 5.1", "Kiến trúc và công cụ của chương trình demo"),
+    ("SƠ ĐỒ 5.1", "Luồng xử lý một lượt yêu cầu của chương trình demo"),
     ("HÌNH 5.1", "Giao diện demo Streamlit — trạng thái ban đầu"),
     ("HÌNH 5.2", "Giao diện demo Streamlit — kết quả với cặp chữ ký thật"),
     ("HÌNH 5.3", "Giao diện demo Streamlit — kết quả với cặp chữ ký giả"),
@@ -971,6 +980,29 @@ add_para(doc, (
     "công trên hầu hết các bộ dữ liệu chuẩn [7], [10], đổi lại cần nhiều dữ "
     "liệu hơn và chi phí tính toán lớn hơn."
 ))
+add_para(doc, (
+    "Về mặt kiến trúc, hai lựa chọn thiết kế lặp lại trong các công trình "
+    "kể trên đáng chú ý cho đồ án này. Thứ nhất, hầu hết dùng contrastive "
+    "loss [6] hoặc triplet loss [19] thay vì hàm mất mát phân loại thông "
+    "thường (cross-entropy) — vì mục tiêu không phải phân loại một chữ ký "
+    "vào một trong N lớp người ký cố định (không khả thi khi N thay đổi "
+    "liên tục theo người dùng mới), mà là học một không gian embedding nơi "
+    "khoảng cách phản ánh đúng quan hệ cùng/khác người ký. Thứ hai, xu "
+    "hướng gần đây (SigNet [4], các công trình dùng ResNet [9]) chuyển từ "
+    "CNN tự thiết kế nông sang backbone sâu hơn, tận dụng tiền huấn luyện "
+    "ImageNet dù miền ảnh chữ ký khác miền ảnh tự nhiên — lựa chọn này "
+    "chính là điều đồ án kiểm chứng thực nghiệm ở Cấu hình B, so sánh trực "
+    "tiếp với Cấu hình A tự thiết kế theo lối cũ hơn."
+))
+add_para(doc, (
+    "Một hạn chế chung của nhiều công trình đã công bố là chỉ báo cáo một "
+    "con số EER hoặc Accuracy tổng hợp, không tách riêng theo loại giả mạo "
+    "(skilled/random) — khiến khó đánh giá mô hình thực sự mạnh ở đâu và "
+    "yếu ở đâu. Đồ án này cố tình tách riêng hai loại giả mạo trong mọi "
+    "bảng kết quả ở Chương 4, và sẽ cho thấy đây là quyết định có giá trị: "
+    "phát hiện chính của đồ án (mục 4.4) chỉ có thể thấy được khi tách "
+    "riêng, không thấy được nếu chỉ nhìn một con số Accuracy tổng."
+))
 
 add_heading(doc, "1.4. Các bộ dữ liệu công khai thường dùng", level=2)
 add_table(doc, ["Bộ dữ liệu", "Số người ký", "Mẫu mỗi người", "Ghi chú"],
@@ -1018,6 +1050,20 @@ add_para(doc, (
     "Chương 4 và Chương 5."
 ))
 
+add_heading(doc, "1.6. Tổng kết chương", level=2)
+add_para(doc, (
+    "Chương này đã trình bày bài toán xác minh chữ ký offline, ba loại "
+    "giả mạo cần phân biệt, hai hướng tiếp cận chính (đặc trưng thủ công "
+    "và học sâu) cùng các công trình tiêu biểu của mỗi hướng, và các bộ dữ "
+    "liệu công khai phổ biến. Từ khoảng trống nghiên cứu đã nêu ở mục 1.5 "
+    "— thiếu so sánh có kiểm soát giữa hai hướng tiếp cận, thiếu kiểm tra "
+    "chéo giữa các bộ dữ liệu, và thiếu báo cáo tách riêng theo loại giả "
+    "mạo — Chương 2 tiếp theo trình bày cơ sở lý thuyết chi tiết cho các "
+    "kỹ thuật đồ án sẽ dùng để giải quyết những khoảng trống này: tiền xử "
+    "lý ảnh, CNN, mạng Siamese, các hàm mất mát, học chuyển giao, và các "
+    "độ đo đánh giá."
+))
+
 add_page_break(doc)
 
 # ===========================================================================
@@ -1038,6 +1084,19 @@ add_bullet(doc, "Chuyển ảnh xám và khử nhiễu bằng bộ lọc Gaussia
 add_bullet(doc, "Nhị phân hóa bằng ngưỡng Otsu [16] để tách nét chữ khỏi "
                 "nền — thuật toán tự động tìm ngưỡng cực đại hoá phương "
                 "sai giữa hai lớp nền/nét chữ.")
+add_para(doc, (
+    "Cụ thể, gọi ω₀(t), ω₁(t) là tỉ lệ điểm ảnh và μ₀(t), μ₁(t) là mức xám "
+    "trung bình của hai lớp (nền, nét chữ) khi chia đôi histogram mức xám "
+    "tại ngưỡng t. Thuật toán Otsu chọn ngưỡng t* cực đại hoá phương sai "
+    "liên lớp (between-class variance):"
+))
+add_formula(doc, f"{FORM}/f_otsu.png", width_cm=10, eq_num=next_eq())
+add_para(doc, (
+    "Vì histogram mức xám của ảnh chữ ký thường có dạng hai đỉnh rõ rệt "
+    "(nền trắng chiếm đa số điểm ảnh, nét mực tối chiếm thiểu số), phương "
+    "pháp Otsu tách được ranh giới nền/nét khá ổn định mà không cần chọn "
+    "ngưỡng cố định bằng tay cho từng ảnh."
+))
 add_bullet(doc, "Cắt sát vùng chữ ký theo hộp bao quanh các điểm nét "
                 "(bounding box).")
 add_bullet(doc, "Căn giữa và đổi kích thước về cỡ cố định, giữ tỷ lệ khung "
@@ -1063,6 +1122,33 @@ add_para(doc, (
     "ký. Vì ảnh chữ ký ít chi tiết màu sắc nhưng giàu thông tin về hình "
     "dạng nét, CNN là lựa chọn tự nhiên để học biểu diễn."
 ))
+add_para(doc, (
+    "Một lớp tích chập trượt một bộ lọc (kernel) K kích thước nhỏ (thường "
+    "3×3) qua toàn bộ ảnh đầu vào I, tại mỗi vị trí tính tổng tích các "
+    "trọng số bộ lọc với vùng ảnh tương ứng:"
+))
+add_formula(doc, f"{FORM}/f_conv.png", width_cm=10, eq_num=next_eq())
+add_para(doc, (
+    "Cùng một bộ lọc được dùng lại (trọng số chia sẻ) tại mọi vị trí trên "
+    "ảnh, giúp CNN phát hiện cùng một đặc trưng (ví dụ một nét cong) bất "
+    "kể nó xuất hiện ở đâu trong ảnh chữ ký — tính chất bất biến theo vị "
+    "trí (translation invariance) này quan trọng vì vị trí chính xác của "
+    "từng nét chữ trong khung ảnh không mang thông tin phân biệt người "
+    "ký, chỉ hình dạng tương đối giữa các nét mới có ý nghĩa. Lớp gộp cực "
+    "đại (max pooling) sau đó lấy giá trị lớn nhất trong mỗi vùng 2×2, "
+    "vừa giảm một nửa kích thước không gian (giảm chi phí tính toán ở các "
+    "lớp sau), vừa tăng thêm tính bất biến với dịch chuyển nhỏ."
+))
+add_para(doc, (
+    "Kiến trúc Cấu hình A của đồ án (chi tiết ở Bảng 3.3, Chương 3) dùng "
+    "5 khối liên tiếp, mỗi khối tăng gấp đôi số kênh đặc trưng (32 → 64 → "
+    "128 → 256 → 256) trong khi giảm một nửa kích thước không gian mỗi "
+    "khối (qua max pooling). Đây là mẫu thiết kế phổ biến trong CNN: khi "
+    "đi sâu vào mạng, số lượng đặc trưng cần biểu diễn tăng lên (từ vài "
+    "chục kiểu nét cơ bản ở lớp đầu đến hàng trăm kiểu tổ hợp nét ở lớp "
+    "cuối), trong khi độ phân giải không gian cần thiết giảm dần vì thông "
+    "tin đã được tổng hợp thành đặc trưng trừu tượng hơn."
+))
 
 add_heading(doc, "2.3. Mạng Siamese", level=2)
 add_para(doc, (
@@ -1081,6 +1167,30 @@ add_para(doc, (
 add_image(doc, f"{FORM}/diagram_siamese.png", width_cm=13,
           caption="Minh hoạ kiến trúc mạng Siamese: hai nhánh CNN dùng chung trọng số",
           caption_num=next_diagram(), source="Nguồn: minh hoạ tự vẽ")
+add_para(doc, (
+    "Việc dùng chung trọng số giữa hai nhánh (thay vì hai mạng độc lập) "
+    "có hai lợi ích quan trọng. Thứ nhất, số tham số cần huấn luyện giảm "
+    "một nửa so với dùng hai mạng riêng, giảm nguy cơ overfitting khi dữ "
+    "liệu huấn luyện hạn chế (chỉ 40 người ký như ở CEDAR). Thứ hai, và "
+    "quan trọng hơn, nó đảm bảo khoảng cách D có tính đối xứng và nhất "
+    "quán: nếu dùng hai mạng riêng, thứ tự đưa hai ảnh vào mạng có thể "
+    "ảnh hưởng đến kết quả, trong khi bài toán xác minh chữ ký về bản "
+    "chất không có thứ tự ưu tiên giữa \"ảnh mẫu\" và \"ảnh cần kiểm "
+    "tra\"."
+))
+add_para(doc, (
+    "Một quyết định thiết kế đáng chú ý của đồ án là KHÔNG chuẩn hoá "
+    "embedding về độ dài đơn vị (L2-normalize) cho Cấu hình A. Nếu chuẩn "
+    "hoá, mọi embedding đều nằm trên một mặt cầu đơn vị, khiến khoảng "
+    "cách Euclid tối đa giữa hai điểm bất kỳ bị chặn trên bởi 2 — khi đó "
+    "mức margin m=2 trong khảo sát margin (mục 3.4) gần như luôn bị bão "
+    "hoà (mọi cặp âm đều vi phạm margin), làm mất ý nghĩa so sánh giữa "
+    "các mức margin khác nhau. Đồ án để embedding tự do trong không gian "
+    "128 chiều, đổi lại phải tự học một thang đo khoảng cách phù hợp — "
+    "đây là sự đánh đổi giữa tính ổn định số học (L2-normalize giúp huấn "
+    "luyện ổn định hơn) và việc giữ được toàn bộ ý nghĩa của phép khảo "
+    "sát margin theo đúng thiết kế thí nghiệm T5."
+))
 
 add_heading(doc, "2.4. Hàm mất mát", level=2)
 add_para(doc, (
@@ -1095,6 +1205,23 @@ add_para(doc, (
     "khuôn mặt [2]."
 ))
 add_para(doc, (
+    "Lấy đạo hàm của L theo D cho thấy rõ hơn cơ chế hoạt động của hàm "
+    "mất mát này:"
+))
+add_formula(doc, f"{FORM}/f_grad.png", width_cm=10, eq_num=next_eq())
+add_para(doc, (
+    "Với cặp dương (y=1), gradient tỉ lệ thuận với D — mạng luôn được đẩy "
+    "để giảm D, bất kể D đã nhỏ hay còn lớn (không có điểm \"đủ tốt\" để "
+    "dừng kéo lại gần). Với cặp âm (y=0), gradient chỉ khác 0 khi D < m "
+    "(hàm chỉ báo 𝟙[D<m]) — một khi khoảng cách đã vượt margin, hàm mất "
+    "mát không còn tạo gradient nữa, tức mạng ngừng cố đẩy cặp âm ra xa "
+    "hơn nữa. Đây chính là lý do contrastive loss ổn định hơn so với việc "
+    "cực đại hoá trực tiếp khoảng cách cặp âm (không có cận trên): một "
+    "hàm mất mát không có điểm dừng cho cặp âm dễ khiến mạng chỉ tập "
+    "trung đẩy các cặp âm dễ (đã xa) ra xa vô hạn thay vì học phân biệt "
+    "các cặp khó."
+))
+add_para(doc, (
     "Triplet loss [19] dùng bộ ba gồm mẫu neo a, mẫu dương p (thật, cùng "
     "người) và mẫu âm n (giả hoặc của người khác):"
 ))
@@ -1107,7 +1234,30 @@ add_para(doc, (
     "cho hướng phát triển tiếp theo (mục 3, phần Kết luận)."
 ))
 
-add_heading(doc, "2.5. Học chuyển giao (transfer learning)", level=2)
+add_heading(doc, "2.5. Bộ tối ưu Adam", level=2)
+add_para(doc, (
+    "Cả hai cấu hình đều huấn luyện bằng Adam [12] (Adaptive Moment "
+    "Estimation), một biến thể của gradient descent duy trì ước lượng "
+    "trung bình động của gradient (mô-men bậc một, m_t) và bình phương "
+    "gradient (mô-men bậc hai, v_t) cho từng tham số riêng biệt, sau khi "
+    "hiệu chỉnh độ lệch (bias correction) ở bước đầu huấn luyện, cập nhật "
+    "tham số theo:"
+))
+add_formula(doc, f"{FORM}/f_adam.png", width_cm=8, eq_num=next_eq())
+add_para(doc, (
+    "trong đó m̂_t, v̂_t là các mô-men đã hiệu chỉnh độ lệch, η là tốc độ "
+    "học, ε là hằng số nhỏ tránh chia cho 0. Vì mỗi tham số có tốc độ học "
+    "hiệu dụng riêng (tỉ lệ nghịch với căn bậc hai của v̂_t), Adam thường "
+    "hội tụ nhanh và ổn định hơn SGD thuần trên các bài toán có gradient "
+    "thưa hoặc không đồng đều giữa các lớp — phù hợp với việc huấn luyện "
+    "đồng thời nhiều lớp có đặc tính khác nhau (lớp tích chập nông, lớp "
+    "kết nối đầy đủ sâu) như trong Cấu hình A, và đặc biệt phù hợp với "
+    "chiến lược hai tốc độ học khác nhau cho backbone/head ở Cấu hình B "
+    "(mục 3.4), vì Adam cho phép mỗi nhóm tham số dùng một learning rate "
+    "cơ sở riêng mà vẫn tự động điều chỉnh theo nhóm đó."
+))
+
+add_heading(doc, "2.6. Học chuyển giao (transfer learning)", level=2)
 add_para(doc, (
     "Học chuyển giao dùng mạng đã huấn luyện sẵn trên tập ảnh lớn như "
     "ImageNet (ví dụ VGG16 [20] hoặc ResNet18 [9]), bỏ lớp phân loại "
@@ -1117,8 +1267,24 @@ add_para(doc, (
     "học chuyển giao có thật sự giúp ích hay không. Đồ án chọn ResNet18 "
     "trong hai lựa chọn nêu trên (kết quả cụ thể ở Chương 4, mục 4.3–4.4)."
 ))
+add_para(doc, (
+    "Một rủi ro cố hữu của tinh chỉnh là hiện tượng quên thảm hoạ "
+    "(catastrophic forgetting): nếu mở khoá toàn bộ backbone và tinh "
+    "chỉnh với tốc độ học lớn ngay từ đầu, gradient lớn từ một tập dữ "
+    "liệu nhỏ và khác miền (ảnh chữ ký so với ImageNet) có thể phá vỡ "
+    "nhanh chóng các trọng số tổng quát đã học được, khiến mạng \"quên\" "
+    "kiến thức hữu ích từ ImageNet trước khi kịp học đặc trưng mới có "
+    "ích. Chiến lược hai giai đoạn (đóng băng rồi mở khoá dần, mục 3.4) "
+    "và dùng tốc độ học nhỏ hơn hẳn cho backbone so với head chính là "
+    "cách giảm thiểu rủi ro này: giai đoạn 1 cho lớp embedding mới có cơ "
+    "hội thích nghi với đặc trưng backbone hiện có trước, tránh gradient "
+    "lớn ngẫu nhiên ban đầu (từ lớp head khởi tạo ngẫu nhiên) lan ngược "
+    "vào phá vỡ backbone; giai đoạn 2 mới mở khoá khối cuối với tốc độ "
+    "học rất nhỏ (1e-5, thấp hơn 10 lần so với head) để tinh chỉnh nhẹ "
+    "nhàng, giữ phần lớn kiến thức ImageNet nguyên vẹn ở các khối đầu."
+))
 
-add_heading(doc, "2.6. Các độ đo đánh giá", level=2)
+add_heading(doc, "2.7. Các độ đo đánh giá", level=2)
 add_para(doc, (
     "Gọi lớp dương là chữ ký thật. TP là chữ ký thật được chấp nhận, FN là "
     "chữ ký thật bị từ chối, FP là chữ ký giả bị chấp nhận, TN là chữ ký "
@@ -1144,6 +1310,34 @@ add_para(doc, (
     "ngưỡng τ, sau đó ĐÓNG BĂNG giá trị này và chỉ dùng nó để tính FAR/"
     "FRR/Accuracy trên tập test, đảm bảo tập test không được dùng để tinh "
     "chỉnh bất kỳ siêu tham số quyết định nào."
+))
+add_para(doc, (
+    "Đường cong ROC (Receiver Operating Characteristic) vẽ True Positive "
+    "Rate (= 1 − FRR) theo False Positive Rate (= FAR) khi quét ngưỡng τ "
+    "qua mọi giá trị có thể, không cố định một ngưỡng cụ thể nào. AUC "
+    "(diện tích dưới đường cong ROC) có một cách hiểu xác suất trực quan: "
+    "AUC bằng xác suất mà, chọn ngẫu nhiên một cặp dương và một cặp âm, "
+    "mô hình gán điểm số (ở đây là −D, để điểm cao hơn ứng với \"giống "
+    "nhau hơn\") cao hơn cho cặp dương. AUC=1 là phân biệt hoàn hảo ở mọi "
+    "ngưỡng, AUC=0,5 tương đương đoán ngẫu nhiên. Vì không phụ thuộc "
+    "ngưỡng, AUC là độ đo phù hợp nhất để so sánh khả năng phân biệt "
+    "THUẦN TUÝ của các mô hình (mục 4.4), tách biệt khỏi ảnh hưởng của "
+    "việc chọn ngưỡng τ khác nhau giữa các mô hình — đây là lý do đồ án "
+    "ưu tiên so sánh bằng AUC thay vì Accuracy/FAR/FRR tại một ngưỡng cụ "
+    "thể khi cần kết luận mô hình nào \"tốt hơn\" về bản chất."
+))
+
+add_heading(doc, "2.8. Tổng kết chương", level=2)
+add_para(doc, (
+    "Chương này đã trình bày đầy đủ nền tảng lý thuyết cho hệ thống: quy "
+    "trình tiền xử lý ảnh (kèm cơ sở toán học của ngưỡng Otsu), nguyên lý "
+    "hoạt động của CNN (phép tích chập, tính bất biến vị trí), kiến trúc "
+    "Siamese và lý do dùng chung trọng số, hai hàm mất mát contrastive và "
+    "triplet (kèm phân tích gradient), bộ tối ưu Adam, cơ chế học chuyển "
+    "giao hai giai đoạn và rủi ro quên thảm hoạ, và các độ đo đánh giá "
+    "sinh trắc học chuẩn. Chương 3 tiếp theo áp dụng toàn bộ nền tảng này "
+    "vào thiết kế cụ thể của hệ thống: quy trình tổng thể, cách sinh dữ "
+    "liệu huấn luyện, và các thiết lập huấn luyện thực tế đã dùng."
 ))
 
 add_page_break(doc)
@@ -1243,6 +1437,70 @@ add_para(doc, (
     "so với kế hoạch ban đầu, kéo theo việc phải rút gọn một số thí nghiệm "
     "mở rộng (T4, T6, T8 — xem mục 4.2)."
 ))
+add_para(doc, (
+    "Bảng dưới đây liệt kê chi tiết từng khối của Cấu hình A, đúng theo mã "
+    "nguồn thật (src/sigverify/models/siamese_scratch.py), để làm rõ cách "
+    "3.142.720 tham số của mạng (đếm thật bằng "
+    "sum(p.numel() for p in model.parameters())) được phân bổ:"
+))
+add_table(doc, ["Khối", "Các lớp", "Kênh ra", "Kích thước không gian"],
+           [
+               ["1", "Conv 3×3 + BatchNorm + ReLU + MaxPool 2×2", 32, "H/2 × W/2"],
+               ["2", "Conv 3×3 + BatchNorm + ReLU + MaxPool 2×2", 64, "H/4 × W/4"],
+               ["3", "Conv 3×3 + BatchNorm + ReLU + MaxPool 2×2", 128, "H/8 × W/8"],
+               ["4", "Conv 3×3 + BatchNorm + ReLU + MaxPool 2×2", 256, "H/16 × W/16"],
+               ["5", "Conv 3×3 + BatchNorm + ReLU + MaxPool 2×2", 256, "H/32 × W/32"],
+               ["—", "AdaptiveAvgPool2d", 256, "4 × 4 (cố định)"],
+               ["—", "Flatten + Linear(4096→512) + ReLU + Dropout(0,3)", 512, "—"],
+               ["—", "Linear(512→128)", "128 (embedding)", "—"],
+           ], col_widths_cm=[2, 9, 3, 4], caption="Kiến trúc chi tiết Cấu hình A theo từng khối",
+           source="Nguồn: mã nguồn src/sigverify/models/siamese_scratch.py của đồ án")
+add_para(doc, (
+    "Lớp AdaptiveAvgPool2d (thay vì Flatten trực tiếp sau khối 5) là một "
+    "chi tiết cài đặt quan trọng: nó luôn nén đặc trưng về đúng 4×4 bất kể "
+    "kích thước ảnh đầu vào chính xác là bao nhiêu, giúp kiến trúc không "
+    "bị ràng buộc cứng vào một kích thước ảnh cụ thể nếu sau này thay đổi "
+    "image.size_scratch trong cấu hình. Lớp Dropout(0,3) chỉ hoạt động "
+    "trong lúc huấn luyện (ngẫu nhiên tắt 30% nơ-ron ở lớp ẩn 512 chiều), "
+    "là một dạng điều chuẩn (regularization) giúp giảm overfitting — đặc "
+    "biệt cần thiết ở đây vì Cấu hình A không có trọng số tiền huấn luyện "
+    "nào để dựa vào, khác với Cấu hình B."
+))
+add_para(doc, (
+    "Đối với Cấu hình B, lớp cuối cùng (fc) của ResNet18 tiền huấn luyện "
+    "(512 chiều đầu vào) được thay bằng một lớp Linear(512→128) đóng vai "
+    "trò lớp embedding; khối cuối cùng của backbone (layer4 trong "
+    "torchvision) là phần duy nhất được mở khoá ở giai đoạn 2, các khối "
+    "layer1–layer3 phía trước giữ nguyên trọng số ImageNet trong suốt quá "
+    "trình huấn luyện."
+))
+add_para(doc, (
+    "Kết quả khảo sát margin thực tế (T5, một phần) cho từng cấu hình — "
+    "số epoch chạy trước khi dừng sớm là số liệu thật lấy từ "
+    "results/config_a/margin_sweep.json và results/config_b/"
+    "margin_sweep.json:"
+))
+add_table(doc, ["Margin", "Epoch dừng sớm", "EER validation"],
+           [
+               ["0,5", 22, "10,79%"],
+               ["1,0 (thắng)", 19, "9,75%"],
+               ["2,0", 15, "10,37%"],
+           ], col_widths_cm=[5, 5, 5], caption="Kết quả khảo sát margin trong huấn luyện — Cấu hình A",
+           source="Nguồn: results/config_a/margin_sweep.json của đồ án")
+add_table(doc, ["Margin", "Epoch giai đoạn 1", "Epoch giai đoạn 2", "EER validation"],
+           [
+               ["0,5", 5, 15, "14,30%"],
+               ["1,0 (thắng)", 5, 47, "5,50%"],
+               ["2,0", "—", "—", "Mất do container khởi động lại giữa chừng"],
+           ], col_widths_cm=[4, 4, 4, 5], caption="Kết quả khảo sát margin trong huấn luyện — Cấu hình B",
+           source="Nguồn: results/config_b/margin_sweep.json của đồ án")
+add_para(doc, (
+    "Đáng chú ý, ở Cấu hình B, margin=1,0 cần tới 47 epoch giai đoạn 2 để "
+    "hội tụ (so với 15 epoch ở margin=0,5) — cho thấy việc chọn margin "
+    "không chỉ ảnh hưởng đến chất lượng cuối cùng (EER) mà còn ảnh hưởng "
+    "đáng kể đến thời gian huấn luyện cần thiết, một yếu tố quan trọng "
+    "khi tài nguyên tính toán hạn chế như trong đồ án này."
+))
 
 add_heading(doc, "3.5. Công cụ và môi trường", level=2)
 add_para(doc, (
@@ -1251,6 +1509,27 @@ add_para(doc, (
     "toán, vẽ biểu đồ); Streamlit cho chương trình demo (đề cương đề xuất "
     "\"Streamlit hoặc Gradio\" — đồ án chọn Streamlit). Mã nguồn quản lý "
     "bằng Git."
+))
+add_para(doc, (
+    "Vì môi trường thực thi không có GPU, thời gian huấn luyện thực tế là "
+    "một ràng buộc quan trọng chi phối phạm vi thí nghiệm có thể thực "
+    "hiện (mục 4.2). Toàn bộ 3 mức margin của Cấu hình A (tổng 56 epoch, "
+    "Bảng 3.4 trên) mất khoảng 3,3 giờ; mỗi epoch trung bình 3,3–5,6 phút "
+    "tuỳ cấu hình mạng. Đây là cơ sở thực tế để giải thích vì sao T4 (khảo "
+    "sát tiền xử lý, đòi hỏi huấn luyện lại từ đầu cho mỗi biến thể) và T6 "
+    "(triplet loss) không kịp thực hiện trong phạm vi thời gian của đồ án."
+))
+
+add_heading(doc, "3.6. Tổng kết chương", level=2)
+add_para(doc, (
+    "Chương này đã trình bày quy trình tổng thể của hệ thống, cách sinh "
+    "cặp dữ liệu huấn luyện có kiểm soát tỉ lệ, phương pháp baseline HOG+"
+    "SVM, kiến trúc chi tiết của hai cấu hình Siamese (kèm bảng lớp-theo-"
+    "lớp thật của Cấu hình A), các thiết lập huấn luyện thực tế đối chiếu "
+    "với đề cương, và số liệu thời gian/epoch thật của quá trình khảo sát "
+    "margin. Chương 4 tiếp theo trình bày kết quả đánh giá định lượng đầy "
+    "đủ trên tập test CEDAR và BHSig260, cùng phân tích định tính các ca "
+    "lỗi."
 ))
 
 add_page_break(doc)
@@ -1535,24 +1814,38 @@ add_para(doc, (
 ))
 
 add_heading(doc, "5.1. Chức năng", level=2)
+add_bullet(doc, "Chọn mô hình muốn dùng (Cấu hình A hoặc Cấu hình B) từ "
+                "danh sách sổ xuống, để có thể so sánh trực tiếp hành vi "
+                "hai mô hình trên cùng một cặp ảnh.")
 add_bullet(doc, "Tải lên ảnh chữ ký mẫu (thật) và một ảnh chữ ký cần kiểm "
                 "tra.")
-add_bullet(doc, "Hiển thị ảnh gốc và ảnh sau tiền xử lý để người dùng "
-                "thấy hệ thống đang \"nhìn\" gì.")
+add_bullet(doc, "Hiển thị đủ 4 ảnh song song: ảnh mẫu gốc, ảnh mẫu đã qua "
+                "tiền xử lý, ảnh kiểm tra gốc, ảnh kiểm tra đã qua tiền "
+                "xử lý — để người dùng thấy hệ thống đang \"nhìn\" gì "
+                "sau bước tiền xử lý.")
 add_bullet(doc, "Trả về kết quả thật hoặc giả, kèm khoảng cách D giữa hai "
-                "embedding.")
-add_bullet(doc, "Thanh trượt ngưỡng τ: khi người dùng kéo, kết quả thay "
-                "đổi theo, minh họa sự đánh đổi giữa FAR và FRR.")
+                "embedding và giá trị τ đang dùng.")
+add_bullet(doc, "Thanh trượt ngưỡng τ ở thanh bên (sidebar), phạm vi lấy "
+                "từ chính các giá trị threshold thật đã tính trong "
+                "far_frr_curve.json của mô hình đang chọn (không phải một "
+                "khoảng cố định gõ tay); khi kéo, chỉ số FAR/FRR tại τ đó "
+                "(tra cứu trực tiếp từ đường cong FAR/FRR thật, không tính "
+                "lại) hiển thị ngay lập tức, minh họa sự đánh đổi giữa hai "
+                "loại lỗi.")
 
 add_heading(doc, "5.2. Luồng sử dụng", level=2)
-add_bullet(doc, "Người dùng mở ứng dụng và tải lên chữ ký mẫu.")
-add_bullet(doc, "Người dùng tải lên chữ ký cần kiểm tra.")
-add_bullet(doc, "Ứng dụng tiền xử lý hai ảnh, đưa qua mô hình đã huấn "
-                "luyện (Cấu hình B) và tính khoảng cách D.")
-add_bullet(doc, "Ứng dụng so D với ngưỡng τ, hiển thị kết quả và điểm "
+add_bullet(doc, "Người dùng chọn mô hình ở thanh bên, ứng dụng tải "
+                "checkpoint và ngưỡng τ mặc định (chọn theo EER trên "
+                "validation) tương ứng.")
+add_bullet(doc, "Người dùng tải lên chữ ký mẫu và chữ ký cần kiểm tra.")
+add_bullet(doc, "Ứng dụng tiền xử lý hai ảnh bằng đúng hàm preprocess_"
+                "image dùng lúc huấn luyện, đưa qua mô hình đã chọn và "
+                "tính khoảng cách D.")
+add_bullet(doc, "Ứng dụng so D với ngưỡng τ hiện tại (có thể đã bị người "
+                "dùng kéo lệch khỏi mặc định), hiển thị kết quả và điểm "
                 "tương đồng.")
 
-add_heading(doc, "5.3. Kiến trúc và công cụ", level=2)
+add_heading(doc, "5.3. Kiến trúc và luồng xử lý", level=2)
 add_table(doc, ["Thành phần", "Nhiệm vụ", "Công cụ"],
            [
                ["Giao diện", "Nhận ảnh, hiển thị kết quả, thanh trượt "
@@ -1564,18 +1857,41 @@ add_table(doc, ["Thành phần", "Nhiệm vụ", "Công cụ"],
                               "và khoảng cách", "PyTorch"],
            ], col_widths_cm=[4, 7, 5], caption="Kiến trúc và công cụ của chương trình demo",
            caption_num=next_table(), source="Nguồn: tự tổng hợp từ mã nguồn app/ của đồ án")
+add_image(doc, f"{FORM}/diagram_demo_flow.png", width_cm=15,
+          caption="Luồng xử lý một lượt yêu cầu của chương trình demo",
+          caption_num=next_diagram(), source="Nguồn: minh hoạ tự vẽ, mô tả luồng thật trong app/demo_app.py")
 add_para(doc, (
     "Ảnh người dùng tải lên chỉ được xử lý trong bộ nhớ và không lưu lại "
     "xuống đĩa ở bất kỳ bước nào, vì chữ ký là dữ liệu cá nhân — đúng yêu "
     "cầu thiết kế nêu trong đề cương (mục 8.3)."
 ))
 
-add_heading(doc, "5.4. Kết quả trình diễn", level=2)
+add_heading(doc, "5.4. Hạn chế của chương trình demo", level=2)
+add_bullet(doc, "Chỉ xử lý một cặp ảnh mỗi lượt, không hỗ trợ tải lên "
+                "hàng loạt (batch) nhiều cặp cùng lúc — phù hợp cho mục "
+                "đích minh hoạ/trình diễn hơn là dùng thực tế với khối "
+                "lượng lớn.")
+add_bullet(doc, "Mô hình được tải lại từ checkpoint mỗi khi người dùng "
+                "đổi lựa chọn ở sổ xuống (không có cơ chế cache mô hình "
+                "trong bộ nhớ giữa các lượt tương tác), nên có độ trễ nhỏ "
+                "mỗi lần đổi mô hình.")
+add_bullet(doc, "Không lưu lại lịch sử các lượt kiểm tra trước đó — mỗi "
+                "lần tải trang là một phiên làm việc mới, đúng theo yêu "
+                "cầu không lưu dữ liệu cá nhân, nhưng cũng có nghĩa người "
+                "dùng không thể xem lại kết quả cũ.")
+add_bullet(doc, "Chất lượng kết quả phụ thuộc ảnh đầu vào tuân theo giả "
+                "định của quy trình tiền xử lý (nền tương đối đồng nhất, "
+                "đủ độ tương phản giữa nét mực và nền để ngưỡng Otsu hoạt "
+                "động đúng — mục 2.1); ảnh chụp trong điều kiện ánh sáng "
+                "kém hoặc nền có hoa văn phức tạp có thể cho kết quả tiền "
+                "xử lý kém tin cậy hơn so với ảnh scan chuẩn của CEDAR.")
+
+add_heading(doc, "5.5. Kết quả trình diễn", level=2)
 add_para(doc, (
     "Hình dưới là ảnh chụp màn hình thực tế của ứng dụng, sử dụng mô hình "
-    "Cấu hình B đã huấn luyện, thử nghiệm với ảnh chữ ký thật lấy từ người "
-    "ký #2 trong tập test CEDAR (chưa từng xuất hiện trong tập train/"
-    "validation)."
+    "Cấu hình B đã huấn luyện (một trong hai lựa chọn ở sổ xuống mục "
+    "5.1), thử nghiệm với ảnh chữ ký thật lấy từ người ký #2 trong tập "
+    "test CEDAR (chưa từng xuất hiện trong tập train/validation)."
 ))
 add_image(doc, f"{SCR}/demo_empty.png", width_cm=13,
           caption="Giao diện demo Streamlit — trạng thái ban đầu",
