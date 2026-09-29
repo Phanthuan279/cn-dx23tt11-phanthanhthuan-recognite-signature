@@ -10,7 +10,6 @@ không cần huấn luyện lại khi có người ký mới.
 |---|---|
 | Sinh viên thực hiện | Phan Thành Thuận — MSSV 170123591 — Lớp DX23TT11 |
 | Giảng viên hướng dẫn | ThS. Nguyễn Nhứt Lam |
-| Liên hệ | nghong.quan403@gmail.com — [SĐT: điền trước khi nộp] |
 | Đề cương chi tiết đã duyệt | `plans/260926-1324-siamese-signature-verification/plan.md` |
 | Báo cáo đồ án đầy đủ | [`thesis/doc/thesis.docx`](thesis/doc/thesis.docx) · [`thesis/pdf/thesis.pdf`](thesis/pdf/thesis.pdf) |
 
