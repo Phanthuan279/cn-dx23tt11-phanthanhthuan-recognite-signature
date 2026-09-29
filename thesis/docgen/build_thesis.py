@@ -421,63 +421,18 @@ add_para(doc, "Từ khoá: xác minh chữ ký offline, mạng Siamese, contrast
          italic=True)
 add_page_break(doc)
 
-add_heading(doc, "ABSTRACT", level=1, center=True)
-add_para(doc, (
-    "This project builds an offline handwritten signature verification "
-    "system following a writer-independent approach, using a Siamese "
-    "neural network trained with contrastive loss, as proposed in the "
-    "approved project outline. Two model configurations are trained and "
-    "compared: Configuration A, a 5-block Conv-BatchNorm-ReLU-MaxPool "
-    "convolutional network trained from scratch, and Configuration B, a "
-    "transfer-learning model built on an ImageNet-pretrained ResNet18 "
-    "backbone fine-tuned in two stages. A handcrafted-feature baseline "
-    "(HOG features with an RBF-kernel SVM) is also built for comparison."
-))
-add_para(doc, (
-    "Experiments use the CEDAR dataset (55 writers, split writer-disjointly "
-    "40/5/10 for train/validation/test) for in-domain training, and the "
-    "BHSig260 dataset (Bengali and Hindi signatures) for zero-shot "
-    "cross-domain generalization -- the threshold τ selected on the CEDAR "
-    "validation split by the Equal Error Rate (EER) criterion is frozen "
-    "and applied as-is, with no fine-tuning, to avoid leaking information "
-    "into threshold selection."
-))
-add_para(doc, (
-    "Real (not simulated) results on the CEDAR test split: Configuration B "
-    "reaches an overall AUC of 0.955 (validation EER 5.50%), outperforming "
-    "Configuration A (AUC 0.915, EER 9.75%) and the HOG+SVM baseline (AUC "
-    "0.887); FAR on random forgeries drops from 39.5% to 13.0%. Zero-shot "
-    "evaluation on BHSig260 shows the model retains meaningful "
-    "discriminative signal across a different script/language domain (AUC "
-    "0.75-0.85)."
-))
-add_para(doc, (
-    "Of the eight experiments (T1-T8) planned in the outline, T1 "
-    "(baseline), T2 (Configuration A), T3 (Configuration B) and T7 "
-    "(cross-dataset check) are completed in full; T5 is partially completed "
-    "(margin sweep done, augmentation on/off not separately tested); T4, "
-    "T6 and T8 were not carried out given time/hardware constraints, and "
-    "are reported honestly as future work. An interactive Streamlit demo "
-    "application, processing images entirely in memory, is built using the "
-    "trained Configuration B model."
-))
-add_para(doc, "Keywords: offline signature verification, Siamese network, "
-              "contrastive loss, transfer learning, ResNet18, writer-independent, "
-              "CEDAR, BHSig260.", italic=True)
-add_page_break(doc)
-
 # ===========================================================================
 # MỤC LỤC (đánh số trang thật, đo từ bản render cuối cùng; front matter =
 # số La Mã thường, nội dung chương = số Ả Rập bắt đầu từ 1 tại Chương 1)
 # ===========================================================================
 add_heading(doc, "MỤC LỤC", level=1, center=True)
 TOC_ENTRIES = [
-    (1, "LỜI MỞ ĐẦU", "ix"),
-    (2, "1. Lý do chọn đề tài", "ix"),
-    (2, "2. Mục tiêu nghiên cứu", "x"),
-    (2, "3. Đối tượng và phạm vi nghiên cứu", "x"),
-    (2, "4. Phương pháp nghiên cứu", "xii"),
-    (2, "5. Cấu trúc báo cáo", "xii"),
+    (1, "LỜI MỞ ĐẦU", "viii"),
+    (2, "1. Lý do chọn đề tài", "viii"),
+    (2, "2. Mục tiêu nghiên cứu", "ix"),
+    (2, "3. Đối tượng và phạm vi nghiên cứu", "ix"),
+    (2, "4. Phương pháp nghiên cứu", "xi"),
+    (2, "5. Cấu trúc báo cáo", "xi"),
     (1, "CHƯƠNG 1. TỔNG QUAN", "1"),
     (2, "1.1. Bài toán xác minh chữ ký", "1"),
     (2, "1.2. Hướng dùng đặc trưng thủ công", "1"),
