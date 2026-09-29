@@ -1,6 +1,6 @@
 import pandas as pd
 
-from sigverify.pairs.generator import generate_pairs, pairs_to_dataframe
+from sigverify.pairs.generator import build_triplets_from_pairs, generate_pairs, pairs_to_dataframe
 from sigverify.pairs.splits import writer_disjoint_split
 
 
@@ -74,3 +74,39 @@ def test_generate_pairs_random_forgery_never_crosses_split():
         b_writer = int(row["path_b"].split("_")[0][1:])
         involved_writers.update([a_writer, b_writer])
     assert involved_writers <= set(val_writers)
+
+
+def test_build_triplets_from_pairs_uses_only_real_rows_no_new_data():
+    df = _synthetic_signatures_df(n_writers=6)
+    writer_ids = df["writer_id"].unique().tolist()
+    pairs = generate_pairs(df, writer_ids, ratio=(2, 1, 1), pairs_per_writer=4, seed=7)
+    pairs_df = pairs_to_dataframe(pairs)
+
+    triplets = build_triplets_from_pairs(pairs_df, seed=1)
+
+    n_positive_pairs = (pairs_df.forgery_type == "genuine_genuine").sum()
+    assert len(triplets) == n_positive_pairs  # one triplet per genuine_genuine row
+
+    # every anchor/positive/negative path must come from the real pairs_df --
+    # nothing fabricated
+    real_paths = set(pairs_df["path_a"]) | set(pairs_df["path_b"])
+    assert set(triplets["anchor"]) <= real_paths
+    assert set(triplets["positive"]) <= real_paths
+    assert set(triplets["negative"]) <= real_paths
+    assert set(triplets["negative_type"].unique()) <= {"skilled_forgery", "random_forgery"}
+
+    # anchor/positive must be genuine_genuine pairs of the SAME writer as the negative
+    genuine = pairs_df[pairs_df.forgery_type == "genuine_genuine"].set_index(["path_a", "path_b"])
+    for row in triplets.itertuples(index=False):
+        assert (row.anchor, row.positive) in genuine.index
+        assert genuine.loc[(row.anchor, row.positive), "writer_id"] == row.writer_id
+
+
+def test_build_triplets_from_pairs_skips_writers_without_negatives():
+    pairs_df = pd.DataFrame(
+        [
+            {"path_a": "a1.png", "path_b": "a2.png", "label": 1, "forgery_type": "genuine_genuine", "writer_id": 1},
+        ]
+    )
+    triplets = build_triplets_from_pairs(pairs_df, seed=1)
+    assert triplets.empty

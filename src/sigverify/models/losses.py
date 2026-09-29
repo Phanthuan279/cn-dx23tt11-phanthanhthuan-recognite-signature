@@ -30,3 +30,21 @@ class ContrastiveLoss(nn.Module):
         same_term = y * d.pow(2)
         diff_term = (1 - y) * torch.clamp(self.margin - d, min=0).pow(2)
         return (same_term + diff_term).mean()
+
+
+class TripletLoss(nn.Module):
+    """L(a, p, n) = max(0, d(a,p) - d(a,n) + margin), averaged over the batch.
+
+    Anchor/positive are two genuine signatures of the same writer; negative is
+    either a skilled forgery or a genuine signature of a different writer
+    (see sigverify/pairs/generator.py::build_triplets_from_pairs).
+    """
+
+    def __init__(self, margin: float = 1.0):
+        super().__init__()
+        self.margin = margin
+
+    def forward(self, anchor: torch.Tensor, positive: torch.Tensor, negative: torch.Tensor) -> torch.Tensor:
+        d_pos = pairwise_distance(anchor, positive)
+        d_neg = pairwise_distance(anchor, negative)
+        return torch.clamp(d_pos - d_neg + self.margin, min=0).mean()

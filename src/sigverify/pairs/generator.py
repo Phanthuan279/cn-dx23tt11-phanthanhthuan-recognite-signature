@@ -105,3 +105,39 @@ def pairs_to_dataframe(pairs: List[Pair]) -> pd.DataFrame:
 def summarize_ratio(pairs: List[Pair]) -> Dict[str, int]:
     df = pairs_to_dataframe(pairs)
     return df["forgery_type"].value_counts().to_dict()
+
+
+def build_triplets_from_pairs(pairs_df: pd.DataFrame, seed: int = 42) -> pd.DataFrame:
+    """Reorganize an existing (already writer-disjoint) pairs dataframe into
+    (anchor, positive, negative) triplets, for triplet-loss training (T6).
+
+    Each genuine_genuine row (path_a, path_b, writer) becomes one triplet's
+    anchor/positive; its negative is drawn from that SAME writer's own
+    skilled_forgery/random_forgery rows (path_b there is already the forged or
+    cross-writer image), cycling through them if there are fewer negatives
+    than positives for that writer. No new images or pairs are generated --
+    this only reshapes the same real, already-split pairs used for
+    contrastive training, so the two losses train on comparable data.
+    """
+    rng = random.Random(seed)
+    triplets = []
+    for writer, group in pairs_df.groupby("writer_id"):
+        positives = group[group.forgery_type == "genuine_genuine"]
+        negatives = group[group.forgery_type != "genuine_genuine"]["path_b"].tolist()
+        neg_types = group[group.forgery_type != "genuine_genuine"]["forgery_type"].tolist()
+        if positives.empty or not negatives:
+            continue
+        neg_order = list(range(len(negatives)))
+        rng.shuffle(neg_order)
+        for i, row in enumerate(positives.itertuples(index=False)):
+            j = neg_order[i % len(neg_order)]
+            triplets.append(
+                {
+                    "anchor": row.path_a,
+                    "positive": row.path_b,
+                    "negative": negatives[j],
+                    "negative_type": neg_types[j],
+                    "writer_id": writer,
+                }
+            )
+    return pd.DataFrame(triplets)

@@ -82,6 +82,16 @@ def main() -> None:
     parser.add_argument("--out-dir", default="results/config_b")
     parser.add_argument("--model-out", default="models_registry/config_b_best.pt")
     parser.add_argument("--threshold-out", default="models_registry/config_b_threshold.json")
+    parser.add_argument(
+        "--only-margin",
+        type=float,
+        default=None,
+        help=(
+            "Train exactly one margin and merge it into an existing margin_sweep.json "
+            "(e.g. to finish a sweep interrupted partway through), instead of resweeping "
+            "every margin in the config from scratch."
+        ),
+    )
     args = parser.parse_args()
 
     config = load_config(args.config)
@@ -107,7 +117,22 @@ def main() -> None:
     margin_sweep = {}
     best_margin, best_val_eer, best_state = None, float("inf"), None
 
-    for margin in config["train"]["margins"]:
+    margins_to_run = config["train"]["margins"]
+    if args.only_margin is not None:
+        # Resume mode: reuse whichever margins already finished (their history is
+        # already trustworthy real data -- no need to retrain them), and only run
+        # the one that's missing. The previously-saved best model is loaded as the
+        # current champion so it can still win the final comparison below.
+        if margin_sweep_path.exists():
+            margin_sweep = json.loads(margin_sweep_path.read_text())
+        for m_str, entry in margin_sweep.items():
+            if entry["val_eer"] < best_val_eer:
+                best_val_eer, best_margin = entry["val_eer"], float(m_str)
+        if best_margin is not None and model_path.exists():
+            best_state = torch.load(model_path, map_location=device)
+        margins_to_run = [args.only_margin]
+
+    for margin in margins_to_run:
         print(f"[train_config_b] === margin={margin} ===", flush=True)
         # Reseed before each margin (see the same fix in train_config_a.py):
         # otherwise margin N>1 inherits whatever random state margin N-1's

@@ -43,6 +43,7 @@ from sigverify.utils.seed import set_seed  # noqa: E402
 ABLATION_VARIANTS = {
     "no_bbox_crop": "configs/ablation_variants/no_bbox_crop.yaml",
     "binarize_output": "configs/ablation_variants/binarize_output.yaml",
+    "image_size": "configs/ablation_variants/image_size.yaml",
     "no_augmentation": "configs/ablation_variants/no_augmentation.yaml",
     "l2_normalize": "configs/ablation_variants/l2_normalize.yaml",
 }
@@ -108,8 +109,11 @@ def run_variant(
     return metrics
 
 
-def run_ablation_sweep(config_path: str, train_pairs, val_pairs, test_pairs, device) -> dict:
-    summary = {}
+def run_ablation_sweep(
+    config_path: str, train_pairs, val_pairs, test_pairs, device, variants: list[str] | None = None
+) -> dict:
+    summary_path = Path("results/ablations/summary.json")
+    summary = json.loads(summary_path.read_text()) if summary_path.exists() else {}
 
     default_metrics_path = Path("results/config_a/metrics.json")
     if default_metrics_path.exists():
@@ -120,14 +124,15 @@ def run_ablation_sweep(config_path: str, train_pairs, val_pairs, test_pairs, dev
             "run scripts/train_config_a.py first to get the 'default' comparison row."
         )
 
-    for name, override_path in ABLATION_VARIANTS.items():
+    selected = {name: ABLATION_VARIANTS[name] for name in variants} if variants else ABLATION_VARIANTS
+    for name, override_path in selected.items():
         print(f"[run_ablations] === variant: {name} ===")
         config = load_config_with_override(config_path, override_path)
         out_dir = Path("results/ablations") / name
         summary[name] = run_variant(name, config, train_pairs, val_pairs, test_pairs, device, out_dir)
 
     Path("results/ablations").mkdir(parents=True, exist_ok=True)
-    Path("results/ablations/summary.json").write_text(json.dumps(summary, indent=2))
+    summary_path.write_text(json.dumps(summary, indent=2))
     print("[run_ablations] Summary written to results/ablations/summary.json")
     return summary
 
@@ -262,7 +267,13 @@ def main() -> None:
     parser.add_argument("--config", default="configs/default.yaml")
     parser.add_argument("--skip-ablations", action="store_true")
     parser.add_argument("--skip-cross-dataset", action="store_true")
+    parser.add_argument(
+        "--variants",
+        default=None,
+        help=f"Comma-separated subset of {list(ABLATION_VARIANTS)} to run (default: all).",
+    )
     args = parser.parse_args()
+    variants = args.variants.split(",") if args.variants else None
 
     base_config = load_config(args.config)
     set_seed(base_config["seed"])
@@ -273,7 +284,7 @@ def main() -> None:
         train_pairs = pd.read_csv(splits_dir / "train_pairs.csv")
         val_pairs = pd.read_csv(splits_dir / "val_pairs.csv")
         test_pairs = pd.read_csv(splits_dir / "test_pairs.csv")
-        run_ablation_sweep(args.config, train_pairs, val_pairs, test_pairs, device)
+        run_ablation_sweep(args.config, train_pairs, val_pairs, test_pairs, device, variants)
 
     if not args.skip_cross_dataset:
         try:
