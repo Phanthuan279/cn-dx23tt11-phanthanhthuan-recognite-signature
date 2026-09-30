@@ -85,6 +85,7 @@ def main() -> None:
         device=device,
         denoise_method=denoise_method,
         binarize_output=binarize_output,
+        checkpoint_path=out_dir / "checkpoint.pt",
     )
     val_eer = min(h["val_eer"] for h in history) if history else None
 

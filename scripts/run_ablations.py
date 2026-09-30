@@ -70,6 +70,7 @@ def run_variant(
     # margin at the middle of the sweep instead of re-sweeping it too.
     margin = config["train"]["margins"][len(config["train"]["margins"]) // 2]
 
+    out_dir.mkdir(parents=True, exist_ok=True)
     model = SiameseScratchCNN(embedding_dim=config["model"]["embedding_dim"], l2_normalize=l2_normalize)
     _, history = train_one_config(
         model, train_pairs, val_pairs, target_size, "unit", margin,
@@ -83,6 +84,7 @@ def run_variant(
         binarize_output=binarize_output,
         crop_to_bbox=crop_to_bbox,
         augmentation_enabled=augmentation_enabled,
+        checkpoint_path=out_dir / "checkpoint.pt",
     )
 
     val_scores, val_labels, _ = compute_pair_scores(

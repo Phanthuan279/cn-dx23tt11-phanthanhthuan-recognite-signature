@@ -12,6 +12,7 @@ which loss shaped that embedding space during training.
 from __future__ import annotations
 
 import random
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
@@ -78,10 +79,16 @@ def train_triplet_config(
     binarize_output: bool = False,
     crop_to_bbox: bool = True,
     augmentation_enabled: bool = True,
+    checkpoint_path: Optional[Path] = None,
 ) -> tuple[dict, list[dict]]:
     """Train `model` with triplet loss, early-stopping on validation EER
     (computed the same way as the contrastive path, via compute_pair_scores
-    on val_pairs_df). Returns (best_state_dict, history)."""
+    on val_pairs_df). Returns (best_state_dict, history).
+
+    `checkpoint_path` works the same way as in train_one_config: saves
+    resumable state after every epoch so an interruption only costs the
+    current epoch.
+    """
     device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
@@ -101,8 +108,24 @@ def train_triplet_config(
     best_state = {k: v.detach().clone() for k, v in model.state_dict().items()}
     epochs_without_improvement = 0
     history = []
+    start_epoch = 0
 
-    for epoch in range(max_epochs):
+    if checkpoint_path is not None and Path(checkpoint_path).exists():
+        ckpt = torch.load(checkpoint_path, map_location=device)
+        model.load_state_dict(ckpt["model_state"])
+        optimizer.load_state_dict(ckpt["optimizer_state"])
+        best_eer = ckpt["best_eer"]
+        best_state = ckpt["best_state"]
+        epochs_without_improvement = ckpt["epochs_without_improvement"]
+        history = ckpt["history"]
+        start_epoch = ckpt["epoch"] + 1
+        print(
+            f"[train_triplet_config] Resumed from checkpoint: epoch={start_epoch}, "
+            f"best_val_eer={best_eer:.4f}",
+            flush=True,
+        )
+
+    for epoch in range(start_epoch, max_epochs):
         model.train()
         total_loss = 0.0
         for img_a, img_p, img_n in train_loader:
@@ -130,9 +153,26 @@ def train_triplet_config(
             epochs_without_improvement = 0
         elif epoch >= warmup_epochs:
             epochs_without_improvement += 1
-            if epochs_without_improvement >= patience:
-                print(f"[train_triplet_config] Early stopping at epoch {epoch} (best_val_eer={best_eer:.4f})", flush=True)
-                break
+
+        if checkpoint_path is not None:
+            torch.save(
+                {
+                    "epoch": epoch,
+                    "model_state": model.state_dict(),
+                    "optimizer_state": optimizer.state_dict(),
+                    "best_eer": best_eer,
+                    "best_state": best_state,
+                    "epochs_without_improvement": epochs_without_improvement,
+                    "history": history,
+                },
+                checkpoint_path,
+            )
+
+        if epoch >= warmup_epochs and epochs_without_improvement >= patience:
+            print(f"[train_triplet_config] Early stopping at epoch {epoch} (best_val_eer={best_eer:.4f})", flush=True)
+            break
 
     model.load_state_dict(best_state)
+    if checkpoint_path is not None:
+        Path(checkpoint_path).unlink(missing_ok=True)
     return best_state, history

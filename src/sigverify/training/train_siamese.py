@@ -6,6 +6,7 @@ differ between the two.
 from __future__ import annotations
 
 import random
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
@@ -112,12 +113,20 @@ def train_one_config(
     crop_to_bbox: bool = True,
     augmentation_enabled: bool = True,
     optimizer: Optional[torch.optim.Optimizer] = None,
+    checkpoint_path: Optional[Path] = None,
 ) -> tuple[dict, list[dict]]:
     """Train `model` with contrastive loss, early-stopping on validation EER.
 
     `crop_to_bbox` and `augmentation_enabled` exist mainly for the Phase 7
     ablation variants (configs/ablation_variants/*.yaml); both default to the
     plan's standard configuration.
+
+    `checkpoint_path`, if given, saves full resumable state (model/optimizer/
+    history/best-so-far) after every epoch and resumes from it automatically
+    if the file already exists -- this environment's CPU training runs can
+    take hours and the container has been interrupted mid-run more than
+    once, so an interruption only costs the current epoch instead of the
+    whole run.
 
     Returns (best_state_dict, history) -- history is a list of per-epoch
     {epoch, train_loss, val_eer} dicts, useful for the margin-sweep report.
@@ -145,8 +154,24 @@ def train_one_config(
     best_state = {k: v.detach().clone() for k, v in model.state_dict().items()}
     epochs_without_improvement = 0
     history = []
+    start_epoch = 0
 
-    for epoch in range(max_epochs):
+    if checkpoint_path is not None and Path(checkpoint_path).exists():
+        ckpt = torch.load(checkpoint_path, map_location=device)
+        model.load_state_dict(ckpt["model_state"])
+        optimizer.load_state_dict(ckpt["optimizer_state"])
+        best_eer = ckpt["best_eer"]
+        best_state = ckpt["best_state"]
+        epochs_without_improvement = ckpt["epochs_without_improvement"]
+        history = ckpt["history"]
+        start_epoch = ckpt["epoch"] + 1
+        print(
+            f"[train_one_config] Resumed from checkpoint: epoch={start_epoch}, "
+            f"best_val_eer={best_eer:.4f}",
+            flush=True,
+        )
+
+    for epoch in range(start_epoch, max_epochs):
         model.train()
         total_loss = 0.0
         for img_a, img_b, label, _ in train_loader:
@@ -174,9 +199,26 @@ def train_one_config(
             epochs_without_improvement = 0
         elif epoch >= warmup_epochs:
             epochs_without_improvement += 1
-            if epochs_without_improvement >= patience:
-                print(f"[train_one_config] Early stopping at epoch {epoch} (best_val_eer={best_eer:.4f})", flush=True)
-                break
+
+        if checkpoint_path is not None:
+            torch.save(
+                {
+                    "epoch": epoch,
+                    "model_state": model.state_dict(),
+                    "optimizer_state": optimizer.state_dict(),
+                    "best_eer": best_eer,
+                    "best_state": best_state,
+                    "epochs_without_improvement": epochs_without_improvement,
+                    "history": history,
+                },
+                checkpoint_path,
+            )
+
+        if epoch >= warmup_epochs and epochs_without_improvement >= patience:
+            print(f"[train_one_config] Early stopping at epoch {epoch} (best_val_eer={best_eer:.4f})", flush=True)
+            break
 
     model.load_state_dict(best_state)
+    if checkpoint_path is not None:
+        Path(checkpoint_path).unlink(missing_ok=True)
     return best_state, history

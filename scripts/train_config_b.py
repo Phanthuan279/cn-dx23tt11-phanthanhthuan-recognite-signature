@@ -31,12 +31,18 @@ from sigverify.utils.config import load_config  # noqa: E402
 from sigverify.utils.seed import set_seed  # noqa: E402
 
 
-def train_margin(config, train_pairs, val_pairs, margin, target_size, denoise_method, binarize_output, device):
+def train_margin(
+    config, train_pairs, val_pairs, margin, target_size, denoise_method, binarize_output, device,
+    checkpoint_dir=None,
+):
     embedding_dim = config["model"]["embedding_dim"]
     backbone = config["model"]["transfer_backbone"]
 
     model = SiameseTransferCNN(embedding_dim=embedding_dim, backbone=backbone, pretrained=True)
     model.to(device)
+
+    stage1_ckpt = Path(checkpoint_dir) / f"margin_{margin}_stage1.pt" if checkpoint_dir else None
+    stage2_ckpt = Path(checkpoint_dir) / f"margin_{margin}_stage2.pt" if checkpoint_dir else None
 
     # Stage 1: frozen backbone, embedding head only
     model.freeze_backbone()
@@ -50,6 +56,7 @@ def train_margin(config, train_pairs, val_pairs, margin, target_size, denoise_me
         device=device,
         denoise_method=denoise_method,
         binarize_output=binarize_output,
+        checkpoint_path=stage1_ckpt,
     )
 
     # Stage 2: unfreeze last block, two learning rates
@@ -71,6 +78,7 @@ def train_margin(config, train_pairs, val_pairs, margin, target_size, denoise_me
         denoise_method=denoise_method,
         binarize_output=binarize_output,
         optimizer=optimizer,
+        checkpoint_path=stage2_ckpt,
     )
     val_eer = min(h["val_eer"] for h in stage2_history) if stage2_history else float("inf")
     return best_state, {"stage1": stage1_history, "stage2": stage2_history}, val_eer
@@ -113,6 +121,8 @@ def main() -> None:
     model_path = Path(args.model_out)
     model_path.parent.mkdir(parents=True, exist_ok=True)
     margin_sweep_path = out_dir / "margin_sweep.json"
+    checkpoint_dir = out_dir / "checkpoints"
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
     margin_sweep = {}
     best_margin, best_val_eer, best_state = None, float("inf"), None
@@ -139,7 +149,8 @@ def main() -> None:
         # training left behind, confounding the comparison between margins.
         set_seed(config["seed"])
         state, history, val_eer = train_margin(
-            config, train_pairs, val_pairs, margin, target_size, denoise_method, binarize_output, device
+            config, train_pairs, val_pairs, margin, target_size, denoise_method, binarize_output, device,
+            checkpoint_dir=checkpoint_dir,
         )
         margin_sweep[str(margin)] = {"val_eer": val_eer, "history": history}
         margin_sweep_path.write_text(json.dumps(margin_sweep, indent=2))
