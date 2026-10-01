@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# trained models (large, regenerate with scripts/train.py)
+models/*
+!models/.gitkeep
+
+# sklearn's MNIST download cache
+data/
+
+.DS_Store

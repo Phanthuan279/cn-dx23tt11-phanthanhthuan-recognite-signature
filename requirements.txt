@@ -1,0 +1,10 @@
+scikit-learn
+numpy
+pandas
+matplotlib
+joblib
+streamlit
+streamlit-drawable-canvas
+pillow
+scipy
+pytest
