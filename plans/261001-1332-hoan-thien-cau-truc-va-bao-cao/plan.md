@@ -1,7 +1,7 @@
 ---
 title: "Hoàn thiện cấu trúc dự án và báo cáo đồ án chính thức"
 description: "Đưa dự án nhận dạng chữ số viết tay lên cùng mức độ hoàn thiện tổ chức như dự án xác minh chữ ký cũ: cấu trúc thư mục đầy đủ, báo cáo đồ án chính thức (docx/pdf theo đúng biểu mẫu trình bày), video demo thật, và progress report."
-status: pending
+status: done
 priority: P1
 effort: "~1 ngày"
 tags: [documentation, thesis, video, project-structure]
@@ -60,17 +60,17 @@ kỹ thuật đã có.
 | 3 | [Phase 3: Viết nội dung báo cáo](./phase-03-viet-noi-dung-bao-cao.md) | Done |
 | 4 | [Phase 4: Sinh và kiểm tra báo cáo](./phase-04-sinh-va-kiem-tra-bao-cao.md) | Done |
 | 5 | [Phase 5: Video demo](./phase-05-video-demo.md) | Done |
-| 6 | [Phase 6: Progress report và rà soát cuối](./phase-06-progress-report-va-ra-soat-cuoi.md) | Pending |
+| 6 | [Phase 6: Progress report và rà soát cuối](./phase-06-progress-report-va-ra-soat-cuoi.md) | Done |
 
 ## Success Criteria
 
-- [ ] Cấu trúc thư mục khớp với quy ước dự án cũ (đối chiếu từng mục)
-- [ ] `thesis/doc/thesis.docx` và `thesis/pdf/thesis.pdf` tồn tại, đúng biểu mẫu trình bày chính thức, nội dung thật 100% (số liệu từ `results/comparison_summary.json`, không mô phỏng)
-- [ ] Video demo thật, cho thấy luồng sử dụng (vẽ/tải ảnh → xem dự đoán KNN và SVM)
-- [ ] `progress-report/progress-report.md` với mốc thời gian thật từ `git log`
-- [ ] `setup/README.md` hướng dẫn cài đặt/tái tạo đầy đủ
-- [ ] README.md gốc cập nhật đúng cấu trúc mới
-- [ ] Toàn bộ đã commit và đẩy lên nhánh `nhan-dang-chu-so-viet-tay`
+- [x] Cấu trúc thư mục khớp với quy ước dự án cũ (đối chiếu từng mục)
+- [x] `thesis/doc/thesis.docx` và `thesis/pdf/thesis.pdf` tồn tại, đúng biểu mẫu trình bày chính thức, nội dung thật 100% (số liệu từ `results/comparison_summary.json`, không mô phỏng)
+- [x] Video demo thật, cho thấy luồng sử dụng (vẽ/tải ảnh → xem dự đoán KNN và SVM)
+- [x] `progress-report/progress-report.md` với mốc thời gian thật từ `git log`
+- [x] `setup/README.md` hướng dẫn cài đặt/tái tạo đầy đủ
+- [x] README.md gốc cập nhật đúng cấu trúc mới
+- [x] Toàn bộ đã commit và đẩy lên nhánh `nhan-dang-chu-so-viet-tay`
 
 ## Dependencies
 
