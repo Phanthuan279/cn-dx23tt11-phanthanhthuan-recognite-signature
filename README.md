@@ -6,6 +6,7 @@
 |---|---|
 | Sinh viên thực hiện | Phan Thành Thuận — MSSV 170123591 — Lớp DX23TT11 |
 | Giảng viên hướng dẫn | ThS. Nguyễn Nhứt Lam |
+| Báo cáo đồ án đầy đủ | [`thesis/doc/thesis.docx`](thesis/doc/thesis.docx) · [`thesis/pdf/thesis.pdf`](thesis/pdf/thesis.pdf) |
 
 ## Đề tài
 
@@ -40,19 +41,34 @@ phù hợp để so sánh đánh đổi giữa chất lượng và chi phí tín
 ## Cấu trúc dự án
 
 ```
-├── src/digitrec/        # package chính: tải dữ liệu, mô hình, đánh giá
-│   ├── data.py          # tải MNIST thật + chia tập train/val/test
-│   ├── models.py        # khởi tạo KNN và SVM
-│   └── evaluate.py      # tính accuracy, classification report, ma trận nhầm lẫn
+├── setup/                  # hướng dẫn cài đặt & tái tạo hệ thống từ đầu
+├── src/digitrec/           # package chính: tải dữ liệu, mô hình, đánh giá
+│   ├── data.py             # tải MNIST thật + chia tập train/val/test
+│   ├── models.py           # khởi tạo KNN và SVM
+│   └── evaluate.py         # tính accuracy, classification report, ma trận nhầm lẫn
 ├── scripts/
-│   └── train.py         # huấn luyện cả hai mô hình, lưu kết quả thật vào results/
-├── app.py               # demo Streamlit: vẽ/tải ảnh chữ số, xem dự đoán
-├── models/               # trọng số mô hình đã huấn luyện (gitignored, tái tạo bằng scripts/train.py)
-├── results/              # kết quả thật đã commit: metrics, ma trận nhầm lẫn
-└── tests/                # unit test trên dữ liệu tổng hợp, không cần tải MNIST
+│   └── train.py            # huấn luyện cả hai mô hình, lưu kết quả thật vào results/
+├── app.py                  # demo Streamlit: vẽ/tải ảnh chữ số, xem dự đoán
+├── data/                    # cache MNIST do sklearn tự quản lý (gitignored, tái tạo bằng scripts/train.py)
+├── models/                  # trọng số mô hình đã huấn luyện (gitignored, tái tạo bằng scripts/train.py)
+├── results/                 # kết quả thật đã commit: metrics, ma trận nhầm lẫn
+├── progress-report/         # nhật ký tiến độ thực hiện đồ án
+├── thesis/                  # tài liệu báo cáo đồ án
+│   ├── doc/                 # báo cáo dạng .docx
+│   ├── pdf/                 # báo cáo dạng .pdf
+│   ├── html/                # (dự phòng) bản web của báo cáo
+│   ├── abs/                 # hình/công thức/ảnh chụp màn hình dùng trong báo cáo; video demo đặt tại đây
+│   ├── refs/                # tài liệu tham khảo dùng khi làm đồ án
+│   └── docgen/               # script sinh báo cáo .docx tự động (build_thesis.py, dùng python-docx)
+├── plans/                   # đề cương triển khai + kế hoạch từng phase
+└── tests/                   # unit test trên dữ liệu tổng hợp, không cần tải MNIST
 ```
 
-## Cài đặt
+## Cài đặt nhanh
+
+Hướng dẫn cài đặt đầy đủ (bao gồm cách tải MNIST và tái tạo mô hình đã
+huấn luyện, vì mô hình không được commit do dung lượng): xem
+[`setup/README.md`](setup/README.md).
 
 ```bash
 pip install -r requirements.txt

@@ -1,6 +1,6 @@
 ---
 title: "Phase 2: Tái cấu trúc dự án"
-status: todo
+status: done
 ---
 
 # Phase 2: Tái cấu trúc dự án
@@ -13,10 +13,10 @@ nội dung vào.
 
 ## Requirements
 
-- [ ] Tạo `setup/` (README hướng dẫn cài đặt sẽ viết nội dung ở bước riêng, chỉ tạo khung ở đây nếu nội dung thuộc phase khác — thực ra nội dung setup/README.md làm luôn trong phase này vì không phụ thuộc báo cáo)
-- [ ] Tạo `progress-report/` (khung thư mục, nội dung viết ở Phase 6)
-- [ ] Tạo `thesis/{doc,pdf,html,abs/{formulas,screenshots},refs,docgen}/`
-- [ ] Cập nhật `README.md` gốc: thêm mục trỏ tới `setup/`, `thesis/`, `progress-report/`, cập nhật sơ đồ cấu trúc thư mục
+- [x] Tạo `setup/` với `setup/README.md` đầy đủ nội dung
+- [x] Tạo `progress-report/` (khung thư mục, nội dung viết ở Phase 6)
+- [x] Tạo `thesis/{doc,pdf,html,abs/{formulas,screenshots},refs,docgen}/`
+- [x] Cập nhật `README.md` gốc: thêm mục trỏ tới `setup/`, `thesis/`, cập nhật sơ đồ cấu trúc thư mục
 
 ## Implementation Steps
 
@@ -27,13 +27,18 @@ nội dung vào.
 
 ## Todo
 
-- [ ] Tạo cây thư mục đầy đủ
-- [ ] Viết `setup/README.md`
-- [ ] Cập nhật `README.md` gốc (liên kết + sơ đồ cấu trúc)
+- [x] Tạo cây thư mục đầy đủ
+- [x] Viết `setup/README.md`
+- [x] Cập nhật `README.md` gốc (liên kết + sơ đồ cấu trúc)
 
 ## Success Criteria
 
-`ls` cây thư mục của `digit-recognition` khớp 1-1 với các mục trong bảng
-đối chiếu Phase 1 (trừ nội dung `thesis/doc`, `thesis/pdf`,
-`thesis/docgen`, `progress-report/progress-report.md` — tạo ở phase sau).
-`setup/README.md` mô tả đúng, chạy thử được các lệnh nêu trong đó.
+Đã rà soát: `find . -maxdepth 3 -type d` khớp 1-1 với bảng đối chiếu Phase
+1 (trừ nội dung `thesis/doc`, `thesis/pdf`, `thesis/docgen`,
+`progress-report/progress-report.md` — tạo ở phase sau, đúng kế hoạch).
+`setup/README.md` tồn tại, nội dung khớp số liệu thật (235 giây SVM, 0,07
+giây KNN — đối chiếu với `results/comparison_summary.json`). README.md gốc
+có liên kết tới `setup/README.md` và `thesis/doc/thesis.docx` /
+`thesis/pdf/thesis.pdf` (hai liên kết sau chưa trỏ tới file có thật — sẽ
+có sau Phase 4, đây là tham chiếu trước có chủ đích, không phải lỗi).
+`pytest tests/` vẫn pass (5/5) sau khi đổi cấu trúc.

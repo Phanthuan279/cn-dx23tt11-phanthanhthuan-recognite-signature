@@ -56,7 +56,7 @@ kỹ thuật đã có.
 | # | Phase | Status |
 |---|-------|--------|
 | 1 | [Phase 1: Rà soát cấu trúc hiện tại](./phase-01-start.md) | Done |
-| 2 | [Phase 2: Tái cấu trúc dự án](./phase-02-tai-cau-truc-du-an.md) | Pending |
+| 2 | [Phase 2: Tái cấu trúc dự án](./phase-02-tai-cau-truc-du-an.md) | Done |
 | 3 | [Phase 3: Viết nội dung báo cáo](./phase-03-viet-noi-dung-bao-cao.md) | Pending |
 | 4 | [Phase 4: Sinh và kiểm tra báo cáo](./phase-04-sinh-va-kiem-tra-bao-cao.md) | Pending |
 | 5 | [Phase 5: Video demo](./phase-05-video-demo.md) | Pending |
