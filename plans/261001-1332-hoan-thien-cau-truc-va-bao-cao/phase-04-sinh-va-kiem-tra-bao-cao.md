@@ -1,6 +1,6 @@
 ---
 title: "Phase 4: Sinh và kiểm tra báo cáo"
-status: todo
+status: done
 ---
 
 # Phase 4: Sinh và kiểm tra báo cáo
@@ -15,10 +15,10 @@ lục) — không chỉ tin vào việc script chạy không lỗi.
 
 ## Requirements
 
-- [ ] `.docx` sinh ra không lỗi, convert sang `.pdf` bằng LibreOffice không lỗi
-- [ ] Mục lục khớp chính xác số trang thật (phương pháp hai lượt)
-- [ ] Trang bìa đúng biểu mẫu (logo, canh giữa/canh trái đúng như đã sửa ở dự án cũ)
-- [ ] Mỗi chương, công thức, bảng, hình hiển thị đúng khi render ra ảnh kiểm tra bằng mắt
+- [x] `.docx` sinh ra không lỗi, convert sang `.pdf` bằng LibreOffice không lỗi
+- [x] Mục lục khớp chính xác số trang thật (phương pháp hai lượt)
+- [x] Trang bìa đúng biểu mẫu (logo, canh giữa/canh trái đúng như đã sửa ở dự án cũ)
+- [x] Mỗi chương, công thức, bảng, hình hiển thị đúng khi render ra ảnh kiểm tra bằng mắt
 
 ## Implementation Steps
 
@@ -30,12 +30,21 @@ lục) — không chỉ tin vào việc script chạy không lỗi.
 
 ## Todo
 
-- [ ] Sinh docx/pdf lần đầu
-- [ ] Hội tụ số trang mục lục (hai lượt)
-- [ ] Render và xem bằng mắt các trang quan trọng
-- [ ] Sửa mọi lỗi hiển thị phát hiện được trước khi coi là xong
+- [x] Sinh docx/pdf lần đầu
+- [x] Hội tụ số trang mục lục (hai lượt)
+- [x] Render và xem bằng mắt các trang quan trọng
+- [x] Sửa mọi lỗi hiển thị phát hiện được trước khi coi là xong
 
 ## Success Criteria
 
-Mục lục khớp số trang thật tuyệt đối. Xem bằng mắt xác nhận bìa, mục lục,
-từng chương, phụ lục không có lỗi hiển thị. `pytest tests/` vẫn pass.
+Đã đo số trang thật của 40 heading/mục bằng `pdftotext -layout` (tách theo
+form-feed `\f`, lấy dòng cuối mỗi trang làm số trang chân trang), cập nhật
+`TOC_ENTRIES` khớp đúng từng mục, sinh lại docx/pdf lần hai và đo lại —
+**0/40 mục lệch số trang** (script đo đối chiếu in "Total mismatches: 0").
+Bản chính thức đã copy vào `thesis/doc/thesis.docx` và `thesis/pdf/thesis.pdf`
+đúng quy ước của dự án cũ (docgen/ là bản làm việc, doc/+pdf/ là bản chính
+thức). Đã xem bằng mắt (render ảnh `pdftoppm`) trang bìa (logo thật, khối
+Giảng viên/Sinh viên căn trái đúng), trang mục lục (khớp số trang thật,
+không tràn dòng), trang đầu các Chương 1-5, trang Phụ lục, trang Tài liệu
+tham khảo — không phát hiện lỗi canh lề/font/ngắt trang nào. `pytest tests/`
+vẫn pass (5/5) sau khi thêm các file docx/pdf mới.
