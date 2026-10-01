@@ -1,9 +1,20 @@
 """Streamlit demo: draw or upload a handwritten digit, see KNN vs SVM
 predictions side by side with confidence scores.
+
+Drawing uses Streamlit's own built-in `st.components.v2` inline-component API
+(a plain HTML5 canvas) rather than the third-party `streamlit-drawable-canvas`
+package: that package's component registration call is incompatible with this
+streamlit version (raises `StreamlitAPIException: ... must be declared in
+pyproject.toml with asset_dir ...` on import), and upstream has not published
+a fix. Per the đề tài's own technology note ("có thể thay bằng công nghệ
+tương đương nếu giải thích được lựa chọn và bảo đảm sản phẩm chạy ổn định"),
+this substitutes a first-party, dependency-free equivalent instead.
 """
 
 from __future__ import annotations
 
+import base64
+import io
 import sys
 from pathlib import Path
 
@@ -14,10 +25,96 @@ import numpy as np
 import streamlit as st
 from PIL import Image
 from scipy.special import softmax
-from streamlit_drawable_canvas import st_canvas
 
 BASE = Path(__file__).resolve().parent
 MODELS_DIR = BASE / "models"
+
+_CANVAS_HTML = """
+<div>
+  <canvas id="draw-canvas" width="280" height="280"></canvas>
+  <div style="margin-top: 8px;">
+    <button id="clear-btn" type="button">Xóa</button>
+  </div>
+</div>
+"""
+
+_CANVAS_CSS = """
+#draw-canvas {
+  border: 1px solid #888;
+  touch-action: none;
+  cursor: crosshair;
+  background: black;
+}
+#clear-btn {
+  padding: 4px 14px;
+}
+"""
+
+_CANVAS_JS = """
+export default function(component) {
+    const { setStateValue, parentElement } = component;
+    const canvas = parentElement.querySelector('#draw-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function clear() {
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    clear();
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 18;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    let drawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const point = e.touches ? e.touches[0] : e;
+        return [point.clientX - rect.left, point.clientY - rect.top];
+    }
+
+    function start(e) {
+        drawing = true;
+        [lastX, lastY] = getPos(e);
+    }
+
+    function move(e) {
+        if (!drawing) return;
+        const [x, y] = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        [lastX, lastY] = [x, y];
+        e.preventDefault();
+    }
+
+    function end() {
+        if (!drawing) return;
+        drawing = false;
+        setStateValue('image_data', canvas.toDataURL('image/png'));
+    }
+
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', end);
+    canvas.addEventListener('touchstart', start);
+    canvas.addEventListener('touchmove', move);
+    canvas.addEventListener('touchend', end);
+
+    parentElement.querySelector('#clear-btn').addEventListener('click', () => {
+        clear();
+        setStateValue('image_data', null);
+    });
+
+    setStateValue('image_data', null);
+}
+"""
+
+_draw_canvas = st.components.v2.component("digit_draw_canvas", html=_CANVAS_HTML, css=_CANVAS_CSS, js=_CANVAS_JS)
 
 
 @st.cache_resource
@@ -44,6 +141,11 @@ def preprocess(image: Image.Image) -> np.ndarray:
     return arr.reshape(1, -1)
 
 
+def _decode_data_url(data_url: str) -> Image.Image:
+    _, b64data = data_url.split(",", 1)
+    return Image.open(io.BytesIO(base64.b64decode(b64data))).convert("RGB")
+
+
 def main() -> None:
     st.set_page_config(page_title="Nhận dạng chữ số viết tay", page_icon="🔢")
     st.title("Nhận dạng chữ số viết tay — KNN vs SVM")
@@ -64,18 +166,9 @@ def main() -> None:
     image = None
 
     with tab_draw:
-        canvas = st_canvas(
-            fill_color="black",
-            stroke_width=18,
-            stroke_color="white",
-            background_color="black",
-            width=280,
-            height=280,
-            drawing_mode="freedraw",
-            key="canvas",
-        )
-        if canvas.image_data is not None and canvas.image_data[:, :, :3].sum() > 0:
-            image = Image.fromarray(canvas.image_data.astype("uint8")).convert("RGB")
+        result = _draw_canvas(on_image_data_change=lambda: None, key="canvas")
+        if result.image_data:
+            image = _decode_data_url(result.image_data)
 
     with tab_upload:
         uploaded = st.file_uploader("Ảnh chữ số (PNG/JPG)", type=["png", "jpg", "jpeg"])

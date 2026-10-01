@@ -58,3 +58,18 @@ def test_plot_confusion_matrix_writes_a_file(tmp_path):
     out_path = tmp_path / "cm.png"
     plot_confusion_matrix(cm, "test", str(out_path))
     assert out_path.exists() and out_path.stat().st_size > 0
+
+
+def test_app_runs_without_exceptions():
+    """Regression test: app.py previously imported streamlit-drawable-canvas,
+    which crashes at import time on this Streamlit version (incompatible
+    component API) while the bare server process still starts fine -- a
+    server-liveness check alone would miss this. AppTest actually executes
+    the script the way a real browser session would.
+    """
+    from streamlit.testing.v1 import AppTest
+
+    app_path = Path(__file__).resolve().parents[1] / "app.py"
+    at = AppTest.from_file(str(app_path), default_timeout=30)
+    at.run()
+    assert not at.exception

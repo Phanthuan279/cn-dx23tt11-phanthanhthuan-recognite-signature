@@ -83,4 +83,6 @@ dùng ảnh có sẵn. Cần đã chạy `scripts/train.py` trước để có m
 ## Công nghệ sử dụng
 
 Python, scikit-learn (KNN, SVM), NumPy/Pandas, Matplotlib (ma trận nhầm
-lẫn), Streamlit + streamlit-drawable-canvas (demo).
+lẫn), Streamlit (demo — bảng vẽ chữ số dùng `st.components.v2` có sẵn của
+Streamlit, không phụ thuộc thư viện ngoài, vì `streamlit-drawable-canvas`
+không tương thích với phiên bản Streamlit đang dùng).
