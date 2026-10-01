@@ -59,7 +59,7 @@ kỹ thuật đã có.
 | 2 | [Phase 2: Tái cấu trúc dự án](./phase-02-tai-cau-truc-du-an.md) | Done |
 | 3 | [Phase 3: Viết nội dung báo cáo](./phase-03-viet-noi-dung-bao-cao.md) | Done |
 | 4 | [Phase 4: Sinh và kiểm tra báo cáo](./phase-04-sinh-va-kiem-tra-bao-cao.md) | Done |
-| 5 | [Phase 5: Video demo](./phase-05-video-demo.md) | Pending |
+| 5 | [Phase 5: Video demo](./phase-05-video-demo.md) | Done |
 | 6 | [Phase 6: Progress report và rà soát cuối](./phase-06-progress-report-va-ra-soat-cuoi.md) | Pending |
 
 ## Success Criteria

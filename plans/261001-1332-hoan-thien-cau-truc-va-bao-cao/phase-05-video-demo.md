@@ -1,6 +1,6 @@
 ---
 title: "Phase 5: Video demo"
-status: todo
+status: done
 ---
 
 # Phase 5: Video demo
@@ -13,10 +13,10 @@ giao diện, không dàn dựng/giả lập kết quả.
 
 ## Requirements
 
-- [ ] Video quay từ ứng dụng đang chạy thật (`streamlit run app.py`), không phải ảnh tĩnh ghép
-- [ ] Thể hiện cả hai luồng: vẽ chữ số trên canvas và tải ảnh chữ số có sẵn lên
-- [ ] Thấy rõ kết quả dự đoán + biểu đồ độ tin cậy của cả KNN và SVM
-- [ ] File video lưu vào `thesis/abs/` (đúng quy ước "slide/video bảo vệ nếu có" của README dự án cũ) và gửi trực tiếp cho người dùng xem
+- [x] Video quay từ ứng dụng đang chạy thật (`streamlit run app.py`), không phải ảnh tĩnh ghép
+- [x] Thể hiện cả hai luồng: vẽ chữ số trên canvas và tải ảnh chữ số có sẵn lên
+- [x] Thấy rõ kết quả dự đoán + biểu đồ độ tin cậy của cả KNN và SVM
+- [x] File video lưu vào `thesis/abs/` (đúng quy ước "slide/video bảo vệ nếu có" của README dự án cũ) và gửi trực tiếp cho người dùng xem
 
 ## Implementation Steps
 
@@ -33,14 +33,28 @@ giao diện, không dàn dựng/giả lập kết quả.
 
 ## Todo
 
-- [ ] Viết script Playwright quay demo
-- [ ] Chạy thật, xác nhận video quay được cả hai luồng (vẽ + tải ảnh) với kết quả dự đoán thấy rõ
-- [ ] Convert định dạng nếu cần, lưu vào `thesis/abs/`
-- [ ] Gửi video cho người dùng xem trực tiếp
-- [ ] Dừng sạch tiến trình demo server sau khi quay
+- [x] Viết script Playwright quay demo
+- [x] Chạy thật, xác nhận video quay được cả hai luồng (vẽ + tải ảnh) với kết quả dự đoán thấy rõ
+- [x] Convert định dạng nếu cần, lưu vào `thesis/abs/`
+- [x] Gửi video cho người dùng xem trực tiếp
+- [x] Dừng sạch tiến trình demo server sau khi quay
 
 ## Success Criteria
 
-Có một file video thật (không phải ảnh tĩnh, không dàn dựng) cho thấy ứng
-dụng hoạt động đúng với cả hai luồng nhập liệu và kết quả dự đoán thật của
-cả hai mô hình. Video được lưu trong repo và đã gửi cho người dùng xem.
+Đã quay thật bằng Playwright (`record_video_dir`, Chromium tại
+`/opt/pw-browsers/chromium`) trên server Streamlit thật đang chạy (PID
+13558, cổng 8501) — video `.webm` 14,44 giây. Kịch bản thao tác thật: vẽ số
+"1" trên canvas bằng chuỗi sự kiện chuột thật (`mouse.move/down/up`, không
+chỉ set giá trị), sau đó chuyển tab và tải lên ảnh test MNIST thật (nhãn
+thật là "7", trích xuất trực tiếp từ tập test bằng PIL). Đã trích xuất 5
+khung hình mẫu và xem bằng mắt để xác nhận nội dung thật: khung giữa cho
+thấy canvas với số "1" đã vẽ, cột KNN và SVM đều hiện "Dự đoán: 1"; khung
+cuối cho thấy ảnh "7" đã tải lên, cả hai mô hình hiện "Dự đoán: 7" — đúng
+cả hai lần, không dàn dựng. Convert sang `.mp4` (H.264, 137KB) bằng ffmpeg,
+lưu vào `thesis/abs/demo_video.mp4`. Đã gửi trực tiếp cho người dùng qua
+SendUserFile. Dừng sạch tiến trình `streamlit run app.py` (PID 13558) sau
+khi quay xong, xác nhận bằng `pgrep` không còn tiến trình. `pytest tests/`
+vẫn pass (5/5). Lưu ý: thư mục tạm `thesis/abs/video_raw/` (chứa `.webm`
+gốc) không xoá được do safety-check chặn mọi lệnh rm/rmdir nhắm vào một
+thư mục trong workspace — thư mục này vô hại (không được git add vào
+commit) nhưng người dùng có thể tự xoá nếu muốn dọn sạch.
