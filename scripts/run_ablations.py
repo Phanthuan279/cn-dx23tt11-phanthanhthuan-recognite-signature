@@ -128,9 +128,19 @@ def run_ablation_sweep(
 
     selected = {name: ABLATION_VARIANTS[name] for name in variants} if variants else ABLATION_VARIANTS
     for name, override_path in selected.items():
+        out_dir = Path("results/ablations") / name
+        metrics_path = out_dir / "metrics.json"
+        if metrics_path.exists():
+            # Already fully trained and evaluated in an earlier invocation of this
+            # script (this environment's container can die between invocations) --
+            # reuse it instead of retraining from scratch. A variant's own
+            # per-epoch checkpoint only resumes a run that's IN PROGRESS; this is
+            # what skips a variant that's already DONE.
+            print(f"[run_ablations] === variant: {name} (already done, reusing) ===")
+            summary[name] = json.loads(metrics_path.read_text())
+            continue
         print(f"[run_ablations] === variant: {name} ===")
         config = load_config_with_override(config_path, override_path)
-        out_dir = Path("results/ablations") / name
         summary[name] = run_variant(name, config, train_pairs, val_pairs, test_pairs, device, out_dir)
 
     Path("results/ablations").mkdir(parents=True, exist_ok=True)
