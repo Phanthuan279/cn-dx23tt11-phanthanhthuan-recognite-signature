@@ -332,14 +332,16 @@ set_page_number_format(section, "lowerRoman", start=1)
 
 
 def cover_page(sub_label):
+    # Layout follows the official Trường Đại học Trà Vinh "Mẫu trang bìa" appendix
+    # (bìa cứng, chữ nhũ vàng): University + Khoa header, university logo, project
+    # type, title, Giảng viên hướng dẫn / Sinh viên thực hiện block, location+date.
     add_para(doc, UNIVERSITY, bold=True, center=True, size=16, space_after=0)
     add_para(doc, SCHOOL, bold=True, center=True, size=16, space_after=0)
     add_para(doc, FACULTY, bold=True, center=True, size=14, space_after=0)
-    for _ in range(5):
-        doc.add_paragraph()
+    add_image(doc, f"{IMGD}/logo_truong_dai_hoc_tra_vinh.png", width_cm=2.2)
     add_para(doc, PROJECT_TYPE, bold=True, center=True, size=16, space_after=6)
     add_para(doc, THESIS_TITLE, bold=True, center=True, size=18, space_after=6)
-    for _ in range(6):
+    for _ in range(3):
         doc.add_paragraph()
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -352,12 +354,20 @@ def cover_page(sub_label):
     r.font.size = Pt(14)
     r.bold = True
     add_para(doc, "", space_after=0)
-    add_para(doc, "Sinh viên thực hiện", bold=True, center=True, size=14, space_after=6)
-    add_para(doc, STUDENT_NAME.upper(), bold=True, center=True, size=14, space_after=0)
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r = p.add_run("Sinh viên thực hiện: ")
+    r.font.name = "Times New Roman"
+    r.font.size = Pt(14)
+    r.bold = True
+    r = p.add_run(STUDENT_NAME.upper())
+    r.font.name = "Times New Roman"
+    r.font.size = Pt(14)
+    r.bold = True
     add_para(doc, f"Mã số sinh viên : {STUDENT_ID}", bold=True, center=True, size=14, space_after=0)
     add_para(doc, f"Lớp : {STUDENT_CLASS}", bold=True, center=True, size=14, space_after=0)
     add_para(doc, f"Khoá : {STUDENT_COHORT}", bold=True, center=True, size=14, space_after=0)
-    for _ in range(4):
+    for _ in range(3):
         doc.add_paragraph()
     add_para(doc, SUBMIT_DATE, bold=True, center=True, size=13)
     add_page_break(doc)
