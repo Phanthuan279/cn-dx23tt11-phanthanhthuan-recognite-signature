@@ -55,7 +55,7 @@ PROJECT_TYPE = "ĐỒ ÁN THỰC TẬP CHUYÊN NGÀNH"
 # số" vs "chữ ký" is almost certainly a leftover template typo. The title
 # below is corrected to match the đề cương's actual content; flagged to the
 # student for confirmation.
-THESIS_TITLE = "XÂY DỰNG HỆ THỐNG XÁC MINH CHỮ KÝ VIẾT TAY OFFLINE\nSỬ DỤNG MẠNG NƠ-RON SIAMESE"
+THESIS_TITLE = "XÂY DỰNG HỆ THỐNG XÁC MINH CHỮ KÝ\nVIẾT TAY OFFLINE\nSỬ DỤNG MẠNG NƠ-RON SIAMESE"
 
 # ---------------------------------------------------------------------------
 # Low-level helpers
