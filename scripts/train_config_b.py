@@ -42,22 +42,35 @@ def train_margin(
     model.to(device)
 
     stage1_ckpt = Path(checkpoint_dir) / f"margin_{margin}_stage1.pt" if checkpoint_dir else None
+    stage1_done = Path(checkpoint_dir) / f"margin_{margin}_stage1_done.pt" if checkpoint_dir else None
     stage2_ckpt = Path(checkpoint_dir) / f"margin_{margin}_stage2.pt" if checkpoint_dir else None
 
-    # Stage 1: frozen backbone, embedding head only
-    model.freeze_backbone()
-    _, stage1_history = train_one_config(
-        model, train_pairs, val_pairs, target_size, "imagenet", margin,
-        lr=config["train"]["lr_finetune_head"],
-        max_epochs=config["train"]["finetune_stage1_epochs"],
-        patience=config["train"]["finetune_stage1_epochs"] + 1,  # no early stop during stage 1
-        warmup_epochs=0,
-        batch_size=config["train"]["batch_size"],
-        device=device,
-        denoise_method=denoise_method,
-        binarize_output=binarize_output,
-        checkpoint_path=stage1_ckpt,
-    )
+    # Stage 1: frozen backbone, embedding head only. finetune_stage1_epochs is
+    # small and fixed (no early stop), so once it genuinely finishes it's cached
+    # to stage1_done -- this environment's container can die right at the
+    # stage1->stage2 boundary (stage2's first epoch is heavier and may not fit
+    # in the same execution window), and without this cache every re-invocation
+    # would redo all of stage1 from scratch before ever making it into stage2.
+    if stage1_done is not None and stage1_done.exists():
+        print(f"[train_config_b] Stage 1 already done for margin={margin}, reusing cached weights", flush=True)
+        model.load_state_dict(torch.load(stage1_done, map_location=device))
+        stage1_history = []
+    else:
+        model.freeze_backbone()
+        _, stage1_history = train_one_config(
+            model, train_pairs, val_pairs, target_size, "imagenet", margin,
+            lr=config["train"]["lr_finetune_head"],
+            max_epochs=config["train"]["finetune_stage1_epochs"],
+            patience=config["train"]["finetune_stage1_epochs"] + 1,  # no early stop during stage 1
+            warmup_epochs=0,
+            batch_size=config["train"]["batch_size"],
+            device=device,
+            denoise_method=denoise_method,
+            binarize_output=binarize_output,
+            checkpoint_path=stage1_ckpt,
+        )
+        if stage1_done is not None:
+            torch.save(model.state_dict(), stage1_done)
 
     # Stage 2: unfreeze last block, two learning rates
     model.unfreeze_last_block()
@@ -80,6 +93,8 @@ def train_margin(
         optimizer=optimizer,
         checkpoint_path=stage2_ckpt,
     )
+    if stage1_done is not None:
+        stage1_done.unlink(missing_ok=True)
     val_eer = min(h["val_eer"] for h in stage2_history) if stage2_history else float("inf")
     return best_state, {"stage1": stage1_history, "stage2": stage2_history}, val_eer
 
