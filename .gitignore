@@ -25,4 +25,8 @@ models_registry/*
 results/*
 !results/.gitkeep
 
+# build_thesis.py's own working copy -- the committed deliverable is
+# thesis/doc/thesis.docx (copied there after each regeneration)
+thesis/docgen/thesis.docx
+
 .DS_Store
