@@ -57,7 +57,7 @@ muốn, nhưng không phải yêu cầu bắt buộc của đề tài.
 |---|-------|--------|
 | 1 | [Phase 1: Dữ liệu và huấn luyện mô hình](./phase-01-start.md) | Done |
 | 2 | [Phase 2: Demo Streamlit](./phase-02-demo-streamlit.md) | Done |
-| 3 | [Phase 3: Tài liệu, kiểm thử và công bố mã nguồn](./phase-03-tai-lieu-kiem-thu-cong-bo.md) | In Progress |
+| 3 | [Phase 3: Tài liệu, kiểm thử và công bố mã nguồn](./phase-03-tai-lieu-kiem-thu-cong-bo.md) | Done |
 
 ## Kết quả thật đã đạt được
 
@@ -79,7 +79,7 @@ Chi tiết: `results/comparison_summary.json`, `results/confusion_matrix_knn.png
 - [x] Ứng dụng demo Streamlit chạy được, nhận ảnh/vẽ tay và trả kết quả dự đoán của cả hai mô hình
 - [x] Unit test chạy được không cần tải MNIST (dữ liệu tổng hợp), toàn bộ pass
 - [x] README mô tả đúng đề tài, cài đặt, cách chạy lại, và số liệu thật
-- [ ] Mã nguồn đã được đẩy lên repository GitHub (`cn-dx23tt11-phanthanhthuan-digit-recognition`) — đang chờ sinh viên tạo repo trống (Claude không có quyền tự tạo repo mới)
+- [x] Mã nguồn đã được đẩy lên GitHub: nhánh [`nhan-dang-chu-so-viet-tay`](https://github.com/Phanthuan279/cn-dx23tt11-phanthanhthuan-recognite-signature/tree/nhan-dang-chu-so-viet-tay) trên repository đã có sẵn quyền ghi (không tạo repo mới, do giới hạn quyền tạo repo của tích hợp Claude Code — xem Phase 3 để biết cách thật sự dùng)
 
 ## Dependencies
 
