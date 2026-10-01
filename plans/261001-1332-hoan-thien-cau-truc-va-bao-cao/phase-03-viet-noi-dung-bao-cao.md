@@ -1,6 +1,6 @@
 ---
 title: "Phase 3: Viết nội dung báo cáo"
-status: todo
+status: done
 ---
 
 # Phase 3: Viết nội dung báo cáo
@@ -16,11 +16,11 @@ Nhận dạng chữ số viết tay — không copy nội dung xác minh chữ k
 
 ## Requirements
 
-- [ ] Đúng biểu mẫu trình bày chính thức của Trường Đại học Trà Vinh (bìa, mục lục, nhận xét, đánh số trang) — tái sử dụng hạ tầng đã kiểm chứng
-- [ ] Nội dung 100% thật: số liệu từ `results/comparison_summary.json`, không mô phỏng, không độn trang
-- [ ] Độ dài tỉ lệ thuận với độ phức tạp thật của đề tài (ước tính ~15-25 trang nội dung chính, ngắn hơn báo cáo chữ ký vì đề tài đơn giản hơn nhiều — không ép đạt một số trang cụ thể)
-- [ ] Công thức toán học render đúng (KNN, SVM, các độ đo đánh giá)
-- [ ] Trích dẫn tài liệu tham khảo thật, có thể kiểm chứng (không bịa)
+- [x] Đúng biểu mẫu trình bày chính thức của Trường Đại học Trà Vinh (bìa, mục lục, nhận xét, đánh số trang) — tái sử dụng hạ tầng đã kiểm chứng
+- [x] Nội dung 100% thật: số liệu từ `results/comparison_summary.json`, không mô phỏng, không độn trang
+- [x] Độ dài tỉ lệ thuận với độ phức tạp thật của đề tài (nội dung chương 1-5 + kết luận + phụ lục + tài liệu tham khảo = 21 trang Ả Rập, trong khoảng ước tính 15-25 trang; tổng cộng 39 trang kể cả bìa/mục lục/nhận xét theo biểu mẫu, so với 67 trang của báo cáo chữ ký cũ)
+- [x] Công thức toán học render đúng (KNN, SVM, các độ đo đánh giá)
+- [x] Trích dẫn tài liệu tham khảo thật, có thể kiểm chứng (không bịa)
 
 ## Implementation Steps
 
@@ -44,16 +44,40 @@ Nhận dạng chữ số viết tay — không copy nội dung xác minh chữ k
 
 ## Todo
 
-- [ ] Copy hạ tầng dùng chung từ build_thesis.py cũ, đổi hằng số đề tài
-- [ ] Copy logo trường
-- [ ] Soạn công thức KNN/SVM/độ đo đánh giá
-- [ ] Chụp ảnh màn hình demo thật
-- [ ] Viết đủ nội dung 5 chương + kết luận + phụ lục + tài liệu tham khảo
-- [ ] Đối chiếu từng số liệu/khẳng định với `results/comparison_summary.json` và ma trận nhầm lẫn thật trước khi viết — không suy đoán
+- [x] Copy hạ tầng dùng chung từ build_thesis.py cũ, đổi hằng số đề tài
+- [x] Copy logo trường
+- [x] Soạn công thức KNN/SVM/độ đo đánh giá
+- [x] Chụp ảnh màn hình demo thật
+- [x] Viết đủ nội dung 5 chương + kết luận + phụ lục + tài liệu tham khảo
+- [x] Đối chiếu từng số liệu/khẳng định với `results/comparison_summary.json` và ma trận nhầm lẫn thật trước khi viết — không suy đoán
 
 ## Success Criteria
 
-`thesis/docgen/build_thesis.py` chạy sinh ra `.docx` không lỗi (xem Phase
-4). Mọi số liệu, bảng, hình trong báo cáo đều truy ngược được về một file
-thật trong `results/` hoặc một phép tính có thể kiểm chứng lại được — không
-có số liệu mô phỏng hoặc suy đoán không kiểm chứng.
+Đã rà soát: `thesis/docgen/build_thesis.py` đọc trực tiếp
+`results/comparison_summary.json` (biến `RESULTS`, `KNN`, `SVM`) và nội suy
+mọi số liệu trong báo cáo từ đó (accuracy, thời gian huấn luyện,
+precision/recall/F1 macro, recall từng chữ số) — không có số nào gõ tay.
+Script chạy sinh `.docx` không lỗi (`python3 thesis/docgen/build_thesis.py`
+→ "Saved thesis.docx"), chuyển sang `.pdf` bằng LibreOffice thành công (39
+trang). Đã render toàn bộ 39 trang thành ảnh và xem trực tiếp bằng mắt:
+bìa đúng biểu mẫu (logo thật, khối Giảng viên/Sinh viên căn trái đúng như
+đã sửa trước đó), đánh số trang La Mã ở phần đầu và Ả Rập bắt đầu lại từ 1
+tại Chương 1 đều đúng, công thức Euclidean/KNN vote/SVM hyperplane/margin/
+RBF kernel/decision function/Accuracy/Precision/Recall/F1 đều render rõ
+ràng bằng matplotlib mathtext, hai ảnh ma trận nhầm lẫn chèn vào đúng là
+ảnh thật từ `results/confusion_matrix_{knn,svm}.png`, hai ảnh chụp màn
+hình demo ở Chương 5 là ảnh chụp thật (Playwright, server Streamlit thật
+đang chạy, tải lên một ảnh chữ số "7" thật lấy từ tập test MNIST, cả hai
+mô hình dự đoán đúng) — không dàn dựng. Phát hiện một lỗi hiển thị trong
+lần render đầu (một hàng cuối của Bảng 4.2 bị cắt ngang ở ranh giới trang,
+để lại một khung bảng trống nhìn như lỗi) và đã sửa ngay bằng cách thêm
+`w:cantSplit` cho mọi hàng trong `add_table()`, sau đó render lại và xác
+nhận hàng đó nay hiển thị đầy đủ nội dung ở đầu trang kế tiếp — không còn
+lỗi hiển thị nào khác sau khi rà soát lại toàn bộ 39 trang. Phân tích lỗi
+ở mục 4.5 (cặp số dễ nhầm 4↔9, 8↔3, 8↔5, 2↔7) đối chiếu đúng với số liệu
+thật trong hai ảnh ma trận nhầm lẫn trước khi viết, không suy đoán. 12 tài
+liệu tham khảo đều là nguồn thật, có thể kiểm chứng (LeCun, Cover & Hart,
+Cortes & Vapnik, Scholkopf & Smola, Pedregosa et al., tài liệu chính thức
+scikit-learn/NumPy/Matplotlib/Streamlit, và chính brief đề tài được phân
+công). Việc đo trang chính xác cho Mục lục (hiện dùng số trang ước tính)
+để lại cho Phase 4 theo đúng kế hoạch hai-lượt đã định.
