@@ -1,0 +1,126 @@
+{
+  "default": {
+    "best_margin": 1.0,
+    "val_eer": 0.0975,
+    "tau": 0.24711237681898562,
+    "overall": {
+      "accuracy": 0.84625,
+      "far": 0.2025,
+      "frr": 0.105,
+      "tau": 0.24711237681898562,
+      "n_pairs": 800,
+      "auc": 0.91548125
+    },
+    "by_forgery_type": {
+      "skilled_forgery": {
+        "accuracy": 0.9266666666666666,
+        "far": 0.01,
+        "frr": 0.105,
+        "tau": 0.24711237681898562,
+        "n_pairs": 600,
+        "auc": 0.99655
+      },
+      "random_forgery": {
+        "accuracy": 0.7983333333333333,
+        "far": 0.395,
+        "frr": 0.105,
+        "tau": 0.24711237681898562,
+        "n_pairs": 600,
+        "auc": 0.8344124999999999
+      }
+    }
+  },
+  "binarize_output": {
+    "variant": "binarize_output",
+    "margin": 1.0,
+    "val_eer": 0.245,
+    "tau": 0.24732032908248391,
+    "overall": {
+      "accuracy": 0.7375,
+      "far": 0.2325,
+      "frr": 0.2925,
+      "tau": 0.24732032908248391,
+      "n_pairs": 800
+    },
+    "by_forgery_type": {
+      "skilled_forgery": {
+        "accuracy": 0.705,
+        "far": 0.3,
+        "frr": 0.2925,
+        "tau": 0.24732032908248391,
+        "n_pairs": 600,
+        "auc": 0.7837749999999999
+      },
+      "random_forgery": {
+        "accuracy": 0.75,
+        "far": 0.165,
+        "frr": 0.2925,
+        "tau": 0.24732032908248391,
+        "n_pairs": 600,
+        "auc": 0.8606
+      }
+    }
+  },
+  "image_size": {
+    "variant": "image_size",
+    "margin": 1.0,
+    "val_eer": 0.13125,
+    "tau": 0.13490427138765598,
+    "overall": {
+      "accuracy": 0.80125,
+      "far": 0.2675,
+      "frr": 0.13,
+      "tau": 0.13490427138765598,
+      "n_pairs": 800
+    },
+    "by_forgery_type": {
+      "skilled_forgery": {
+        "accuracy": 0.9133333333333333,
+        "far": 0.0,
+        "frr": 0.13,
+        "tau": 0.13490427138765598,
+        "n_pairs": 600,
+        "auc": 0.999975
+      },
+      "random_forgery": {
+        "accuracy": 0.735,
+        "far": 0.535,
+        "frr": 0.13,
+        "tau": 0.13490427138765598,
+        "n_pairs": 600,
+        "auc": 0.7222374999999999
+      }
+    }
+  },
+  "no_augmentation": {
+    "variant": "no_augmentation",
+    "margin": 1.0,
+    "val_eer": 0.0625,
+    "tau": 0.2238598885640605,
+    "overall": {
+      "accuracy": 0.88125,
+      "far": 0.13,
+      "frr": 0.1075,
+      "tau": 0.2238598885640605,
+      "n_pairs": 800
+    },
+    "by_forgery_type": {
+      "skilled_forgery": {
+        "accuracy": 0.9283333333333333,
+        "far": 0.0,
+        "frr": 0.1075,
+        "tau": 0.2238598885640605,
+        "n_pairs": 600,
+        "auc": 1.0
+      },
+      "random_forgery": {
+        "accuracy": 0.8416666666666667,
+        "far": 0.26,
+        "frr": 0.1075,
+        "tau": 0.2238598885640605,
+        "n_pairs": 600,
+        "auc": 0.89635
+      }
+    }
+  }
+}

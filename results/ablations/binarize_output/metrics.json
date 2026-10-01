@@ -1,0 +1,31 @@
+{
+  "variant": "binarize_output",
+  "margin": 1.0,
+  "val_eer": 0.245,
+  "tau": 0.24732032908248391,
+  "overall": {
+    "accuracy": 0.7375,
+    "far": 0.2325,
+    "frr": 0.2925,
+    "tau": 0.24732032908248391,
+    "n_pairs": 800
+  },
+  "by_forgery_type": {
+    "skilled_forgery": {
+      "accuracy": 0.705,
+      "far": 0.3,
+      "frr": 0.2925,
+      "tau": 0.24732032908248391,
+      "n_pairs": 600,
+      "auc": 0.7837749999999999
+    },
+    "random_forgery": {
+      "accuracy": 0.75,
+      "far": 0.165,
+      "frr": 0.2925,
+      "tau": 0.24732032908248391,
+      "n_pairs": 600,
+      "auc": 0.8606
+    }
+  }
+}

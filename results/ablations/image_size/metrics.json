@@ -1,0 +1,31 @@
+{
+  "variant": "image_size",
+  "margin": 1.0,
+  "val_eer": 0.13125,
+  "tau": 0.13490427138765598,
+  "overall": {
+    "accuracy": 0.80125,
+    "far": 0.2675,
+    "frr": 0.13,
+    "tau": 0.13490427138765598,
+    "n_pairs": 800
+  },
+  "by_forgery_type": {
+    "skilled_forgery": {
+      "accuracy": 0.9133333333333333,
+      "far": 0.0,
+      "frr": 0.13,
+      "tau": 0.13490427138765598,
+      "n_pairs": 600,
+      "auc": 0.999975
+    },
+    "random_forgery": {
+      "accuracy": 0.735,
+      "far": 0.535,
+      "frr": 0.13,
+      "tau": 0.13490427138765598,
+      "n_pairs": 600,
+      "auc": 0.7222374999999999
+    }
+  }
+}
