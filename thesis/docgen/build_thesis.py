@@ -69,8 +69,7 @@ def dec(x, n=4):
 # Student / school identifying info
 # ---------------------------------------------------------------------------
 UNIVERSITY = "TRƯỜNG ĐẠI HỌC TRÀ VINH"
-SCHOOL = "TRƯỜNG KỸ THUẬT VÀ CÔNG NGHỆ"
-FACULTY = "KHOA CÔNG NGHỆ THÔNG TIN"
+SCHOOL = "KHOA KỸ THUẬT VÀ CÔNG NGHỆ"
 STUDENT_NAME = "Phan Thành Thuận"
 STUDENT_ID = "170123591"
 STUDENT_CLASS = "DX23TT11"
@@ -80,7 +79,7 @@ ADVISOR = "ThS. Nguyễn Nhứt Lam"
 LOCATION = "Trà Vinh"
 SUBMIT_DATE = f"{LOCATION}, tháng 10 năm 2026"
 PROJECT_TYPE = "ĐỒ ÁN THỰC TẬP CHUYÊN NGÀNH"
-THESIS_TITLE = "NHẬN DẠNG CHỮ SỐ VIẾT TAY\nHUẤN LUYỆN VÀ SO SÁNH KNN, SVM\nTRÊN TẬP DỮ LIỆU MNIST"
+THESIS_TITLE = "NHẬN DẠNG CHỮ SỐ VIẾT TAY"
 
 # ---------------------------------------------------------------------------
 # Low-level helpers (reused from Recognite-signature/build_thesis.py)
@@ -364,14 +363,12 @@ def cover_label_value(doc, label, value, size=14):
 def cover_page():
     add_para(doc, UNIVERSITY, bold=True, center=True, size=16, space_after=0)
     add_para(doc, SCHOOL, bold=True, center=True, size=16, space_after=0)
-    add_para(doc, FACULTY, bold=True, center=True, size=14, space_after=0)
     add_image(doc, f"{IMGD}/logo_truong_dai_hoc_tra_vinh.png", width_cm=3.5)
     add_para(doc, PROJECT_TYPE, bold=True, center=True, size=16, space_after=6)
     add_para(doc, THESIS_TITLE, bold=True, center=True, size=18, space_after=6)
     for _ in range(2):
         doc.add_paragraph()
     cover_label_value(doc, "Giảng viên hướng dẫn: ", ADVISOR.upper())
-    add_para(doc, "", center=False, justify=False, space_after=0)
     cover_label_value(doc, "Sinh viên thực hiện: ", STUDENT_NAME.upper())
     cover_label_value(doc, "Mã số sinh viên: ", STUDENT_ID)
     cover_label_value(doc, "Lớp: ", STUDENT_CLASS)
@@ -619,7 +616,7 @@ add_para(doc, (
     "thực tập chuyên ngành này."
 ))
 add_para(doc, (
-    f"Em cũng xin cảm ơn quý thầy cô {FACULTY}, {SCHOOL}, {UNIVERSITY} đã "
+    f"Em cũng xin cảm ơn quý thầy cô {SCHOOL}, {UNIVERSITY} đã "
     "truyền đạt kiến thức nền tảng về học máy trong suốt quá trình học tập, "
     "là cơ sở để em có thể tiếp cận và triển khai đồ án ở mức độ kỹ thuật "
     "như trình bày trong báo cáo này."
