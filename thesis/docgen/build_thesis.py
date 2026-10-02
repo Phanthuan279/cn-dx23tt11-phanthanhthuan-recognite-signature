@@ -46,6 +46,10 @@ with open(f"{RES}/extra_experiments.json", encoding="utf-8") as f:
     EXTRA = json.load(f)
 with open(f"{RES}/inference_timing.json", encoding="utf-8") as f:
     TIMING = json.load(f)
+with open(f"{RES}/kfold_cv.json", encoding="utf-8") as f:
+    KFOLD = json.load(f)
+with open(f"{RES}/error_gallery.json", encoding="utf-8") as f:
+    ERRGAL = json.load(f)
 
 KNN = RESULTS["knn"]
 SVM = RESULTS["svm"]
@@ -63,6 +67,10 @@ def sec(x):
 
 def dec(x, n=4):
     return f"{x:.{n}f}".replace(".", ",")
+
+
+def thousand(x):
+    return f"{x:,}".replace(",", ".")
 
 
 # ---------------------------------------------------------------------------
@@ -485,12 +493,13 @@ TOC_ENTRIES = [
     (2, "4.9. So sánh thời gian dự đoán (độ trễ)", "32"),
     (2, "4.10. Đường cong học theo kích thước tập huấn luyện", "33"),
     (2, "4.11. Phân tích định tính các ca lỗi", "34"),
-    (2, "4.12. Kết quả chương trình demo", "35"),
-    (2, "4.13. Hạn chế của chương trình demo", "36"),
-    (2, "4.14. Thảo luận tổng hợp", "36"),
-    (1, "CHƯƠNG 5. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN", "38"),
-    (1, "DANH MỤC TÀI LIỆU THAM KHẢO", "40"),
-    (1, "PHỤ LỤC", "42"),
+    (2, "4.12. Kết quả chương trình demo", "36"),
+    (2, "4.13. Hạn chế của chương trình demo", "38"),
+    (2, "4.14. Thảo luận tổng hợp", "38"),
+    (2, "4.15. Kiểm chứng độ ổn định bằng Stratified K-Fold Cross-Validation", "38"),
+    (1, "CHƯƠNG 5. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN", "41"),
+    (1, "DANH MỤC TÀI LIỆU THAM KHẢO", "43"),
+    (1, "PHỤ LỤC", "45"),
 ]
 for lvl, text, pg in TOC_ENTRIES:
     add_toc_entry(doc, lvl, text, pg)
@@ -1925,6 +1934,38 @@ add_para(doc, (
     "giản của KNN, nên phân biệt tốt hơn các chữ số có hình dạng gần "
     "giống nhau."
 ))
+add_para(doc, (
+    f"Trên toàn bộ 10.000 ảnh của tập test, KNN dự đoán sai "
+    f"{ERRGAL['knn_total_errors']} ảnh và SVM dự đoán sai "
+    f"{ERRGAL['svm_total_errors']} ảnh; trong đó có "
+    f"{ERRGAL['both_wrong_same_sample']} ảnh cả hai mô hình cùng dự đoán "
+    f"sai (một tập con hẹp, gợi ý đây là những ảnh thật sự mơ hồ về mặt "
+    f"hình ảnh chứ không chỉ do điểm yếu riêng của một mô hình). Để minh "
+    f"hoạ trực quan, hình dưới đây trích ngẫu nhiên 12 ảnh KNN dự đoán sai "
+    f"thật từ tập test (nhãn thật và nhãn dự đoán của chính mô hình KNN đã "
+    f"huấn luyện, không dàn dựng):"
+))
+add_image(doc, f"{FORM}/error_gallery_knn.png", width_cm=13,
+          caption="12 ảnh KNN dự đoán sai thật, lấy ngẫu nhiên từ tập test",
+          caption_num=next_fig(),
+          source="Nguồn: dự đoán thật của models/knn_mnist.joblib trên tập test MNIST")
+add_para(doc, (
+    "Phần lớn các ảnh trên có nét viết tay không rõ ràng, nghiêng lệch "
+    "hoặc thiếu nét đặc trưng (ví dụ số 8 viết không khép kín vòng dưới, "
+    "số 3 viết liền nét giống số 5) — ngay cả mắt người cũng dễ nhầm lẫn "
+    "khi nhìn thoáng qua. Tương tự, 12 ảnh SVM dự đoán sai thật:"
+))
+add_image(doc, f"{FORM}/error_gallery_svm.png", width_cm=13,
+          caption="12 ảnh SVM dự đoán sai thật, lấy ngẫu nhiên từ tập test",
+          caption_num=next_fig(),
+          source="Nguồn: dự đoán thật của models/svm_mnist.joblib trên tập test MNIST")
+add_para(doc, (
+    "Có thể quan sát cùng một xu hướng: các ảnh SVM dự đoán sai cũng chủ "
+    "yếu rơi vào các cặp chữ số dễ nhầm lẫn đã nêu ở trên (4/9, 3/7, "
+    "5/6, 8/9), củng cố thêm cho nhận định rằng nguồn gốc sai số không "
+    "nằm ở thuật toán mà nằm ở sự mơ hồ vốn có trong cách một số người "
+    "viết tay các chữ số này."
+))
 
 add_heading(doc, "4.12. Kết quả chương trình demo", level=2)
 add_para(doc, (
@@ -1987,6 +2028,46 @@ add_para(doc, (
     "toán lúc huấn luyện hạn chế; SVM phù hợp hơn khi độ chính xác là ưu "
     "tiên hàng đầu và mô hình chỉ cần huấn luyện một lần rồi dùng lâu "
     "dài."
+))
+
+add_heading(doc, "4.15. Kiểm chứng độ ổn định bằng Stratified K-Fold Cross-Validation", level=2)
+add_para(doc, (
+    "Các kết quả ở mục 4.2 được đo trên một lần chia tập huấn luyện/kiểm "
+    "thử (hold-out) duy nhất, theo seed cố định (mục 2.4, 2.6). Để kiểm "
+    "chứng độ chính xác đo được không phải là một may rủi của riêng lần "
+    "chia dữ liệu đó, đồ án bổ sung một thực nghiệm stratified 5-fold "
+    "cross-validation cho KNN (k=5) trên một tập con lấy mẫu ngẫu nhiên "
+    f"có phân tầng gồm {thousand(KFOLD['subset_size'])} ảnh từ tập huấn "
+    "luyện thật (không dùng toàn bộ 54.000 mẫu, cùng lý do tốc độ đã nêu "
+    "ở mục 4.5 cho các khảo sát C/gamma của SVM trên tập con)."
+))
+rows_kf = [[f"Fold {i+1}", pct(acc) + "%"] for i, acc in enumerate(KFOLD["fold_accuracies"])]
+rows_kf.append(["Trung bình", pct(KFOLD["mean_accuracy"]) + "%"])
+rows_kf.append(["Độ lệch chuẩn", pct(KFOLD["std_accuracy"]) + "%"])
+add_table(doc, ["Fold", "Độ chính xác"], rows_kf, col_widths_cm=[6, 6],
+          caption="Độ chính xác KNN (k=5) qua 5 fold (stratified 5-fold CV, "
+                   f"tập con {thousand(KFOLD['subset_size'])} mẫu)",
+          caption_num=next_table(),
+          source="Nguồn: scripts/kfold_and_error_analysis.py, results/kfold_cv.json")
+add_image(doc, f"{FORM}/chart_kfold_cv.png", width_cm=12,
+          caption="Biểu đồ độ chính xác KNN qua 5 fold",
+          caption_num=next_fig(),
+          source="Nguồn: scripts/kfold_and_error_analysis.py, results/kfold_cv.json")
+add_para(doc, (
+    f"Độ lệch chuẩn giữa các fold chỉ {pct(KFOLD['std_accuracy'])}% — rất "
+    f"nhỏ so với giá trị trung bình {pct(KFOLD['mean_accuracy'])}% — cho "
+    "thấy hiệu năng của KNN trên dữ liệu MNIST thật ổn định, không phụ "
+    "thuộc nhiều vào cách chia dữ liệu cụ thể. Giá trị trung bình "
+    f"{pct(KFOLD['mean_accuracy'])}% trên tập con "
+    f"{thousand(KFOLD['subset_size'])} mẫu thấp hơn độ chính xác "
+    f"{pct(KNN['test_accuracy'])}% đo được trên tập test đầy đủ ở mục "
+    "4.2 (huấn luyện trên toàn bộ 54.000 mẫu) — kết quả này nhất quán với "
+    "đường cong học ở mục 4.10: KNN càng có nhiều dữ liệu huấn luyện thì "
+    "độ chính xác càng cao, nên một mô hình chỉ huấn luyện trên tập con "
+    f"nhỏ hơn (ở đây là một phần của chính tập con {thousand(KFOLD['subset_size'])} "
+    "mẫu, do cơ chế k-fold luân phiên giữ lại 1/5 làm fold kiểm thử) tất "
+    "yếu đạt độ chính xác thấp hơn một chút so với mô hình chính thức "
+    "huấn luyện trên toàn bộ dữ liệu."
 ))
 add_page_break(doc)
 

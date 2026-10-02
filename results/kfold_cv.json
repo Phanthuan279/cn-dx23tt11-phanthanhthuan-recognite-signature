@@ -1,0 +1,15 @@
+{
+  "subset_size": 10000,
+  "n_splits": 5,
+  "fold_accuracies": [
+    0.9395,
+    0.947,
+    0.943,
+    0.9475,
+    0.947
+  ],
+  "mean_accuracy": 0.9448000000000001,
+  "std_accuracy": 0.0031080540535840043,
+  "total_time_seconds": 0.9763007164001465,
+  "note": "Stratified 5-fold cross-validation of KNN (k=5) on a 10,000-sample stratified-random subset of the real training set (not the full 54,000, for the same speed reason documented for the SVM C/gamma subset sweeps in mục 4.5) -- used to check the stability (variance across folds) of the accuracy estimate, not to produce a new final-model number."
+}
