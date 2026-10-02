@@ -340,11 +340,8 @@ section.bottom_margin = Cm(2)
 section.left_margin = Cm(3.0)
 section.right_margin = Cm(2)
 
-footer = section.footer
-fp = footer.paragraphs[0]
-fp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-add_field(fp, "PAGE", "1")
-set_page_number_format(section, "lowerRoman", start=1)
+# No page number on the cover pages (bìa chính / bìa lót) -- the footer
+# for this section is intentionally left empty.
 
 
 def cover_label_value(doc, label, value, size=14):
@@ -382,10 +379,21 @@ def cover_page():
 
 
 # ===========================================================================
-# BÌA CHÍNH / BÌA LÓT
+# BÌA CHÍNH / BÌA LÓT (không đánh số trang)
 # ===========================================================================
 cover_page()
 cover_page()
+
+# ===========================================================================
+# [SECTION BREAK] Từ đây (Tóm tắt trở đi): bắt đầu đánh số trang, dùng số
+# Ả Rập thường (không dùng số La Mã), bắt đầu từ 1.
+# ===========================================================================
+front_matter_section = doc.add_section(WD_SECTION_START.NEW_PAGE)
+front_matter_section.footer.is_linked_to_previous = False
+fm_fp = front_matter_section.footer.paragraphs[0]
+fm_fp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+add_field(fm_fp, "PAGE", "1")
+set_page_number_format(front_matter_section, "decimal", start=1)
 
 # ===========================================================================
 # TÓM TẮT
@@ -426,12 +434,12 @@ add_page_break(doc)
 # ===========================================================================
 add_heading(doc, "MỤC LỤC", level=1, center=True)
 TOC_ENTRIES = [
-    (1, "MỞ ĐẦU", "vi"),
-    (2, "1. Lý do chọn đề tài", "vi"),
-    (2, "2. Mục tiêu nghiên cứu", "vi"),
-    (2, "3. Đối tượng và phạm vi nghiên cứu", "vii"),
-    (2, "4. Phương pháp nghiên cứu", "viii"),
-    (2, "5. Cấu trúc báo cáo", "viii"),
+    (1, "MỞ ĐẦU", "4"),
+    (2, "1. Lý do chọn đề tài", "4"),
+    (2, "2. Mục tiêu nghiên cứu", "4"),
+    (2, "3. Đối tượng và phạm vi nghiên cứu", "5"),
+    (2, "4. Phương pháp nghiên cứu", "6"),
+    (2, "5. Cấu trúc báo cáo", "6"),
     (1, "CHƯƠNG 1. TỔNG QUAN", "1"),
     (2, "1.1. Bài toán nhận dạng chữ số viết tay", "1"),
     (2, "1.2. Bộ dữ liệu MNIST", "1"),
