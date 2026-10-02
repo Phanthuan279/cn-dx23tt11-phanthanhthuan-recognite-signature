@@ -118,5 +118,32 @@
       "weights": "distance",
       "val_accuracy": 0.9751666666666666
     }
+  ],
+  "knn_learning_curve": [
+    {
+      "train_size": 1000,
+      "val_accuracy": 0.8805,
+      "eval_time_seconds": 0.2396378517150879
+    },
+    {
+      "train_size": 5000,
+      "val_accuracy": 0.9368333333333333,
+      "eval_time_seconds": 0.8159706592559814
+    },
+    {
+      "train_size": 10000,
+      "val_accuracy": 0.9523333333333334,
+      "eval_time_seconds": 1.770798683166504
+    },
+    {
+      "train_size": 20000,
+      "val_accuracy": 0.9631666666666666,
+      "eval_time_seconds": 3.334331512451172
+    },
+    {
+      "train_size": 54000,
+      "val_accuracy": 0.9735,
+      "eval_time_seconds": 7.489546775817871
+    }
   ]
 }

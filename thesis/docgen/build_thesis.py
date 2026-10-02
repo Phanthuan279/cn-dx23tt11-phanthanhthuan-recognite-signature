@@ -74,7 +74,7 @@ FACULTY = "KHOA CÔNG NGHỆ THÔNG TIN"
 STUDENT_NAME = "Phan Thành Thuận"
 STUDENT_ID = "170123591"
 STUDENT_CLASS = "DX23TT11"
-STUDENT_COHORT = "2023"
+STUDENT_COHORT = "2023–2027"
 MAJOR = "Công nghệ thông tin"
 ADVISOR = "ThS. Nguyễn Nhứt Lam"
 LOCATION = "Trà Vinh"
@@ -348,38 +348,35 @@ add_field(fp, "PAGE", "1")
 set_page_number_format(section, "lowerRoman", start=1)
 
 
+def cover_label_value(doc, label, value, size=14):
+    p = doc.add_paragraph()
+    r = p.add_run(label)
+    r.font.name = "Times New Roman"
+    r.font.size = Pt(size)
+    r.bold = False
+    r = p.add_run(value)
+    r.font.name = "Times New Roman"
+    r.font.size = Pt(size)
+    r.bold = True
+    return p
+
+
 def cover_page():
     add_para(doc, UNIVERSITY, bold=True, center=True, size=16, space_after=0)
     add_para(doc, SCHOOL, bold=True, center=True, size=16, space_after=0)
     add_para(doc, FACULTY, bold=True, center=True, size=14, space_after=0)
-    add_image(doc, f"{IMGD}/logo_truong_dai_hoc_tra_vinh.png", width_cm=2.2)
+    add_image(doc, f"{IMGD}/logo_truong_dai_hoc_tra_vinh.png", width_cm=3.5)
     add_para(doc, PROJECT_TYPE, bold=True, center=True, size=16, space_after=6)
     add_para(doc, THESIS_TITLE, bold=True, center=True, size=18, space_after=6)
-    for _ in range(3):
+    for _ in range(2):
         doc.add_paragraph()
-    p = doc.add_paragraph()
-    r = p.add_run("Giảng viên hướng dẫn : ")
-    r.font.name = "Times New Roman"
-    r.font.size = Pt(14)
-    r.bold = True
-    r = p.add_run(ADVISOR.upper())
-    r.font.name = "Times New Roman"
-    r.font.size = Pt(14)
-    r.bold = True
+    cover_label_value(doc, "Giảng viên hướng dẫn: ", ADVISOR.upper())
     add_para(doc, "", center=False, justify=False, space_after=0)
-    p = doc.add_paragraph()
-    r = p.add_run("Sinh viên thực hiện: ")
-    r.font.name = "Times New Roman"
-    r.font.size = Pt(14)
-    r.bold = True
-    r = p.add_run(STUDENT_NAME.upper())
-    r.font.name = "Times New Roman"
-    r.font.size = Pt(14)
-    r.bold = True
-    add_para(doc, f"Mã số sinh viên : {STUDENT_ID}", bold=True, center=False, justify=False, size=14, space_after=0)
-    add_para(doc, f"Lớp : {STUDENT_CLASS}", bold=True, center=False, justify=False, size=14, space_after=0)
-    add_para(doc, f"Khoá : {STUDENT_COHORT}", bold=True, center=False, justify=False, size=14, space_after=0)
-    for _ in range(3):
+    cover_label_value(doc, "Sinh viên thực hiện: ", STUDENT_NAME.upper())
+    cover_label_value(doc, "Mã số sinh viên: ", STUDENT_ID)
+    cover_label_value(doc, "Lớp: ", STUDENT_CLASS)
+    cover_label_value(doc, "Khoá: ", STUDENT_COHORT)
+    for _ in range(2):
         doc.add_paragraph()
     add_para(doc, SUBMIT_DATE, bold=True, center=True, size=13)
     add_page_break(doc)
@@ -479,13 +476,14 @@ TOC_ENTRIES = [
     (2, "4.7. Trực quan hoá không gian đặc trưng bằng PCA", "30"),
     (2, "4.8. So sánh thời gian huấn luyện", "31"),
     (2, "4.9. So sánh thời gian dự đoán (độ trễ)", "32"),
-    (2, "4.10. Phân tích định tính các ca lỗi", "33"),
-    (2, "4.11. Kết quả chương trình demo", "33"),
-    (2, "4.12. Hạn chế của chương trình demo", "35"),
-    (2, "4.13. Thảo luận tổng hợp", "35"),
-    (1, "CHƯƠNG 5. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN", "36"),
-    (1, "DANH MỤC TÀI LIỆU THAM KHẢO", "38"),
-    (1, "PHỤ LỤC", "40"),
+    (2, "4.10. Đường cong học theo kích thước tập huấn luyện", "33"),
+    (2, "4.11. Phân tích định tính các ca lỗi", "34"),
+    (2, "4.12. Kết quả chương trình demo", "35"),
+    (2, "4.13. Hạn chế của chương trình demo", "36"),
+    (2, "4.14. Thảo luận tổng hợp", "36"),
+    (1, "CHƯƠNG 5. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN", "38"),
+    (1, "DANH MỤC TÀI LIỆU THAM KHẢO", "40"),
+    (1, "PHỤ LỤC", "42"),
 ]
 for lvl, text, pg in TOC_ENTRIES:
     add_toc_entry(doc, lvl, text, pg)
@@ -1579,10 +1577,10 @@ add_heading(doc, "4.1. Cách chia dữ liệu", level=2)
 add_para(doc, (
     "Như trình bày ở mục 3.3, dữ liệu MNIST thật (70.000 ảnh) được chia "
     "stratify thành 54.000 ảnh huấn luyện, 6.000 ảnh kiểm định và 10.000 "
-    "ảnh kiểm thử. Các mục 4.2, 4.6, 4.8, 4.9, 4.10 báo cáo số liệu trên tập "
-    "kiểm thử (hoàn toàn chưa được mô hình nhìn thấy); các mục 4.3-4.5 "
-    "khảo sát ảnh hưởng tham số trên tập kiểm định, theo đúng nguyên tắc "
-    "tránh rò rỉ dữ liệu đã nêu ở mục 2.4."
+    "ảnh kiểm thử. Các mục 4.2, 4.6, 4.8, 4.9, 4.11 báo cáo số liệu trên tập "
+    "kiểm thử (hoàn toàn chưa được mô hình nhìn thấy); các mục 4.3-4.5 và "
+    "4.10 khảo sát ảnh hưởng tham số/kích thước dữ liệu trên tập kiểm "
+    "định, theo đúng nguyên tắc tránh rò rỉ dữ liệu đã nêu ở mục 2.4."
 ))
 
 add_heading(doc, "4.2. Kết quả tổng thể trên tập test", level=2)
@@ -1865,7 +1863,43 @@ add_para(doc, (
     "hơn đã nêu ở mục 4.8."
 ))
 
-add_heading(doc, "4.10. Phân tích định tính các ca lỗi", level=2)
+add_heading(doc, "4.10. Đường cong học theo kích thước tập huấn luyện", level=2)
+add_para(doc, (
+    "Một câu hỏi thực tiễn quan trọng khi triển khai học máy là: có cần "
+    "thu thập thêm dữ liệu không, hay mô hình đã gần như bão hoà với "
+    "lượng dữ liệu hiện có? Đồ án trả lời câu hỏi này cho KNN bằng cách "
+    "huấn luyện lại với các tập con ngẫu nhiên có kích thước tăng dần từ "
+    "tập huấn luyện gốc (giữ nguyên k=5), đo độ chính xác trên cùng tập "
+    "validation:"
+))
+lc_rows = [[f"{r['train_size']:,}".replace(",", "."), dec(r["val_accuracy"])] for r in EXTRA["knn_learning_curve"]]
+add_table(doc, ["Số mẫu huấn luyện", "Độ chính xác (validation)"], lc_rows,
+          col_widths_cm=[6, 8],
+          caption="Đường cong học của KNN (k=5) theo kích thước tập huấn luyện",
+          caption_num=next_table(),
+          source="Nguồn: results/extra_experiments.json của đồ án")
+add_image(doc, f"{FORM}/chart_learning_curve.png", width_cm=13,
+          caption="Đường cong học của KNN (k=5) theo kích thước tập huấn luyện",
+          caption_num=next_fig(),
+          source="Nguồn: results/extra_experiments.json của đồ án")
+first_acc = EXTRA["knn_learning_curve"][0]["val_accuracy"]
+last_acc = EXTRA["knn_learning_curve"][-1]["val_accuracy"]
+add_para(doc, (
+    f"Độ chính xác tăng nhanh khi tăng từ 1.000 lên 10.000 mẫu (từ "
+    f"{dec(first_acc)} lên {dec(EXTRA['knn_learning_curve'][2]['val_accuracy'])}), "
+    "sau đó tốc độ cải thiện chậm dần rõ rệt khi tăng tiếp lên 20.000 và "
+    f"54.000 mẫu, dù vẫn còn tăng nhẹ (đạt {dec(last_acc)} ở 54.000 mẫu — "
+    "khớp với kết quả ở mục 4.2). Đường cong chưa hoàn toàn đi ngang "
+    "(plateau), gợi ý rằng việc thu thập thêm dữ liệu thật ngoài 54.000 "
+    "mẫu hiện có vẫn có thể cải thiện thêm độ chính xác, dù mức cải thiện "
+    "biên sẽ ngày càng nhỏ — một nhận định hữu ích cho hướng phát triển "
+    "(Chương 5) nếu có điều kiện mở rộng dữ liệu huấn luyện trong tương "
+    "lai. Do chi phí huấn luyện SVM cao (mục 4.2, 4.5), đồ án không lặp "
+    "lại khảo sát này cho SVM trên nhiều kích thước tập huấn luyện khác "
+    "nhau trong phạm vi thời gian cho phép."
+))
+
+add_heading(doc, "4.11. Phân tích định tính các ca lỗi", level=2)
 add_para(doc, (
     "Từ ma trận nhầm lẫn của KNN (mục 4.6), ba cặp chữ số dễ nhầm lẫn "
     "nhất là: 4→9 (23 lần), 8→3 (18 lần), 2→7 (18 lần), 8→5 (17 lần). "
@@ -1885,7 +1919,7 @@ add_para(doc, (
     "giống nhau."
 ))
 
-add_heading(doc, "4.11. Kết quả chương trình demo", level=2)
+add_heading(doc, "4.12. Kết quả chương trình demo", level=2)
 add_para(doc, (
     "Chương trình demo (mục 3.7) cho phép người dùng vẽ hoặc tải ảnh một "
     "chữ số lên, xem song song kết quả dự đoán của cả KNN và SVM kèm biểu "
@@ -1914,7 +1948,7 @@ add_para(doc, (
     "lưu kèm theo đồ án tại `thesis/abs/demo_video.mp4`."
 ))
 
-add_heading(doc, "4.12. Hạn chế của chương trình demo", level=2)
+add_heading(doc, "4.13. Hạn chế của chương trình demo", level=2)
 add_bullet(doc, "Cần chạy `scripts/train.py` trước để tạo mô hình trong "
                 "models/ (không commit lên kho mã nguồn do dung lượng lớn, "
                 "đặc biệt mô hình KNN lưu toàn bộ 54.000 mẫu huấn "
@@ -1925,7 +1959,7 @@ add_bullet(doc, "Điểm tin cậy của SVM là ước lượng từ decision_f
 add_bullet(doc, "Canvas vẽ tay hoạt động tốt nhất với nét bút dày, viết "
                 "căn giữa khung vẽ — giống quy ước của ảnh MNIST gốc.")
 
-add_heading(doc, "4.13. Thảo luận tổng hợp", level=2)
+add_heading(doc, "4.14. Thảo luận tổng hợp", level=2)
 add_para(doc, (
     "Toàn bộ kết quả thực nghiệm ở chương này xác nhận cả ba giả thiết "
     "khoa học đặt ra ở mục 2.7: SVM vượt trội KNN về độ chính xác (Giả "
@@ -1937,7 +1971,7 @@ add_para(doc, (
     "Giả thiết 3."
 ))
 add_para(doc, (
-    "Phân tích PCA (mục 4.7) và phân tích lỗi định tính (mục 4.10) cho "
+    "Phân tích PCA (mục 4.7) và phân tích lỗi định tính (mục 4.11) cho "
     "thấy hai nguồn thông tin độc lập (cấu trúc không gian đặc trưng và "
     "ma trận nhầm lẫn thật) đều chỉ ra cùng một nhóm chữ số khó phân biệt "
     "(4, 7, 9 và 3, 5, 8), tăng độ tin cậy cho kết luận này. Về mặt thực "
