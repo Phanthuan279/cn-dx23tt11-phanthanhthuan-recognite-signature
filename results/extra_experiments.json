@@ -1,0 +1,122 @@
+{
+  "knn_k_sweep": [
+    {
+      "k": 1,
+      "val_accuracy": 0.9738333333333333,
+      "eval_time_seconds": 10.312597513198853
+    },
+    {
+      "k": 3,
+      "val_accuracy": 0.974,
+      "eval_time_seconds": 8.083866119384766
+    },
+    {
+      "k": 5,
+      "val_accuracy": 0.9735,
+      "eval_time_seconds": 8.315751075744629
+    },
+    {
+      "k": 7,
+      "val_accuracy": 0.9728333333333333,
+      "eval_time_seconds": 8.660784006118774
+    },
+    {
+      "k": 9,
+      "val_accuracy": 0.9726666666666667,
+      "eval_time_seconds": 7.977310657501221
+    },
+    {
+      "k": 11,
+      "val_accuracy": 0.9715,
+      "eval_time_seconds": 7.263913869857788
+    },
+    {
+      "k": 15,
+      "val_accuracy": 0.9696666666666667,
+      "eval_time_seconds": 8.421495914459229
+    },
+    {
+      "k": 21,
+      "val_accuracy": 0.9658333333333333,
+      "eval_time_seconds": 8.95143723487854
+    }
+  ],
+  "knn_metric_comparison": [
+    {
+      "metric": "euclidean",
+      "val_accuracy": 0.9735,
+      "eval_time_seconds": 8.109909772872925
+    },
+    {
+      "metric": "manhattan",
+      "val_accuracy": 0.9671666666666666,
+      "eval_time_seconds": 69.7390706539154
+    },
+    {
+      "metric": "chebyshev",
+      "val_accuracy": 0.8091666666666667,
+      "eval_time_seconds": 65.40004754066467
+    }
+  ],
+  "svm_c_sweep_subset5000": [
+    {
+      "C": 0.1,
+      "val_accuracy": 0.9203333333333333,
+      "fit_time_seconds": 17.26654863357544
+    },
+    {
+      "C": 1.0,
+      "val_accuracy": 0.957,
+      "fit_time_seconds": 9.848148822784424
+    },
+    {
+      "C": 5.0,
+      "val_accuracy": 0.9623333333333334,
+      "fit_time_seconds": 8.68367886543274
+    },
+    {
+      "C": 10.0,
+      "val_accuracy": 0.9618333333333333,
+      "fit_time_seconds": 9.684329748153687
+    },
+    {
+      "C": 50.0,
+      "val_accuracy": 0.9618333333333333,
+      "fit_time_seconds": 9.347911596298218
+    }
+  ],
+  "svm_gamma_sweep_subset5000": [
+    {
+      "gamma": "scale",
+      "val_accuracy": 0.9623333333333334,
+      "fit_time_seconds": 9.183355808258057
+    },
+    {
+      "gamma": "0.001",
+      "val_accuracy": 0.1125,
+      "fit_time_seconds": 29.319453954696655
+    },
+    {
+      "gamma": "0.01",
+      "val_accuracy": 0.1125,
+      "fit_time_seconds": 28.490012645721436
+    },
+    {
+      "gamma": "0.1",
+      "val_accuracy": 0.1125,
+      "fit_time_seconds": 28.527235507965088
+    }
+  ],
+  "subset_size": 5000,
+  "note": "C/gamma sweeps use a 5,000-sample stratified-random subset of the training set (not the full 54,000) to keep repeated SVM fits fast within one session; they show the real trend, not final-model numbers. k and distance-metric sweeps use the full 54,000-sample training set and the full 6,000-sample validation set.",
+  "knn_weights_comparison": [
+    {
+      "weights": "uniform",
+      "val_accuracy": 0.9735
+    },
+    {
+      "weights": "distance",
+      "val_accuracy": 0.9751666666666666
+    }
+  ]
+}

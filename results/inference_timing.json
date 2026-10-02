@@ -1,0 +1,6 @@
+{
+  "knn_single_sample_ms": 155.03796100616455,
+  "svm_single_sample_ms": 6.829820871353149,
+  "knn_batch_10000_seconds": 14.247337102890015,
+  "svm_batch_10000_seconds": 58.60228514671326
+}
