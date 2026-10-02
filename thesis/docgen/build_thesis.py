@@ -77,7 +77,7 @@ STUDENT_COHORT = "2023–2027"
 MAJOR = "Công nghệ thông tin"
 ADVISOR = "ThS. Nguyễn Nhứt Lam"
 LOCATION = "Trà Vinh"
-SUBMIT_DATE = f"{LOCATION}, tháng 10 năm 2026"
+SUBMIT_DATE = "TP. Hồ Chí Minh, tháng 10 năm 2026"
 PROJECT_TYPE = "ĐỒ ÁN THỰC TẬP CHUYÊN NGÀNH"
 THESIS_TITLE = "NHẬN DẠNG CHỮ SỐ VIẾT TAY"
 
@@ -363,7 +363,9 @@ def cover_label_value(doc, label, value, size=14):
 def cover_page():
     add_para(doc, UNIVERSITY, bold=True, center=True, size=16, space_after=0)
     add_para(doc, SCHOOL, bold=True, center=True, size=16, space_after=0)
+    doc.add_paragraph()
     add_image(doc, f"{IMGD}/logo_truong_dai_hoc_tra_vinh.png", width_cm=3.5)
+    doc.add_paragraph()
     add_para(doc, PROJECT_TYPE, bold=True, center=True, size=16, space_after=6)
     add_para(doc, THESIS_TITLE, bold=True, center=True, size=18, space_after=6)
     for _ in range(2):
@@ -373,7 +375,7 @@ def cover_page():
     cover_label_value(doc, "Mã số sinh viên: ", STUDENT_ID)
     cover_label_value(doc, "Lớp: ", STUDENT_CLASS)
     cover_label_value(doc, "Khoá: ", STUDENT_COHORT)
-    for _ in range(2):
+    for _ in range(4):
         doc.add_paragraph()
     add_para(doc, SUBMIT_DATE, bold=True, center=True, size=13)
     add_page_break(doc)
