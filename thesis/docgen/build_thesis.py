@@ -266,7 +266,7 @@ def add_toc_entry(doc, level, text, page):
         p.paragraph_format.left_indent = Cm(0.7)
     elif level == 3:
         p.paragraph_format.left_indent = Cm(1.3)
-    run = p.add_run(f"{text}\t{page}")
+    run = p.add_run(f"{text}\t{page}" if page else text)
     run.font.name = "Times New Roman"
     run.font.size = Pt(13 if level == 1 else 12)
     run.bold = (level == 1)
@@ -398,16 +398,8 @@ def cover_page():
 cover_page()
 cover_page()
 
-# ===========================================================================
-# [SECTION BREAK] Từ đây (Tóm tắt trở đi): bắt đầu đánh số trang, dùng số
-# Ả Rập thường (không dùng số La Mã), bắt đầu từ 1.
-# ===========================================================================
-front_matter_section = doc.add_section(WD_SECTION_START.NEW_PAGE)
-front_matter_section.footer.is_linked_to_previous = False
-fm_fp = front_matter_section.footer.paragraphs[0]
-fm_fp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-add_field(fm_fp, "PAGE", "1")
-set_page_number_format(front_matter_section, "decimal", start=1)
+# Phần đầu (Tóm tắt, nhận xét, Mục lục, Mở đầu...) cũng không đánh số trang:
+# vẫn thuộc section đầu tiên có footer rỗng, số trang chỉ bắt đầu từ Chương 1.
 
 # ===========================================================================
 # TÓM TẮT
@@ -448,64 +440,64 @@ add_page_break(doc)
 # ===========================================================================
 add_heading(doc, "MỤC LỤC", level=1, center=True)
 TOC_ENTRIES = [
-    (1, "MỞ ĐẦU", "4"),
-    (2, "1. Lý do chọn đề tài", "4"),
-    (2, "2. Mục tiêu nghiên cứu", "4"),
-    (2, "3. Đối tượng và phạm vi nghiên cứu", "5"),
-    (2, "4. Phương pháp nghiên cứu", "6"),
-    (2, "5. Cấu trúc báo cáo", "6"),
-    (1, "CHƯƠNG 1. TỔNG QUAN", "17"),
-    (2, "1.1. Bài toán nhận dạng chữ số viết tay", "17"),
-    (2, "1.2. Bộ dữ liệu MNIST", "17"),
-    (2, "1.3. Tình hình nghiên cứu: các kết quả đã công bố trên MNIST", "18"),
-    (2, "1.4. Các hướng tiếp cận hiện nay", "20"),
-    (2, "1.5. Phạm vi và lựa chọn của đồ án", "21"),
-    (2, "1.6. Tổng kết chương", "21"),
-    (1, "CHƯƠNG 2. NGHIÊN CỨU LÝ THUYẾT", "22"),
-    (2, "2.1. Bài toán phân loại có giám sát", "22"),
-    (2, "2.2. Thuật toán K-Nearest Neighbors", "22"),
-    (2, "2.3. Support Vector Machine", "24"),
-    (3, "2.3.1. Siêu phẳng phân tách và bài toán lề cực đại", "24"),
-    (3, "2.3.2. Biên mềm và tham số C", "25"),
-    (3, "2.3.3. Kernel trick và hàm kernel RBF", "25"),
-    (3, "2.3.4. Chiến lược phân loại đa lớp", "26"),
-    (3, "2.3.5. Chuẩn hoá dữ liệu và ảnh hưởng tới các mô hình dựa trên khoảng cách", "27"),
-    (2, "2.4. Các độ đo đánh giá mô hình", "27"),
-    (2, "2.5. Công cụ, công nghệ và phần mềm sử dụng", "29"),
-    (2, "2.6. Phân tích độ phức tạp tính toán", "30"),
-    (2, "2.7. Giả thiết khoa học của đồ án", "31"),
-    (2, "2.8. Tổng kết chương", "31"),
-    (1, "CHƯƠNG 3. HIỆN THỰC HÓA NGHIÊN CỨU", "33"),
-    (2, "3.1. Quy trình tổng thể", "33"),
-    (2, "3.2. Kiến trúc hệ thống và cấu trúc mã nguồn", "33"),
-    (2, "3.3. Chuẩn bị dữ liệu", "35"),
-    (2, "3.4. Cài đặt mô hình KNN", "35"),
-    (2, "3.5. Cài đặt mô hình SVM", "36"),
-    (2, "3.6. Quy trình huấn luyện và lưu kết quả", "36"),
-    (2, "3.7. Thiết kế chương trình demo", "37"),
-    (2, "3.8. Kiểm thử tự động", "37"),
-    (3, "3.8.1. Một thách thức kỹ thuật thực tế đã gặp phải", "37"),
-    (2, "3.9. Quản lý mã nguồn và quy trình làm việc", "38"),
-    (2, "3.10. Tổng kết chương", "38"),
-    (1, "CHƯƠNG 4. KẾT QUẢ NGHIÊN CỨU", "39"),
-    (2, "4.1. Cách chia dữ liệu", "39"),
-    (2, "4.2. Kết quả tổng thể trên tập test", "39"),
-    (2, "4.3. Ảnh hưởng của tham số k lên KNN", "40"),
-    (2, "4.4. Ảnh hưởng của độ đo khoảng cách lên KNN", "41"),
-    (2, "4.5. Độ nhạy tham số C và gamma của SVM", "42"),
-    (2, "4.6. Kết quả phân theo từng chữ số", "44"),
-    (2, "4.7. Trực quan hoá không gian đặc trưng bằng PCA", "46"),
-    (2, "4.8. So sánh thời gian huấn luyện", "47"),
-    (2, "4.9. So sánh thời gian dự đoán (độ trễ)", "48"),
-    (2, "4.10. Đường cong học theo kích thước tập huấn luyện", "49"),
-    (2, "4.11. Phân tích định tính các ca lỗi", "50"),
-    (2, "4.12. Kết quả chương trình demo", "52"),
-    (2, "4.13. Hạn chế của chương trình demo", "54"),
-    (2, "4.14. Thảo luận tổng hợp", "54"),
-    (2, "4.15. Kiểm chứng độ ổn định bằng Stratified K-Fold Cross-Validation", "54"),
-    (1, "CHƯƠNG 5. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN", "57"),
-    (1, "DANH MỤC TÀI LIỆU THAM KHẢO", "59"),
-    (1, "PHỤ LỤC", "61"),
+    (1, "MỞ ĐẦU", ""),
+    (2, "1. Lý do chọn đề tài", ""),
+    (2, "2. Mục tiêu nghiên cứu", ""),
+    (2, "3. Đối tượng và phạm vi nghiên cứu", ""),
+    (2, "4. Phương pháp nghiên cứu", ""),
+    (2, "5. Cấu trúc báo cáo", ""),
+    (1, "CHƯƠNG 1. TỔNG QUAN", "1"),
+    (2, "1.1. Bài toán nhận dạng chữ số viết tay", "1"),
+    (2, "1.2. Bộ dữ liệu MNIST", "1"),
+    (2, "1.3. Tình hình nghiên cứu: các kết quả đã công bố trên MNIST", "2"),
+    (2, "1.4. Các hướng tiếp cận hiện nay", "4"),
+    (2, "1.5. Phạm vi và lựa chọn của đồ án", "5"),
+    (2, "1.6. Tổng kết chương", "5"),
+    (1, "CHƯƠNG 2. NGHIÊN CỨU LÝ THUYẾT", "6"),
+    (2, "2.1. Bài toán phân loại có giám sát", "6"),
+    (2, "2.2. Thuật toán K-Nearest Neighbors", "6"),
+    (2, "2.3. Support Vector Machine", "8"),
+    (3, "2.3.1. Siêu phẳng phân tách và bài toán lề cực đại", "8"),
+    (3, "2.3.2. Biên mềm và tham số C", "8"),
+    (3, "2.3.3. Kernel trick và hàm kernel RBF", "9"),
+    (3, "2.3.4. Chiến lược phân loại đa lớp", "10"),
+    (3, "2.3.5. Chuẩn hoá dữ liệu và ảnh hưởng tới các mô hình dựa trên khoảng cách", "10"),
+    (2, "2.4. Các độ đo đánh giá mô hình", "11"),
+    (2, "2.5. Công cụ, công nghệ và phần mềm sử dụng", "13"),
+    (2, "2.6. Phân tích độ phức tạp tính toán", "14"),
+    (2, "2.7. Giả thiết khoa học của đồ án", "15"),
+    (2, "2.8. Tổng kết chương", "15"),
+    (1, "CHƯƠNG 3. HIỆN THỰC HÓA NGHIÊN CỨU", "16"),
+    (2, "3.1. Quy trình tổng thể", "16"),
+    (2, "3.2. Kiến trúc hệ thống và cấu trúc mã nguồn", "16"),
+    (2, "3.3. Chuẩn bị dữ liệu", "17"),
+    (2, "3.4. Cài đặt mô hình KNN", "18"),
+    (2, "3.5. Cài đặt mô hình SVM", "18"),
+    (2, "3.6. Quy trình huấn luyện và lưu kết quả", "19"),
+    (2, "3.7. Thiết kế chương trình demo", "19"),
+    (2, "3.8. Kiểm thử tự động", "20"),
+    (3, "3.8.1. Một thách thức kỹ thuật thực tế đã gặp phải", "20"),
+    (2, "3.9. Quản lý mã nguồn và quy trình làm việc", "21"),
+    (2, "3.10. Tổng kết chương", "21"),
+    (1, "CHƯƠNG 4. KẾT QUẢ NGHIÊN CỨU", "22"),
+    (2, "4.1. Cách chia dữ liệu", "22"),
+    (2, "4.2. Kết quả tổng thể trên tập test", "22"),
+    (2, "4.3. Ảnh hưởng của tham số k lên KNN", "23"),
+    (2, "4.4. Ảnh hưởng của độ đo khoảng cách lên KNN", "24"),
+    (2, "4.5. Độ nhạy tham số C và gamma của SVM", "25"),
+    (2, "4.6. Kết quả phân theo từng chữ số", "27"),
+    (2, "4.7. Trực quan hoá không gian đặc trưng bằng PCA", "29"),
+    (2, "4.8. So sánh thời gian huấn luyện", "30"),
+    (2, "4.9. So sánh thời gian dự đoán (độ trễ)", "31"),
+    (2, "4.10. Đường cong học theo kích thước tập huấn luyện", "32"),
+    (2, "4.11. Phân tích định tính các ca lỗi", "33"),
+    (2, "4.12. Kết quả chương trình demo", "35"),
+    (2, "4.13. Hạn chế của chương trình demo", "37"),
+    (2, "4.14. Thảo luận tổng hợp", "37"),
+    (2, "4.15. Kiểm chứng độ ổn định bằng Stratified K-Fold Cross-Validation", "37"),
+    (1, "CHƯƠNG 5. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN", "40"),
+    (1, "DANH MỤC TÀI LIỆU THAM KHẢO", "42"),
+    (1, "PHỤ LỤC", "43"),
 ]
 for lvl, text, pg in TOC_ENTRIES:
     add_toc_entry(doc, lvl, text, pg)
@@ -781,20 +773,15 @@ abbr = [
 add_table(doc, ["Từ viết tắt", "Giải nghĩa"], abbr, col_widths_cm=[3, 13])
 
 # ===========================================================================
-# [SECTION BREAK] Sang Chương 1 -- số trang tiếp tục liên tục từ phần đầu
-# (Tóm tắt, Mục lục...), không đánh số lại từ 1.
+# [SECTION BREAK] Từ Chương 1: bắt đầu đánh số trang (số Ả Rập) từ 1, đếm
+# liên tục tới hết tài liệu.
 # ===========================================================================
 new_section = doc.add_section(WD_SECTION_START.NEW_PAGE)
-set_page_number_format(new_section, "decimal")
-
-
-def chapter_byline(doc):
-    p = doc.add_paragraph()
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = p.add_run(f"GVHD: {ADVISOR}          SVTH: {STUDENT_NAME}")
-    r.italic = True
-    r.font.size = Pt(12)
-    r.font.name = "Times New Roman"
+new_section.footer.is_linked_to_previous = False
+body_fp = new_section.footer.paragraphs[0]
+body_fp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+add_field(body_fp, "PAGE", "1")
+set_page_number_format(new_section, "decimal", start=1)
 
 
 # ===========================================================================
@@ -802,7 +789,6 @@ def chapter_byline(doc):
 # ===========================================================================
 start_chapter(1)
 add_heading(doc, "CHƯƠNG 1. TỔNG QUAN", level=1)
-chapter_byline(doc)
 
 add_heading(doc, "1.1. Bài toán nhận dạng chữ số viết tay", level=2)
 add_para(doc, (
@@ -995,7 +981,6 @@ add_page_break(doc)
 # ===========================================================================
 start_chapter(2)
 add_heading(doc, "CHƯƠNG 2. NGHIÊN CỨU LÝ THUYẾT", level=1)
-chapter_byline(doc)
 
 add_heading(doc, "2.1. Bài toán phân loại có giám sát", level=2)
 add_para(doc, (
@@ -1369,7 +1354,6 @@ add_page_break(doc)
 # ===========================================================================
 start_chapter(3)
 add_heading(doc, "CHƯƠNG 3. HIỆN THỰC HÓA NGHIÊN CỨU", level=1)
-chapter_byline(doc)
 
 add_heading(doc, "3.1. Quy trình tổng thể", level=2)
 add_para(doc, (
@@ -1594,7 +1578,6 @@ add_page_break(doc)
 # ===========================================================================
 start_chapter(4)
 add_heading(doc, "CHƯƠNG 4. KẾT QUẢ NGHIÊN CỨU", level=1)
-chapter_byline(doc)
 
 add_heading(doc, "4.1. Cách chia dữ liệu", level=2)
 add_para(doc, (
@@ -2165,12 +2148,11 @@ REFS = [
 ]
 for ref in REFS:
     add_para(doc, ref, justify=False, space_after=6)
-add_page_break(doc)
 
 # ===========================================================================
 # PHỤ LỤC
 # ===========================================================================
-add_heading(doc, "PHỤ LỤC", level=1, center=True)
+add_heading(doc, "PHỤ LỤC", level=1, center=True, page_break_before=True)
 
 add_heading(doc, "A. Cấu trúc mã nguồn", level=2)
 add_para(doc, (
