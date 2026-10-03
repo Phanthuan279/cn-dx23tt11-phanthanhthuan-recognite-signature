@@ -147,7 +147,7 @@ def _decode_data_url(data_url: str) -> Image.Image:
 
 
 def main() -> None:
-    st.set_page_config(page_title="Nhận dạng chữ số viết tay", page_icon="🔢")
+    st.set_page_config(page_title="Nhận dạng chữ số viết tay", page_icon="🔢", layout="wide")
     st.title("Nhận dạng chữ số viết tay — KNN vs SVM")
     st.caption(
         "Đồ án thực tập chuyên ngành — so sánh hiệu quả KNN và SVM trên MNIST. "
@@ -162,53 +162,59 @@ def main() -> None:
         )
         return
 
-    tab_draw, tab_upload = st.tabs(["Vẽ chữ số", "Tải ảnh lên"])
+    # Input on the left, results on the right, so a prediction is visible
+    # right next to the canvas without scrolling.
+    col_input, col_result = st.columns([2, 3], gap="large")
     image = None
 
-    with tab_draw:
-        result = _draw_canvas(on_image_data_change=lambda: None, key="canvas")
-        if result.image_data:
-            image = _decode_data_url(result.image_data)
+    with col_input:
+        tab_draw, tab_upload = st.tabs(["Vẽ chữ số", "Tải ảnh lên"])
 
-    with tab_upload:
-        uploaded = st.file_uploader("Ảnh chữ số (PNG/JPG)", type=["png", "jpg", "jpeg"])
-        if uploaded is not None:
-            image = Image.open(uploaded)
+        with tab_draw:
+            result = _draw_canvas(on_image_data_change=lambda: None, key="canvas")
+            if result.image_data:
+                image = _decode_data_url(result.image_data)
 
-    if image is None:
-        st.info("Vẽ một chữ số hoặc tải ảnh lên để xem kết quả.")
-        return
+        with tab_upload:
+            uploaded = st.file_uploader("Ảnh chữ số (PNG/JPG)", type=["png", "jpg", "jpeg"])
+            if uploaded is not None:
+                image = Image.open(uploaded)
 
-    x = preprocess(image)
+    with col_result:
+        if image is None:
+            st.info("Vẽ một chữ số hoặc tải ảnh lên để xem kết quả.")
+            return
 
-    col_img, col_knn, col_svm = st.columns(3)
-    with col_img:
-        st.subheader("Ảnh đầu vào (28×28)")
-        st.image(Image.fromarray((x.reshape(28, 28) * 255).astype("uint8")), width=140)
+        x = preprocess(image)
 
-    with col_knn:
-        st.subheader("KNN")
-        pred = knn.predict(x)[0]
-        proba = knn.predict_proba(x)[0]
-        st.metric("Dự đoán", pred)
-        st.bar_chart({"xác suất": proba}, x_label="chữ số")
+        col_img, col_note = st.columns([1, 3])
+        with col_img:
+            st.image(Image.fromarray((x.reshape(28, 28) * 255).astype("uint8")), width=84)
+        with col_note:
+            st.markdown("**Ảnh đầu vào sau tiền xử lý (28×28)**")
+            st.caption(
+                "Điểm tin cậy của SVM là ước lượng từ decision_function (softmax), "
+                "không phải xác suất đã hiệu chỉnh như KNN."
+            )
 
-    with col_svm:
-        st.subheader("SVM")
-        pred = svm.predict(x)[0]
-        # SVC without probability=True (see src/digitrec/models.py) -- use the
-        # one-vs-rest decision margins, softmax-normalized, as a confidence
-        # proxy instead of calibrated probabilities.
-        scores = svm.decision_function(x)[0]
-        confidence = softmax(scores)
-        st.metric("Dự đoán", pred)
-        st.bar_chart({"điểm tin cậy (ước lượng)": confidence}, x_label="chữ số")
+        col_knn, col_svm = st.columns(2)
+        with col_knn:
+            st.subheader("KNN")
+            pred = knn.predict(x)[0]
+            proba = knn.predict_proba(x)[0]
+            st.metric("Dự đoán", pred)
+            st.bar_chart({"xác suất": proba}, x_label="chữ số", height=220)
 
-    st.divider()
-    st.caption(
-        "Lưu ý: điểm tin cậy của SVM là ước lượng từ decision_function (softmax), "
-        "không phải xác suất đã hiệu chỉnh như KNN."
-    )
+        with col_svm:
+            st.subheader("SVM")
+            pred = svm.predict(x)[0]
+            # SVC without probability=True (see src/digitrec/models.py) -- use the
+            # one-vs-rest decision margins, softmax-normalized, as a confidence
+            # proxy instead of calibrated probabilities.
+            scores = svm.decision_function(x)[0]
+            confidence = softmax(scores)
+            st.metric("Dự đoán", pred)
+            st.bar_chart({"điểm tin cậy (ước lượng)": confidence}, x_label="chữ số", height=220)
 
 
 if __name__ == "__main__":

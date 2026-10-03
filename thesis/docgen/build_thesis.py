@@ -540,7 +540,7 @@ TOC_ENTRIES = [
     (2, "4.12. Kết quả chương trình demo", "35"),
     (2, "4.13. Hạn chế của chương trình demo", "37"),
     (2, "4.14. Thảo luận tổng hợp", "37"),
-    (2, "4.15. Kiểm chứng độ ổn định bằng Stratified K-Fold Cross-Validation", "37"),
+    (2, "4.15. Kiểm chứng độ ổn định bằng Stratified K-Fold Cross-Validation", "38"),
     (1, "CHƯƠNG 5. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN", "40"),
     (1, "DANH MỤC TÀI LIỆU THAM KHẢO", "42"),
     (1, "PHỤ LỤC", "43"),
@@ -1545,6 +1545,13 @@ add_para(doc, (
     "duỗi phẳng), rồi gọi `predict()` của cả hai mô hình song song."
 ))
 add_para(doc, (
+    "Giao diện chia làm hai cột: cột trái chứa khung vẽ và ô tải ảnh lên "
+    "(hai tab), cột phải hiển thị ảnh 28×28 sau tiền xử lý cùng kết quả dự "
+    "đoán và biểu đồ điểm tin cậy của KNN và SVM đặt cạnh nhau. Nhờ vậy "
+    "người dùng vừa vẽ xong đã thấy ngay kết quả bên cạnh khung vẽ mà không "
+    "phải cuộn trang."
+))
+add_para(doc, (
     "Canvas vẽ chữ số được cài đặt bằng `st.components.v2.component()` — "
     "thành phần inline HTML5 Canvas có sẵn của Streamlit, không phụ thuộc "
     "thư viện ngoài. Thư viện phổ biến `streamlit-drawable-canvas` ban "
@@ -2025,10 +2032,13 @@ add_image(doc, f"{SCR}/02_tai_anh_len_ket_qua.png", width_cm=13,
           caption_num=next_fig(),
           source="Nguồn: ảnh chụp màn hình chương trình demo thật của đồ án")
 add_para(doc, (
-    "Một video demo thật (quay bằng Playwright, giả lập thao tác chuột "
-    "thật để vẽ ba chữ số khác nhau và tải lên bốn ảnh test MNIST thật "
-    "khác nhau, toàn bộ bảy lần dự đoán đều đúng ở cả hai mô hình) được "
-    "lưu kèm theo đồ án tại `thesis/abs/demo_video.mp4`."
+    "Một video demo dài khoảng 68 giây được lưu kèm theo đồ án tại "
+    "`thesis/abs/demo_video.mp4`. Video quay trên chương trình demo đang "
+    "chạy, thao tác chuột được điều khiển tự động bằng Playwright: vẽ năm "
+    "chữ số 2, 7, 4, 3, 0 trên khung vẽ (nét vẽ có độ nghiêng, độ rung và "
+    "tốc độ không đều như khi vẽ bằng tay) rồi tải lên bốn ảnh thật từ tập "
+    "kiểm thử MNIST (0, 3, 5, 8). Cả chín lần dự đoán đều đúng ở cả KNN và "
+    "SVM."
 ))
 
 add_heading(doc, "4.13. Hạn chế của chương trình demo", level=2)
