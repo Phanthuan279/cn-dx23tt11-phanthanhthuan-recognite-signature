@@ -22,7 +22,7 @@ import json
 
 import numpy as np
 from docx import Document
-from docx.shared import Pt, Cm, RGBColor
+from docx.shared import Pt, Cm, RGBColor, Twips
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml.ns import qn
@@ -354,8 +354,44 @@ section.bottom_margin = Cm(2)
 section.left_margin = Cm(3.0)
 section.right_margin = Cm(2)
 
-# No page number on the cover pages (bìa chính / bìa lót) -- the footer
-# for this section is intentionally left empty.
+# Hai trang bìa (section đầu tiên) không có header/footer/số trang.
+
+HEADER_LEFT = "Đồ án thực tập chuyên ngành"
+HEADER_RIGHT = "Nhận dạng chữ số viết tay"
+FOOTER_TEXT = f"SVTH: {STUDENT_NAME} – GVHD: {ADVISOR}"
+
+
+def fill_header_footer_paragraph(p, left, right=None, page_field=False, border="bottom"):
+    pf = p.paragraph_format
+    pf.line_spacing = 1.0
+    pf.space_before = Pt(0)
+    pf.space_after = Pt(0)
+    # The built-in Header/Footer styles carry center (4680) and right (9360)
+    # twip tab stops; clear them so the only stop is flush with the margin.
+    for pos in (4680, 9360):
+        pf.tab_stops.add_tab_stop(Twips(pos), WD_TAB_ALIGNMENT.CLEAR)
+    pf.tab_stops.add_tab_stop(Cm(16), WD_TAB_ALIGNMENT.RIGHT)
+    for text in (left, right):
+        if text is None:
+            continue
+        if text is right:
+            p.add_run("\t")
+        r = p.add_run(text)
+        r.italic = True
+        r.font.size = Pt(11)
+        r.font.name = "Times New Roman"
+    if page_field:
+        p.add_run("\t")
+        add_field(p, "PAGE", "1")
+    pPr = p._p.get_or_add_pPr()
+    pBdr = OxmlElement("w:pBdr")
+    edge = OxmlElement(f"w:{border}")
+    edge.set(qn("w:val"), "single")
+    edge.set(qn("w:sz"), "6")
+    edge.set(qn("w:space"), "1")
+    edge.set(qn("w:color"), "000000")
+    pBdr.append(edge)
+    pPr.append(pBdr)
 
 
 def cover_label_value(doc, label, value, size=14):
@@ -371,7 +407,7 @@ def cover_label_value(doc, label, value, size=14):
     return p
 
 
-def cover_page():
+def cover_page(page_break=True):
     add_para(doc, UNIVERSITY, bold=True, center=True, size=16, space_after=0)
     add_para(doc, SCHOOL, bold=True, center=True, size=16, space_after=0)
     doc.add_paragraph()
@@ -389,17 +425,27 @@ def cover_page():
     for _ in range(4):
         doc.add_paragraph()
     add_para(doc, SUBMIT_DATE, bold=True, center=True, size=13)
-    add_page_break(doc)
+    if page_break:
+        add_page_break(doc)
 
 
 # ===========================================================================
 # BÌA CHÍNH / BÌA LÓT (không đánh số trang)
 # ===========================================================================
 cover_page()
-cover_page()
+cover_page(page_break=False)
 
-# Phần đầu (Tóm tắt, nhận xét, Mục lục, Mở đầu...) cũng không đánh số trang:
-# vẫn thuộc section đầu tiên có footer rỗng, số trang chỉ bắt đầu từ Chương 1.
+# ===========================================================================
+# [SECTION BREAK] Phần đầu (Tóm tắt, Mục lục, Mở đầu, nhận xét...): có
+# header/footer cố định nhưng chưa đánh số trang -- số trang bắt đầu từ Chương 1.
+# ===========================================================================
+front_matter_section = doc.add_section(WD_SECTION_START.NEW_PAGE)
+front_matter_section.header.is_linked_to_previous = False
+front_matter_section.footer.is_linked_to_previous = False
+fill_header_footer_paragraph(front_matter_section.header.paragraphs[0],
+                             HEADER_LEFT, HEADER_RIGHT, border="bottom")
+fill_header_footer_paragraph(front_matter_section.footer.paragraphs[0],
+                             FOOTER_TEXT, border="top")
 
 # ===========================================================================
 # TÓM TẮT
@@ -778,9 +824,8 @@ add_table(doc, ["Từ viết tắt", "Giải nghĩa"], abbr, col_widths_cm=[3, 1
 # ===========================================================================
 new_section = doc.add_section(WD_SECTION_START.NEW_PAGE)
 new_section.footer.is_linked_to_previous = False
-body_fp = new_section.footer.paragraphs[0]
-body_fp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-add_field(body_fp, "PAGE", "1")
+fill_header_footer_paragraph(new_section.footer.paragraphs[0], FOOTER_TEXT,
+                             page_field=True, border="top")
 set_page_number_format(new_section, "decimal", start=1)
 
 
